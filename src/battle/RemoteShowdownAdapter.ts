@@ -88,9 +88,29 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
         return { kind: "boost", payload: message.args, source: message };
       case "-unboost":
         return { kind: "unboost", payload: message.args, source: message };
+      case "-ability":
+        return {kind:"ability",payload:message.args,source:message};
+      case "-item":
+        return {kind:"item",payload:message.args,source:message};
+      case "-enditem":
+        return {kind:"enditem",payload:message.args,source:message};
       case "-formechange":
       case "detailschange":
         return { kind: "formechange", payload: message.args, source: message };
+      case "-fieldstart":
+        return {kind:"fieldstart",payload:message.args,source:message};
+      case "-fieldend":
+        return {kind:"fieldend",payload:message.args,source:message};
+      case "-fieldactivate":
+        return {kind:"fieldactivate",payload:message.args,source:message};
+      case "-sidestart":
+        return {kind:"sidestart",payload:message.args,source:message};
+      case "-sideend":
+        return {kind:"sideend",payload:message.args,source:message};
+      case "-start":
+        return {kind:"start",payload:message.args,source:message};
+      case "-end":
+        return {kind:"end",payload:message.args,source:message };
       case "faint":
         return { kind: "faint", payload: message.args, source: message };
       case "win":
