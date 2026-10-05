@@ -2,6 +2,7 @@ import { createRequire } from "node:module";
 import type { BattleStream as BattleStreamType } from "pokemon-showdown";
 const require = createRequire(import.meta.url);
 const {BattleStream} = require("pokemon-showdown") as {BattleStream: typeof BattleStreamType};
+import { parseShowdownBlock } from "../src/battle/ShowdownProtocol";
 
 const battle = new BattleStream({noCatch: false});
 const outputs: string[] = [];
@@ -49,14 +50,15 @@ while (!outputs.join("").includes(moveMarker) && Date.now() < deadline) {
   await new Promise(resolve => setTimeout(resolve, 10));
 }
 const output = outputs.join("");
+const parsedOutput = parseShowdownBlock(output);
 if (!output.includes("|move|p1a: Pikachu|Tackle|")) {
   throw new Error("Showdown did not execute the player's move.");
 }
-const moveMatches = output.match(/\|move\|p1a: Pikachu\|Tackle\|/g) ?? [];
+const moveMatches = parsedOutput.filter(message => message.type === "move" && message.args[0] === "p1a: Pikachu" && message.args[1] === "Tackle");
 if (moveMatches.length !== 1) {
   throw new Error(`Expected exactly one player move execution, got ${moveMatches.length}.`);
 }
-const damageMatches = output.match(/\|-damage\|p2a: Charizard\|/g) ?? [];
+const damageMatches = parsedOutput.filter(message => message.type === "-damage" && message.args[0] === "p2a: Charizard");
 if (damageMatches.length !== 1) {
   throw new Error(`Expected exactly one authoritative damage event, got ${damageMatches.length}.`);
 }
