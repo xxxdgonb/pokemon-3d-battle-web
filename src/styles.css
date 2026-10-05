@@ -25,3 +25,6 @@ h1{font-size:clamp(2rem,5vw,4rem);margin:.25rem 0 1.5rem}
 .hpbar{height:9px;margin:8px 0;background:#26364a;border-radius:99px;overflow:hidden}
 .hpbar i{display:block;height:100%;width:100%;background:#62d47a;transition:width .25s ease}
 .battle-hud small{display:block;opacity:.75;margin-top:3px}
+
+.battle-result{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#08101cf5;border:1px solid #7890ad;border-radius:14px;padding:14px 16px;font-size:1.05rem}
+.battle-result button{margin-left:auto}
