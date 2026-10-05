@@ -46,6 +46,19 @@ describe("BattlePresentationCoordinator", () => {
     expect(coordinator.state.phase).toBe("DAMAGE_APPLICATION");
   });
 
+  it("accepts a Showdown miss as authoritative resolution", () => {
+    const coordinator = new BattlePresentationCoordinator(state());
+    coordinator.selectMove("thunderbolt");
+    coordinator.startMove("tx-miss", "thunderbolt");
+    coordinator.markAnimationImpact("tx-miss");
+    coordinator.applyAuthoritativeDamage("tx-miss", [{
+      kind: "miss",
+      payload: ["p1a: Pikachu", "p2a: Charizard"],
+      source: {type: "-miss", args: ["p1a: Pikachu", "p2a: Charizard"], raw: "|-miss|p1a: Pikachu|p2a: Charizard"},
+    }]);
+    expect(coordinator.state.phase).toBe("DAMAGE_APPLICATION");
+  });
+
   it("returns to move selection when neither side faints", () => {
     const coordinator = new BattlePresentationCoordinator(state());
     coordinator.selectMove("thunderbolt");
