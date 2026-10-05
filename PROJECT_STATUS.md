@@ -163,3 +163,26 @@ Impact: until runtime tests pass, the single-player turn loop is not verified.
 ## Next
 
 PHASE 1 — protocol-to-domain projection and passive-target architecture.
+
+
+## End-to-end implementation checkpoint
+- PHASE 1 Architecture: substantially implemented; runtime verification remains open.
+- PHASE 2 Foundation/Data: generation-scoped Showdown Dex and learnset API implemented.
+- PHASE 3 Pokémon configuration: species/form/gender/shiny/ability/item/level/moves flow implemented.
+- PHASE 4 3D Renderer: Three.js arena, lighting, shadows, GLB lazy loader/cache/fallback implemented.
+- PHASE 5 Battle Engine: state machine + transaction guard + passive Showdown opponent implemented.
+- PHASE 6 Move System: real Showdown move validation/execution; authoritative outcome classification implemented.
+- PHASE 7 Animation: impact timing and procedural generic impact FX implemented; official move animation assets intentionally not bundled without redistribution rights.
+- PHASE 8 Arena/Camera: battle arena and camera presets implemented.
+- PHASE 9 UI: selection flow, move UI, HP bars, status, responsive layout implemented.
+- PHASE 10 Integration: browser → WebSocket → Node Showdown → normalized events → BattleState → presentation chain implemented.
+- PHASE 11 Testing: unit tests + real Showdown smoke test + CI configuration present; execution not observed locally.
+- PHASE 12 Bug Fixing: transaction race/double-click, runtime readiness, phase ownership, non-damage move resolution, authoritative HP sync addressed during integration.
+- PHASE 13 Performance: lazy model loading/cache/disposal and UI transaction lock implemented; browser profiling still required.
+- PHASE 14 Final Audit: NOT CLOSED until CI/browser runtime execution, asset availability, licenses, and repeated-battle soak checks are observed.
+
+## Remaining hard blockers
+1. Runtime/CI execution evidence is still required.
+2. Full browser/WebGL smoke test is still required.
+3. Complete protocol projection for every advanced effect (weather/terrain/side conditions/volatile effects/stat stages) still requires expansion before claiming full battle-state fidelity.
+4. Official/third-party animation and model redistribution rights must be audited individually; current 3D provider explicitly identifies Pokémon models as Nintendo/Creatures/GAME FREAK property. 
