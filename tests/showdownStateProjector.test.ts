@@ -45,12 +45,9 @@ describe("ShowdownStateProjector", () => {
     expect(state.player.moves[0]?.pp).toBe(12);
   });
 
-  it("projects victory and defeat events", () => {
+  it("does not let raw win events bypass the application state machine", () => {
     const victory = projectShowdownBlock(createState(), parseShowdownBlock("|win|Player"));
-    expect(victory.phase).toBe("VICTORY");
-
-    const defeat = projectShowdownBlock(createState(), parseShowdownBlock("|win|Opponent"));
-    expect(defeat.phase).toBe("DEFEAT");
+    expect(victory.phase).toBe("PLAYER_SELECTING_MOVE");
   });
 
   it("projects damage, status, faint and turn events", () => {
