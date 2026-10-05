@@ -104,6 +104,18 @@ function parseRequestMessage(state: BattleState, message: ShowdownProtocolMessag
   return updateSide(state, side, patch);
 }
 
+function parseHpMessage(state: BattleState, message: ShowdownProtocolMessage): BattleState {
+  const target = message.args[0];
+  const condition = message.args[1];
+  if (!target || !condition) return state;
+  const side = sideFromIdent(target);
+  if (!side) return state;
+  const hp = parseCondition(condition)?.hp;
+  if (hp === undefined) return state;
+  const pokemon = side === "player" ? state.player : state.opponent;
+  return updateSide(state, side, {hp: Math.max(0, Math.min(pokemon.maxHp, hp))});
+}
+
 function parseDamageMessage(state: BattleState, message: ShowdownProtocolMessage): BattleState {
   const target = message.args[0];
   const condition = message.args[1];
@@ -145,9 +157,17 @@ export function projectShowdownMessage(
     case "-damage":
     case "damage":
       return parseDamageMessage(state, message);
+    case "-heal":
+    case "-sethp":
+      return parseHpMessage(state, message);
     case "-status":
     case "status":
       return parseStatusMessage(state, message);
+    case "-curestatus": {
+      const target = message.args[0];
+      const side = target ? sideFromIdent(target) : null;
+      return side ? updateSide(state, side, {status: null}) : state;
+    }
     case "faint":
       return parseFaintMessage(state, message);
     case "win":
