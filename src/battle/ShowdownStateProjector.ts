@@ -150,12 +150,10 @@ export function projectShowdownMessage(
       return parseStatusMessage(state, message);
     case "faint":
       return parseFaintMessage(state, message);
-    case "win": {
-      const winner = message.args[0];
-      if (winner === "Player") return {...state, phase: "VICTORY"};
-      if (winner === "Opponent") return {...state, phase: "DEFEAT"};
+    case "win":
+      // Victory/defeat is owned by BattleStateMachine after the faint check.
+      // The raw win event is exposed by RemoteShowdownAdapter instead.
       return state;
-    }
     case "turn": {
       const turn = Number(message.args[0]);
       return Number.isInteger(turn) ? {...state, turn} : state;
