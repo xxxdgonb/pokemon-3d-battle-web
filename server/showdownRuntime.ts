@@ -1,6 +1,9 @@
 import { createServer } from "node:http";
+import { createRequire } from "node:module";
 import { WebSocketServer, type WebSocket } from "ws";
-import { BattleStream } from "pokemon-showdown";
+import type { BattleStream as BattleStreamType } from "pokemon-showdown";
+const require = createRequire(import.meta.url);
+const {BattleStream} = require("pokemon-showdown") as {BattleStream: typeof BattleStreamType};
 import type { Generation, PokemonBattleState } from "../src/core/types";
 import { getDexPayload, getGeneration, getLearnset } from "./dexApi";
 
@@ -147,7 +150,7 @@ async function run(): Promise<void> {
 
 
   wss.on("connection", (socket) => {
-    let battle: BattleStream | null = null;
+    let battle: BattleStreamType | null = null;
     let config: BattleConfig | null = null;
     let outputTask: Promise<void> | null = null;
 
