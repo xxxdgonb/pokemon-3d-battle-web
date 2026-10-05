@@ -55,7 +55,8 @@ async function main(){
 }
 main().catch(error=>{
   document.body.dataset.browserSmoke="failed";
-  document.body.insertAdjacentHTML("beforeend",'<div id="browser-smoke-result">BROWSER_SMOKE_FAILED:'+String(error.message).replace(/[<>&]/g,"")+'</div>');
+  const detail=(document.body.innerText+"\\nERROR:"+String(error.message)).slice(-3000).replace(/[<>&]/g,"");
+  document.body.insertAdjacentHTML("beforeend",'<pre id="browser-smoke-result">BROWSER_SMOKE_FAILED:'+detail+'</pre>');
 });
 </script>
 </body>
