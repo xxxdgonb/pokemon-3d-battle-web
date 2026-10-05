@@ -130,12 +130,16 @@ export class App {
   private nextStage():Stage{return this.stage==="details"?"form":"generation";}
 
   private async startBattle():Promise<void>{
+    const debug=(value:string):void=>{if(new URLSearchParams(window.location.search).get("browserSmoke")==="1")document.body.dataset.battleDebug=value;};
+    debug("start");
     if(!this.pokemon||!this.dex)return;
     this.pokemon={...this.pokemon,moves:toMoveSlots(this.selectedMoves)};
     this.battleEnded=false;
     const charizard=this.dex.species.find(s=>s.id==="charizard" || s.baseSpecies==="Charizard");
     if(!charizard)throw new Error("Charizard is unavailable in the selected generation.");
+    debug("enemy-learnset");
     const enemyLearnset=await loadLearnset(this.generation,charizard.id);
+    debug("enemy-learnset-ready");
     const enemyMoves=enemyLearnset.map(id=>this.dex!.moves.find(m=>m.id===id)).filter((m):m is DexMove=>Boolean(m)).slice(0,4);
     if(enemyMoves.length<1)throw new Error("No legal passive-opponent moves are available.");
     const opponent={
@@ -150,9 +154,12 @@ export class App {
     this.opponentPokemon=opponent;
     this.opponentSpecies=charizard;
     this.adapter=new RemoteShowdownAdapter(new WebSocketShowdownTransport());
+    debug("adapter-create");
     await this.adapter.createBattle({generation:this.generation,player:this.pokemon,opponent});
+    debug("adapter-ready");
     this.coordinator=new BattlePresentationCoordinator(await this.adapter.getState());
     this.coordinator.initializeBattle();
+    debug("render-battle");
     this.stage="battle";
     this.render();
   }
