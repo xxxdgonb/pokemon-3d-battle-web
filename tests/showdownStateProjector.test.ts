@@ -50,6 +50,16 @@ describe("ShowdownStateProjector",()=>{
     expect(state.opponent.shiny).toBe(true);
   });
 
+  it("normalizes combined Showdown form names",()=>{
+    const block="|request|"+JSON.stringify({
+      side:{id:"p2",pokemon:[{active:true,details:"Charizard-Mega-X, L50, M, shiny",condition:"120/120"}]},
+      active:[{moves:[]}]});
+    const state=projectShowdownBlock(createState(),parseShowdownBlock(block));
+    expect(state.opponent.speciesId).toBe("charizard");
+    expect(state.opponent.formId).toBe("mega-x");
+    expect(state.opponent.shiny).toBe(true);
+  });
+
   it("projects ability and held-item changes",()=>{
     const state=projectShowdownBlock(createState(),parseShowdownBlock([
       "|-ability|p2a: Charizard|intimidate",
