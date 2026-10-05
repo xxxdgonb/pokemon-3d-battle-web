@@ -173,6 +173,19 @@ async function run(): Promise<void> {
         }
 
         await battle.write(message.command);
+
+        if (message.command.startsWith(">p1 move ")) {
+          const simulator = battle.battle;
+          const passiveSide = simulator?.sides[1];
+          if (!simulator || !passiveSide) {
+            throw new Error("Showdown battle is not initialized.");
+          }
+
+          if (passiveSide.requestState === "move" && !passiveSide.isChoiceDone()) {
+            passiveSide.choice.actions.push({choice: "pass"});
+            simulator.commitChoices();
+          }
+        }
       } catch (error) {
         sendJson(socket, {
           type: "error",
