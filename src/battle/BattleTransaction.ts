@@ -1,5 +1,14 @@
 import type { MoveSlot } from "../core/types";
 
+export type MoveResolutionKind = "damage" | "miss" | "immune" | "failed";
+
+export interface MoveResolution {
+  readonly kind: MoveResolutionKind;
+  readonly target: "player" | "opponent";
+  readonly critical: boolean;
+  readonly effectiveness: "super-effective" | "resisted" | "neutral" | null;
+}
+
 export interface BattleTransaction {
   readonly id: string;
   readonly actor: "player" | "opponent";
@@ -8,6 +17,7 @@ export interface BattleTransaction {
   readonly startedAt: number;
   readonly impactReached: boolean;
   readonly damageApplied: boolean;
+  readonly resolution: MoveResolution | null;
   readonly completed: boolean;
 }
 
@@ -23,6 +33,7 @@ export class BattleTransactionGuard {
       ...input,
       impactReached: false,
       damageApplied: false,
+      resolution: null,
       completed: false
     };
 
@@ -36,11 +47,20 @@ export class BattleTransactionGuard {
     return this.active;
   }
 
+  public markResolved(id: string, resolution: MoveResolution): BattleTransaction {
+    const tx = this.require(id);
+    if (!tx.impactReached) throw new Error(`Transaction ${id} cannot resolve before impact.`);
+    if (tx.damageApplied) throw new Error(`Transaction ${id} resolution was already applied.`);
+    this.active = { ...tx, damageApplied: true, resolution };
+    return this.active;
+  }
+
   public markDamageApplied(id: string): BattleTransaction {
+
     const tx = this.require(id);
     if (!tx.impactReached) throw new Error(`Transaction ${id} cannot apply damage before impact.`);
     if (tx.damageApplied) throw new Error(`Transaction ${id} resolution was already applied.`);
-    this.active = { ...tx, damageApplied: true };
+    this.active = { ...tx, damageApplied: true, resolution: tx.resolution };
     return this.active;
   }
 
