@@ -1,5 +1,5 @@
 import type { Generation, Gender, PokemonBattleState } from "../core/types";
-import { loadDex, initialPokemon, toMoveSlots, type DexMove, type DexPayload, type DexSpecies } from "../data/dex";
+import { loadDex, loadLearnset, initialPokemon, toMoveSlots, type DexMove, type DexPayload, type DexSpecies } from "../data/dex";
 import { RemoteShowdownAdapter } from "../battle/RemoteShowdownAdapter";
 import { WebSocketShowdownTransport } from "../battle/WebSocketShowdownTransport";
 import { BattlePresentationCoordinator } from "../battle/BattlePresentationCoordinator";
@@ -13,6 +13,7 @@ export class App {
   private dex:DexPayload|null=null;
   private species:DexSpecies|null=null;
   private selectedMoves:DexMove[]=[];
+  private legalMoveIds:readonly string[]=[];
   private pokemon:PokemonBattleState|null=null;
   private coordinator:BattlePresentationCoordinator|null=null;
   private adapter:RemoteShowdownAdapter|null=null;
@@ -25,8 +26,10 @@ export class App {
     this.generation=g; this.dex=await loadDex(g); this.stage="pokemon"; this.render();
   }
 
-  private selectSpecies(s:DexSpecies):void{
-    this.species=s; this.pokemon=initialPokemon(s); this.stage="details"; this.render();
+  private async selectSpecies(s:DexSpecies):Promise<void>{
+    this.species=s; this.pokemon=initialPokemon(s);
+    this.legalMoveIds=await loadLearnset(this.generation,s.id);
+    this.stage="details"; this.render();
   }
 
   private render():void{
@@ -76,14 +79,14 @@ export class App {
   }
   private level():string{return '<input id="level" type="number" min="1" max="100" value="50"><button data-action="level">Continue</button>';}
   private moves():string{
-    const moves=this.dex?.moves.filter(m=>m.gen<=this.generation).slice(0,400)??[];
+    const moves=this.dex?.moves.filter(m=>this.legalMoveIds.includes(m.id))??[];
     return `<p>Select 4 moves: ${this.selectedMoves.length}/4</p><div class="grid-list">${moves.map(m=>`<button data-action="move" data-value="${m.id}">${m.name} · ${m.type} · ${m.category}</button>`).join("")}</div><button data-action="battle" ${this.selectedMoves.length===4?"":"disabled"}>Enter Battle</button>`;
   }
 
   private async action(action:string,value?:string):Promise<void>{
     if(action==="start"){this.stage="generation";this.render();return;}
     if(action==="generation"){await this.chooseGeneration(Number(value) as Generation);return;}
-    if(action==="species"){const s=this.dex?.species.find(x=>x.id===value);if(s)this.selectSpecies(s);return;}
+    if(action==="species"){const s=this.dex?.species.find(x=>x.id===value);if(s)await this.selectSpecies(s);return;}
     if(action==="next"){this.stage=this.nextStage();this.render();return;}
     if(action==="form"){const s=this.dex?.species.find(x=>x.id===value);if(s){this.species=s;if(this.pokemon)this.pokemon={...this.pokemon,speciesId:s.id,formId:s.forme?.toLowerCase()||"base",abilityId:Object.values(s.abilities)[0]??""};this.stage="gender";this.render();}return;}
     if(action==="gender"){if(this.pokemon)this.pokemon={...this.pokemon,gender:value as Gender};this.stage="shiny";this.render();return;}
