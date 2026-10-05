@@ -16,10 +16,15 @@ export function parseShowdownLine(line: string): ShowdownProtocolMessage | null 
 }
 
 export function parseShowdownBlock(block: string): readonly ShowdownProtocolMessage[] {
-  return block
-    .split(/\n+/)
-    .map(parseShowdownLine)
-    .filter((message): message is ShowdownProtocolMessage => message !== null);
+  const messages: ShowdownProtocolMessage[] = [];
+  let lastRaw: string | null = null;
+  for (const line of block.split(/\n+/)) {
+    const message = parseShowdownLine(line);
+    if (!message || message.raw === lastRaw) continue;
+    messages.push(message);
+    lastRaw = message.raw;
+  }
+  return messages;
 }
 
 export function encodeChoice(moveId: string): string {
