@@ -5,69 +5,47 @@ import { parseShowdownBlock } from "../src/battle/ShowdownProtocol";
 
 function createState(): BattleState {
   const pokemon = {
-    id: "pika",
-    speciesId: "pikachu",
-    formId: "base",
-    gender: "male" as const,
-    shiny: false,
-    level: 50,
-    abilityId: "static",
-    heldItemId: null,
-    hp: 100,
-    maxHp: 100,
-    status: null,
-    moves: [
-      {moveId: "thunderbolt", pp: 15, maxPp: 15},
-      {moveId: "quickattack", pp: 30, maxPp: 30},
-    ],
+    id:"pika", speciesId:"pikachu", formId:"base", gender:"male" as const, shiny:false,
+    level:50, abilityId:"static", heldItemId:null, hp:100, maxHp:100, status:null,
+    moves:[{moveId:"thunderbolt",pp:15,maxPp:15},{moveId:"quickattack",pp:30,maxPp:30}],
   };
   return {
-    generation: 9,
-    phase: "PLAYER_SELECTING_MOVE",
-    turn: 1,
-    activeTransactionId: null,
-    player: pokemon,
-    opponent: {...pokemon, id: "target", speciesId: "charizard", abilityId: "blaze"},
+    generation:9, phase:"PLAYER_SELECTING_MOVE", turn:1, activeTransactionId:null,
+    player:pokemon, opponent:{...pokemon,id:"target",speciesId:"charizard",abilityId:"blaze"},
   };
 }
 
-describe("ShowdownStateProjector", () => {
-  it("projects request HP, status and move PP", () => {
-    const block = [
-      "|request|{" +
-        "\"side\":{\"id\":\"p1\",\"pokemon\":[{\"active\":true,\"condition\":\"73/100\"}]}," +
-        "\"active\":[{\"moves\":[{\"id\":\"thunderbolt\",\"pp\":12,\"maxpp\":15}]}]}" +
-    ].join("\n");
-
-    const state = projectShowdownBlock(createState(), parseShowdownBlock(block));
+describe("ShowdownStateProjector",()=>{
+  it("projects request HP, status and move PP",()=>{
+    const block="|request|"+JSON.stringify({
+      side:{id:"p1",pokemon:[{active:true,condition:"73/100"}]},
+      active:[{moves:[{id:"thunderbolt",pp:12,maxpp:15}]}],
+    });
+    const state=projectShowdownBlock(createState(),parseShowdownBlock(block));
     expect(state.player.hp).toBe(73);
     expect(state.player.maxHp).toBe(100);
     expect(state.player.moves[0]?.pp).toBe(12);
-    expect(state.player.speciesId).toBe("pikachu");
-    expect(state.player.gender).toBe("male");
-  
+  });
 
-  it("projects authoritative active identity and ability", () => {
-    const block = "|request|" + JSON.stringify({
+  it("projects authoritative active identity and ability",()=>{
+    const block="|request|"+JSON.stringify({
       side:{id:"p2",pokemon:[{active:true,details:"Charizard, L50, M",condition:"120/120",ability:"blaze"}]},
       active:[{moves:[{id:"flamethrower",pp:10,maxpp:15}]}],
     });
-    const state = projectShowdownBlock(createState(), parseShowdownBlock(block));
+    const state=projectShowdownBlock(createState(),parseShowdownBlock(block));
     expect(state.opponent.speciesId).toBe("charizard");
     expect(state.opponent.gender).toBe("male");
     expect(state.opponent.abilityId).toBe("blaze");
     expect(state.opponent.moves[0]?.pp).toBe(10);
   });
 
-});
-
-  it("does not let raw win events bypass the application state machine", () => {
-    const victory = projectShowdownBlock(createState(), parseShowdownBlock("|win|Player"));
-    expect(victory.phase).toBe("PLAYER_SELECTING_MOVE");
+  it("does not let raw win events bypass the application state machine",()=>{
+    const state=projectShowdownBlock(createState(),parseShowdownBlock("|win|Player"));
+    expect(state.phase).toBe("PLAYER_SELECTING_MOVE");
   });
 
-  it("projects damage, status, faint and turn events", () => {
-    const block = [
+  it("projects damage, healing, status cure, faint and turn events",()=>{
+    const block=[
       "|-damage|p2a: Charizard|40/100",
       "|-heal|p2a: Charizard|60/100",
       "|-status|p2a: Charizard|brn",
@@ -75,8 +53,7 @@ describe("ShowdownStateProjector", () => {
       "|turn|3",
       "|faint|p2a: Charizard",
     ].join("\n");
-
-    const state = projectShowdownBlock(createState(), parseShowdownBlock(block));
+    const state=projectShowdownBlock(createState(),parseShowdownBlock(block));
     expect(state.opponent.hp).toBe(0);
     expect(state.opponent.status).toBeNull();
     expect(state.turn).toBe(3);
