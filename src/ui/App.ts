@@ -114,7 +114,7 @@ export class App {
     this.root.innerHTML='<section id="battle-root" class="battle-screen"><div id="battle-canvas" class="battle-canvas"></div><div class="battle-hud"><div><strong>Player</strong><span id="player-hp"></span></div><div><strong>Opponent</strong><span id="opponent-hp"></span></div><div id="moves" class="move-grid"></div></div></section>';
     const host=this.root.querySelector("#battle-canvas") as HTMLElement;
     this.battleRenderer=new ThreeBattleRenderer(host);
-    this.battleRenderer.setupBattle({nationalDex:this.species!.num,shiny:this.pokemon!.shiny,gender:this.pokemon!.gender},{nationalDex:6,shiny:false,gender:"male"},this.generation);
+    this.battleRenderer.setupBattle({nationalDex:this.species!.num,shiny:this.pokemon!.shiny,gender:this.pokemon!.gender,formId:this.pokemon!.formId},{nationalDex:6,shiny:false,gender:"male",formId:"base"},this.generation);
     const moves=this.selectedMoves;
     const container=this.root.querySelector("#moves") as HTMLElement;
     moves.forEach(m=>{const b=document.createElement("button");b.textContent=`${m.name} · PP ${m.pp}`;b.onclick=()=>void this.useMove(m);container.appendChild(b);});
