@@ -113,12 +113,14 @@ export class BattlePresentationCoordinator {
       }
     }
 
-    const damage = events.find(event => event.kind === "damage" && targetSide(event) === "opponent");
-    if (damage) return {kind: "damage", target: "opponent", critical, effectiveness};
+    const damage = events.find(event => event.kind === "damage" && targetSide(event) !== null);
+    if (damage) return {kind:"damage", target:targetSide(damage) ?? "opponent", critical, effectiveness};
 
     const special = events.find(event => event.kind === "miss" || event.kind === "immune" || event.kind === "failed");
-    if (!special) throw new Error("Unable to classify authoritative move resolution.");
-    return {kind: special.kind, target: "opponent", critical, effectiveness};
+    if (special) return {kind:special.kind, target:targetSide(special) ?? "opponent", critical, effectiveness};
+
+    const effect = events.find(event => ["heal","status","curestatus","boost","unboost"].includes(event.kind));
+    return {kind:"success", target:effect ? (targetSide(effect) ?? "player") : "player", critical, effectiveness};
   }
 
   public endBattle(): BattleState {
