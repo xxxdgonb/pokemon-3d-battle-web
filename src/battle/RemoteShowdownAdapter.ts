@@ -1,5 +1,6 @@
 import type { BattleState, MoveSlot } from "../core/types";
 import type { ShowdownBattleConfig, ShowdownAdapter, ShowdownBattleEvent, ShowdownTransport } from "./ShowdownAdapter";
+import { projectShowdownMessage } from "./ShowdownStateProjector";
 import { encodeChoice, parseShowdownBlock, type ShowdownProtocolMessage } from "./ShowdownProtocol";
 
 export class RemoteShowdownAdapter implements ShowdownAdapter {
@@ -11,8 +12,18 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
   public constructor(private readonly transport: ShowdownTransport) {}
 
   public async createBattle(config: ShowdownBattleConfig): Promise<void> {
+    this.state = {
+      generation: config.generation,
+      phase: "INIT",
+      turn: 0,
+      activeTransactionId: null,
+      player: config.player,
+      opponent: config.opponent,
+    };
+
     this.unsubscribe = this.transport.onMessage((block) => {
       for (const message of parseShowdownBlock(block)) {
+        this.state = projectShowdownMessage(this.state!, message);
         const event = this.normalize(message);
         if (event) this.pending.push(event);
       }
