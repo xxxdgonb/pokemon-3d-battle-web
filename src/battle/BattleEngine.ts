@@ -10,6 +10,17 @@ export interface BattleEngine {
 export class BattleStateMachine implements BattleEngine {
   public constructor(public state: BattleState) {}
 
+  public syncAuthoritativeFacts(authoritative: BattleState): BattleState {
+    this.state = {
+      ...this.state,
+      generation: authoritative.generation,
+      turn: authoritative.turn,
+      player: authoritative.player,
+      opponent: authoritative.opponent,
+    };
+    return this.state;
+  }
+
   public dispatch(event: BattleEvent): BattleState {
     const phase = transition(this.state.phase, event);
     let nextState: BattleState = {...this.state, phase};
