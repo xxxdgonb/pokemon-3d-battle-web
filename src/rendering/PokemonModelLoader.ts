@@ -5,6 +5,7 @@ export interface PokemonModelRequest {
   readonly nationalDex:number;
   readonly shiny:boolean;
   readonly gender:"male"|"female"|"genderless";
+  readonly formId?:string;
 }
 
 export class PokemonModelLoader {
@@ -12,18 +13,20 @@ export class PokemonModelLoader {
   private readonly cache=new Map<string,THREE.Group>();
 
   public async load(request:PokemonModelRequest):Promise<THREE.Group|null>{
-    const category=request.shiny?"shiny":"regular";
-    const key=`${category}/${request.nationalDex}`;
-    const cached=this.cache.get(key);
-    if(cached)return cached.clone(true);
-    const url=`https://raw.githubusercontent.com/Pokemon-3D-api/assets/main/models/opt/${category}/${request.nationalDex}.glb`;
-    try{
-      const gltf=await this.loader.loadAsync(url);
-      this.cache.set(key,gltf.scene);
-      return gltf.scene.clone(true);
-    }catch{
-      return null;
+    const categories=[request.shiny?"shiny":"regular"];
+    if(request.formId && request.formId!=="base") categories.unshift(request.formId.toLowerCase());
+    for(const category of categories){
+      const key=`${category}/${request.nationalDex}`;
+      const cached=this.cache.get(key);
+      if(cached)return cached.clone(true);
+      const url=`https://raw.githubusercontent.com/Pokemon-3D-api/assets/main/models/opt/${category}/${request.nationalDex}.glb`;
+      try{
+        const gltf=await this.loader.loadAsync(url);
+        this.cache.set(key,gltf.scene);
+        return gltf.scene.clone(true);
+      }catch{}
     }
+    return null;
   }
 
   public dispose():void{
