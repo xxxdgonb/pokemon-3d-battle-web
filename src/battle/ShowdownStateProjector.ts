@@ -101,12 +101,15 @@ function parseRequestMessage(state: BattleState, message: ShowdownProtocolMessag
   } = {};
   if (active?.details) {
     const parts = active.details.split(",").map(part => part.trim()).filter(Boolean);
-    const detailsName = parts[0];
-    if (detailsName) {
-      patch.speciesId = detailsName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const rawName = parts[0];
+    if (rawName) {
+      const normalized = rawName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      const formMarker = normalized.match(/^(.*?)-(mega-x|mega-y|mega|gmax|gigantamax|alolan|galarian|hisuian|paldean)$/);
+      patch.speciesId = formMarker?.[1] ?? normalized;
+      patch.formId = formMarker?.[2] ?? "base";
     }
     const formName = parts[1];
-    if (formName && !["M", "F", "shiny"].includes(formName)) {
+    if (formName && !/^l\\d+$/i.test(formName) && !["M", "F", "shiny"].includes(formName)) {
       patch.formId = formName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
     }
     const genderToken = parts.find(part => part === "M" || part === "F");
