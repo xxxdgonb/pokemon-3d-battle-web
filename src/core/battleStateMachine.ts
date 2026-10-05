@@ -14,7 +14,7 @@ export type BattleEvent =
   | { readonly type: "FAINT_CHECK_COMPLETE"; readonly playerFainted: boolean; readonly opponentFainted: boolean }
   | { readonly type: "BATTLE_ENDED" };
 
-const transitions: Readonly<Record<BattlePhase, Readonly<Record<BattleEvent["type"], BattlePhase | undefined>>>> = {
+const transitions: Readonly<Partial<Record<BattlePhase, Readonly<Partial<Record<BattleEvent["type"], BattlePhase | undefined>>>>>> = {
   INIT: { INIT_COMPLETE: "INTRO" },
   INTRO: { INTRO_COMPLETE: "PLAYER_SELECTING_MOVE" },
   PLAYER_SELECTING_MOVE: { PLAYER_MOVE_SELECTED: "MOVE_VALIDATING" },
