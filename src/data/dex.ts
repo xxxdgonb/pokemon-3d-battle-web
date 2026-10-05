@@ -29,3 +29,11 @@ export function initialPokemon(species:DexSpecies, level=50):PokemonBattleState{
 export function toMoveSlots(moves:readonly DexMove[]):readonly MoveSlot[]{
   return moves.slice(0,4).map(move=>({moveId:move.id,pp:move.pp,maxPp:move.pp}));
 }
+
+
+export async function loadLearnset(generation: Generation, speciesId: string): Promise<readonly string[]> {
+  const response = await fetch(`/api/learnset?generation=${generation}&species=${encodeURIComponent(speciesId)}`);
+  if (!response.ok) throw new Error(`Learnset request failed: ${response.status}`);
+  const data = await response.json() as {moves: string[]};
+  return data.moves;
+}
