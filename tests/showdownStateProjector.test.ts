@@ -45,6 +45,14 @@ describe("ShowdownStateProjector", () => {
     expect(state.player.moves[0]?.pp).toBe(12);
   });
 
+  it("projects victory and defeat events", () => {
+    const victory = projectShowdownBlock(createState(), parseShowdownBlock("|win|Player"));
+    expect(victory.phase).toBe("VICTORY");
+
+    const defeat = projectShowdownBlock(createState(), parseShowdownBlock("|win|Opponent"));
+    expect(defeat.phase).toBe("DEFEAT");
+  });
+
   it("projects damage, status, faint and turn events", () => {
     const block = [
       "|-damage|p2a: Charizard|40/100",
