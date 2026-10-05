@@ -2,192 +2,190 @@
 
 ## Current phase
 
-PHASE 0 — Research: COMPLETE
+**PHASE 12 — Bug Fixing / Integration Hardening**
 
-PHASE 1 — Architecture: SUBSTANTIALLY IMPLEMENTED; CI/runtime verification remains open
+Phases 0–11 have implementation or verification evidence as described below. PHASE 14 is intentionally not closed until browser/WebGL verification, advanced battle-event coverage, asset/license audit, and repeated-battle soak evidence exist.
 
-No gameplay implementation is claimed.
+Current head: `6f9f724ef40632c770c05a84146975b00011872c`
 
-## Repository baseline
+## Evidence
 
-Repository: https://github.com/xxxdgonb/pokemon-3d-battle-web
-Default branch: main
+Latest GitHub Actions CI run after the current implementation changes completed successfully.
 
-Initial state:
-- README.md empty
-- ARCHITECTURE.md empty
-- SOURCE_RESEARCH.md empty
-- PROJECT_STATUS.md empty
-- LICENSES.md empty
-- no package.json
-- no src/
-- no data/
-- no assets/
-- no tests/
+Verified by CI:
+- `npm install`
+- `npm run check`
+  - TypeScript application/server compilation
+  - ESLint
+  - 20 Vitest tests
+- `npm run build`
+- direct pinned-Showdown passive-opponent smoke
+- real WebSocket runtime smoke
+  - runtime process startup
+  - WebSocket connection
+  - battle creation
+  - team preview
+  - active move request
+  - player move submission
+  - authoritative Showdown move event
+  - authoritative damage event
+  - duplicate split-event normalization
 
-This is a foundation-from-zero project.
+The browser/WebGL client itself has **not** been launched by an available browser automation runtime in this session. Therefore visual/browser claims remain explicitly unverified.
 
-## PHASE 0 completed
+## Phase matrix
 
-- verified the five requested source categories
-- verified exact core repositories
-- identified original CFRU as Skeli789/Complete-Fire-Red-Upgrade
-- searched CFRU forks/expansions rather than assuming fork names were original
-- inspected README, LICENSE and package metadata where available
-- inspected important data/asset directories
-- identified Showdown as the primary battle-logic candidate
-- identified Showdown Client as AGPL presentation reference
-- identified 3D model asset ownership as a separate rights issue
-- identified Gen 9 animation resources as reference-only pending per-asset permission
-- established architecture and licensing gates
+| Phase | Status | Evidence / limitation |
+|---|---|---|
+| PHASE 0 Research | COMPLETE | Required Showdown, Showdown Client, Pokémon 3D assets, Gen 9 animation resources and original/forked CFRU research completed; licensing gates recorded. |
+| PHASE 1 Architecture | COMPLETE | Battle/render separation, WebSocket runtime boundary, transaction model, state machine and asset-provider strategy implemented. |
+| PHASE 2 Foundation | COMPLETE | Vite/TypeScript/Three.js/Vitest/ESLint foundation, Node Showdown runtime and CI established. |
+| PHASE 3 Pokémon Data | IMPLEMENTED | Pinned Showdown Dex/learnset APIs drive species/move/ability/item data and generation filtering. Runtime API chain is exercised through the server smoke. |
+| PHASE 4 3D Renderer | IMPLEMENTED / BROWSER UNVERIFIED | Three.js arena, camera, lighting, GLB loader/cache/fallback, effect disposal and renderer disposal implemented. Browser/WebGL visual inspection remains open. |
+| PHASE 5 Battle Engine | IMPLEMENTED / ADVANCED PROJECTION PARTIAL | State machine, transaction guard, authoritative HP/status/faint/turn projection and passive no-AI Showdown runtime are implemented and runtime-tested. |
+| PHASE 6 Move System | IMPLEMENTED / ADVANCED PROJECTION PARTIAL | Actual Showdown move validation/execution/damage is authoritative. Miss/immune/fail/crit/effectiveness/secondary event normalization exists; richer state projection still expanding. |
+| PHASE 7 Animation | IMPLEMENTED PROCEDURAL | Move impact timing, procedural attack motion and generic type impact FX exist. Official/third-party animation packs are not bundled without rights. |
+| PHASE 8 Arena | IMPLEMENTED / BROWSER UNVERIFIED | Ground, battle positions, lighting, shadows and camera presets implemented. |
+| PHASE 9 UI | IMPLEMENTED / BROWSER UNVERIFIED | Generation/species/form/gender/shiny/ability/item/level/4-move flow, battle HUD, move lock, terminal result and restart flow implemented. |
+| PHASE 10 Integration | VERIFIED SERVER/WS | Browser adapter → WebSocket → Node → pinned Showdown → normalized protocol is covered by the real WebSocket smoke. Browser launch remains unverified. |
+| PHASE 11 Testing | CI GREEN | 20 unit tests + direct Showdown smoke + real WebSocket runtime smoke + production build pass in CI. |
+| PHASE 12 Bug Fixing | ACTIVE | Recent fixes cover CommonJS runtime loading, transaction identity, Showdown split duplication, runtime readiness, effect disposal, renderer loop disposal, level HP recalculation and terminal/restart lifecycle. |
+| PHASE 13 Performance | PARTIAL | Lazy model loading/cache and disposal are implemented; browser profiling, GPU frame analysis and long-session soak are still required. |
+| PHASE 14 Final Audit | NOT CLOSED | Requires browser/WebGL run, repeated battle soak, advanced protocol/state coverage, dependency/security audit and individual asset-license review. |
 
-## PHASE 1
+## Battle architecture
 
-Status: IN PROGRESS
+Authoritative path:
 
-Completed in this increment:
-1. Vite + TypeScript foundation
-2. Three.js renderer shell with resize/dispose boundary
-3. typed battle domain contracts
-4. Showdown adapter boundary without assuming browser runtime compatibility
-5. explicit battle state machine with illegal-transition rejection
-6. Vitest configuration and first state-machine tests
-7. ESLint + TypeScript-ESLint configuration
-8. build/lint/check scripts
-9. browser-to-Node Showdown transport boundary
-10. Showdown protocol parser and command validation
-11. battle transaction guard for single-flight moves and impact/damage ordering
-12. pinned Node Showdown runtime dependency
-13. WebSocket transport and Node BattleStream service boundary
-14. framed Showdown block synchronization
-15. pure Showdown protocol-to-BattleState projector
-16. projector tests for request/damage/status/faint/turn
-17. Showdown victory/defeat projection
-18. passive opponent integration using Showdown's explicit no-op pass action
-19. BattlePresentationCoordinator enforcing impact-before-authoritative-damage
-20. activeTransactionId lifecycle bound to BattleState
-21. authoritative miss/immune/fail outcomes normalized
-22. real Showdown passive-opponent smoke test added
-23. CI workflow added for check/build/smoke
-24. WebSocket transport now awaits runtime readiness and propagates failures
-25. centralized win-event phase ownership
-26. normalized heal/sethp/curestatus/boost/unboost/formechange event boundary
-27. authoritative move transaction now retains outcome kind/crit/effectiveness metadata
+`Browser UI -> WebSocket transport -> Node Showdown BattleStream -> normalized Showdown events -> BattleState projector -> presentation coordinator -> UI/3D`
 
-Important implementation boundary:
-- Showdown is not imported into the browser yet. Its execution environment must be verified before selecting browser, worker, or server runtime.
-- Renderer owns presentation only; battle state and damage authority remain outside Three.js.
-- No Pokémon, move, ability, item or model data is fabricated in this phase.
+Rules:
+- Three.js never calculates battle damage.
+- UI never invents HP or damage.
+- Showdown remains the battle-rule authority.
+- The opponent has no active decision-making. The Node runtime injects an explicit internal no-op/pass action after the player has submitted a legal move.
+- A move transaction owns one action identity and cannot accept stale transaction events.
+- Damage presentation is gated behind the animation impact marker.
+- Showdown `split` duplicate messages are collapsed at the protocol boundary before state/event projection.
 
-Runtime decision:
-- The current Showdown simulator package is Node-only, so it is not a browser dependency.
-- The browser side now talks to an abstract WebSocket transport boundary.
-- A Node service now owns the pinned Showdown BattleStream runtime.
-- The service validates the incoming battle envelope and converts the configured Pokémon into Showdown team sets.
-- The browser waits for framed Showdown output blocks instead of assuming a synchronous response.
-- The adapter now owns a pure protocol-to-BattleState projector for HP/max HP, status, move PP, ability and turn updates.
-- Projector tests cover request, damage, status, faint and turn messages.
+## Current implemented safeguards
 
-- The opponent is currently represented as a real Showdown player, so passive/no-AI single-player turn semantics are NOT solved yet.
+- runtime readiness handshake before battle commands
+- CommonJS-safe loading of the pinned Showdown runtime
+- strict client message validation and command allowlist
+- single-flight move lock
+- stale transaction rejection
+- impact-before-resolution ordering
+- authoritative HP/max HP projection from Showdown conditions
+- status and faint projection
+- ability/item event normalization
+- miss/immune/failed outcome handling
+- crit/effectiveness event normalization
+- form/shiny/gender identity normalization for Showdown details
+- exact move/damage smoke assertions
+- WebSocket runtime integration smoke
+- renderer animation-loop disposal
+- transient effect cancellation/disposal
+- battle terminal controls locked
+- battle restart disposes transport/renderer and returns to menu
+- level changes recalculate pre-battle HP from species base HP
+- model-load failure does not crash battle setup
 
-Testing:
-- Tests were added but NOT executed in this environment.
-- No npm install, build, lint, browser or WebGL runtime test has been claimed.
-- Static source review only.
+## Known limitations / blockers
 
-## Later phases
+### BLOCKER-001 — Pokémon 3D model redistribution rights
 
-PHASE 2 Project Foundation — NOT STARTED
-PHASE 3 Pokémon Data — NOT STARTED
-PHASE 4 3D Renderer — NOT STARTED
-PHASE 5 Battle Engine — NOT STARTED
-PHASE 6 Move System — NOT STARTED
-PHASE 7 Animation System — NOT STARTED
-PHASE 8 Battle Arena — NOT STARTED
-PHASE 9 UI — NOT STARTED
-PHASE 10 Integration — NOT STARTED
-PHASE 11 Testing — NOT STARTED
-PHASE 12 Bug Fixing — NOT STARTED
-PHASE 13 Performance — NOT STARTED
-PHASE 14 Final Audit — NOT STARTED
+The researched Pokémon 3D asset provider's code is permissively licensed, but its README identifies the Pokémon models themselves as Nintendo/Creatures/GAME FREAK property.
 
-## Testing status
+Decision:
+- do not blanket-vendor third-party Pokémon models
+- use provider-backed lazy loading with explicit fallback/error handling
+- maintain provenance/licensing records
 
-STATIC CHECK ONLY.
+### BLOCKER-002 — Animation/audio redistribution rights
 
-This increment was inspected through repository source reads and GitHub writes. npm install, npm test, npm run build, npm run lint, browser launch, WebGL runtime test and the Node Showdown service have NOT been executed in this environment.
+The researched Gen 9 animation resources contain contributor/project provenance and do not establish a blanket permissive redistribution grant for this Web project.
 
-Do not interpret the new server/transport code as runtime-verified.
+Decision:
+- procedural presentation is used by default
+- do not bundle third-party animation/audio packs without per-asset permission/license evidence
 
-No npm install, npm test, npm run build, npm run lint, browser launch, WebGL runtime test or production build has been executed. The repository currently has no application toolchain to execute.
+### BLOCKER-003 — CFRU provenance / ROM dependency
 
-## Blockers
+Original CFRU and forks are useful mechanics references but include ROM/devkit/ROM-dependent material and varying provenance.
 
-### BLOCKER-001 — 3D model redistribution
-Pokemon-3D-api's repository code is MIT, but its README says the models are property of Nintendo/Creatures Inc./GAME FREAK inc.
+Decision:
+- no ROM, ROM patch, or ROM-dependent asset is bundled
+- mechanics are treated as reference only
+- individual fork/license checks remain required before reuse
 
-Impact: blanket model vendoring is not approved.
+### BLOCKER-004 — Advanced Showdown state projection
 
-Solution: provider/fallback model loader plus asset provenance records.
+Core authoritative HP/status/faint/turn projection and event normalization are implemented. The remaining fidelity work includes richer handling for:
+- multi-hit sequencing
+- recoil/drain as explicit presentation/state events
+- stat-stage storage and UI
+- weather/terrain and side conditions
+- volatile conditions
+- richer ability/item activation state
+- form/transform changes beyond the currently covered identity details
 
-### BLOCKER-002 — animation/audio redistribution
-The Gen 9 Move Animation Project requests contributor credits and incorporates resources from multiple projects. A compatible permissive redistribution license was not established.
+The battle simulator itself remains authoritative; this blocker is about complete local presentation/state projection, not reimplementing damage formulas.
 
-Impact: no downloaded animation pack/audio is bundled by default.
+### BLOCKER-005 — Browser/WebGL verification
 
-Solution: recreate animation behavior in our own system.
+No browser automation/runtime evidence is available in this session.
 
-### BLOCKER-003 — CFRU provenance
-Original CFRU and forks contain ROM-dependent material and multiple contributors; forks cannot be assumed to have identical licensing.
+Required before closing:
+- launch production/dev client
+- walk the complete selection flow
+- load representative models and fallback cases
+- verify camera framing at desktop resolutions
+- execute repeated moves
+- verify impact/damage synchronization visually
+- verify victory/defeat/restart
+- repeat multiple battles without renderer/effect/socket leaks
 
-Impact: no direct CFRU source/assets.
+### SECURITY-001 — Dependency audit
 
-Solution: mechanics and presentation reference only.
+CI's `npm install` currently reports dependency vulnerabilities (including high/critical findings). This is not yet a release-blocking build failure, but it must be reviewed before production release.
 
-## Current blockers
+## Test inventory
 
-### BLOCKER-004 — authoritative Showdown state projection
-Protocol events are parsed, but the adapter does not yet construct authoritative BattleState from requests, switch/damage/status/faint/turn messages.
+Current test coverage includes:
+- battle state transition legality
+- transaction identity and stale-event rejection
+- transaction lifecycle
+- Showdown protocol parsing/choice validation
+- Showdown split-message deduplication
+- authoritative request/damage/status/faint/turn projection
+- form/shiny identity normalization
+- ability/item event projection
+- coordinator move-resolution behavior
+- direct pinned-Showdown passive-opponent smoke
+- real WebSocket runtime smoke
 
-Impact: the UI cannot safely drive HP/status/phase from Showdown yet.
+## Final-audit checklist
 
-Next: expand projection tests/events for multi-hit, recoil, drain, boosts, field effects, volatile conditions, item/ability activations, and form changes.
+Before declaring the project complete:
+- [x] CI check passes
+- [x] TypeScript build passes
+- [x] production Vite build passes
+- [x] direct Showdown runtime smoke passes
+- [x] real WebSocket runtime smoke passes
+- [x] passive opponent has no AI decisions
+- [x] duplicate move/damage transaction guard exists
+- [x] protocol duplicate split messages are normalized
+- [x] terminal battle controls are locked
+- [x] battle restart disposes renderer/transport
+- [ ] browser/WebGL runtime walkthrough
+- [ ] repeated-battle soak in browser
+- [ ] advanced state/effect projection completion
+- [ ] GPU/browser performance profiling
+- [ ] dependency security remediation/review
+- [ ] individual model/animation/audio license audit
+- [ ] production release decision
 
-### BLOCKER-005 — passive opponent semantics
-Resolved at the architecture level: the Node runtime now injects a Showdown pass action for p2 after a legal p1 move request. This is not a move-selection heuristic or AI decision; Showdown executes the action as an explicit no-op.
+## Status rule
 
-Constraint: the integration currently relies on the pinned Showdown BattleStream battle reference and Battle/Side choice APIs. It must be runtime-tested against the pinned Showdown version before this blocker can be marked fully closed.
-
-Impact: until runtime tests pass, the single-player turn loop is not verified.
-
-## Next
-
-1. Obtain a green CI run on the current head; previous runs exposed compile-only issues and were used to harden the code.
-2. Execute the real passive-opponent smoke test in CI and use failures to harden the Node runtime.
-3. Expand authoritative event projection and tests for advanced effects.
-4. Run browser/WebGL smoke and repeated-battle checks.
-5. Perform performance and license/asset final audit before closing PHASE 14.
-
-
-
-## End-to-end implementation checkpoint
-- PHASE 1 Architecture: substantially implemented; runtime verification remains open.
-- PHASE 2 Foundation/Data: generation-scoped Showdown Dex and learnset API implemented.
-- PHASE 3 Pokémon configuration: species/form/gender/shiny/ability/item/level/moves flow implemented.
-- PHASE 4 3D Renderer: Three.js arena, lighting, shadows, GLB lazy loader/cache/fallback implemented.
-- PHASE 5 Battle Engine: state machine + transaction guard + passive Showdown opponent implemented.
-- PHASE 6 Move System: real Showdown move validation/execution; authoritative outcome classification implemented.
-- PHASE 7 Animation: impact timing and procedural generic impact FX implemented; official move animation assets intentionally not bundled without redistribution rights.
-- PHASE 8 Arena/Camera: battle arena and camera presets implemented.
-- PHASE 9 UI: selection flow, move UI, HP bars, status, responsive layout implemented.
-- PHASE 10 Integration: browser → WebSocket → Node Showdown → normalized events → BattleState → presentation chain implemented.
-- PHASE 11 Testing: unit tests + real Showdown smoke test + CI configuration present; execution not observed locally.
-- PHASE 12 Bug Fixing: transaction race/double-click, runtime readiness, phase ownership, non-damage move resolution, authoritative HP sync addressed during integration.
-- PHASE 13 Performance: lazy model loading/cache/disposal and UI transaction lock implemented; browser profiling still required.
-- PHASE 14 Final Audit: NOT CLOSED until CI/browser runtime execution, asset availability, licenses, and repeated-battle soak checks are observed.
-
-## Remaining hard blockers
-1. Runtime/CI execution evidence is still required; latest dependency fix is queued as CI run #84.
-2. Full browser/WebGL smoke test is still required.
-3. Complete protocol projection for every advanced effect (weather/terrain/side conditions/volatile effects/stat stages) still requires expansion before claiming full battle-state fidelity.
-4. Official/third-party animation and model redistribution rights must be audited individually; current 3D provider explicitly identifies Pokémon models as Nintendo/Creatures/GAME FREAK property. 
+A feature is not marked COMPLETE merely because source code exists. It is marked complete only when the relevant implementation and verification evidence exist. Browser/WebGL work remains explicitly unverified until an actual browser runtime is exercised.
