@@ -56,7 +56,7 @@ function parseStatus(condition: string | undefined): StatusCondition {
 
 function updatePokemon(
   pokemon: PokemonBattleState,
-  patch: Partial<Pick<PokemonBattleState, "hp" | "maxHp" | "status" | "moves" | "abilityId" | "speciesId" | "formId" | "gender">>,
+  patch: Partial<Pick<PokemonBattleState, "hp" | "maxHp" | "status" | "moves" | "abilityId" | "speciesId" | "formId" | "gender" | "shiny">>,
 ): PokemonBattleState {
   return {...pokemon, ...patch};
 }
@@ -97,16 +97,19 @@ function parseRequestMessage(state: BattleState, message: ShowdownProtocolMessag
 
   const patch: Partial<PokemonBattleState> = {};
   if (active?.details) {
-    const parts = active.details.split(",");
-    const detailsName = parts[0]?.trim();
+    const parts = active.details.split(",").map(part => part.trim()).filter(Boolean);
+    const detailsName = parts[0];
     if (detailsName) {
-      const normalized = detailsName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-      patch.speciesId = normalized;
-      patch.formId = "base";
+      patch.speciesId = detailsName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
     }
-    const genderToken = parts.find(part => ["M", "F"].includes(part.trim()));
+    const formName = parts[1];
+    if (formName && !["M", "F", "shiny"].includes(formName)) {
+      patch.formId = formName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    }
+    const genderToken = parts.find(part => part === "M" || part === "F");
     if (genderToken === "M") patch.gender = "male";
     if (genderToken === "F") patch.gender = "female";
+    if (parts.includes("shiny")) patch.shiny = true;
   }
   if (condition) {
     patch.hp = condition.hp;
