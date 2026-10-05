@@ -51,6 +51,14 @@ export class App {
     c.querySelectorAll<HTMLElement>("[data-action]").forEach(el=>el.addEventListener("click",()=>void this.action(el.dataset.action??"",el.dataset.value)));
   }
 
+  private speciesIdForForm(s:DexSpecies):string{
+    return s.baseSpecies.toLowerCase().replace(/[^a-z0-9]+/g,"");
+  }
+
+  private formIdForForm(s:DexSpecies):string{
+    return s.forme ? s.forme.toLowerCase().replace(/[^a-z0-9]+/g,"-") : "base";
+  }
+
   private title():string{return ({menu:"Battle",generation:"Generation",pokemon:"Pokémon",details:"Details",form:"Form",gender:"Gender",shiny:"Shiny",ability:"Ability",item:"Held Item",level:"Level",moves:"Moves"} as Record<string,string>)[this.stage]??"Battle";}
 
   private generations():string{return Array.from({length:9},(_,i)=>i+1).map(g=>`<button data-action="generation" data-value="${g}">Generation ${g}</button>`).join("");}
@@ -93,7 +101,7 @@ export class App {
     if(action==="generation"){await this.chooseGeneration(Number(value) as Generation);return;}
     if(action==="species"){const s=this.dex?.species.find(x=>x.id===value);if(s)await this.selectSpecies(s);return;}
     if(action==="next"){this.stage=this.nextStage();this.render();return;}
-    if(action==="form"){const s=this.dex?.species.find(x=>x.id===value);if(s){this.species=s;if(this.pokemon)this.pokemon={...this.pokemon,speciesId:s.id,formId:s.forme?.toLowerCase()||"base",abilityId:Object.values(s.abilities)[0]??""};this.stage="gender";this.render();}return;}
+    if(action==="form"){const s=this.dex?.species.find(x=>x.id===value);if(s){this.species=s;if(this.pokemon)this.pokemon={...this.pokemon,speciesId:this.speciesIdForForm(s),formId:this.formIdForForm(s),abilityId:Object.values(s.abilities)[0]??""};this.stage="gender";this.render();}return;}
     if(action==="gender"){if(this.pokemon)this.pokemon={...this.pokemon,gender:value as Gender};this.stage="shiny";this.render();return;}
     if(action==="shiny"){if(this.pokemon)this.pokemon={...this.pokemon,shiny:value==="true"};this.stage="ability";this.render();return;}
     if(action==="ability"){if(this.pokemon)this.pokemon={...this.pokemon,abilityId:value??""};this.stage="item";this.render();return;}
