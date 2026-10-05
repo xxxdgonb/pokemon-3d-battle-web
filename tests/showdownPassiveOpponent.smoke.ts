@@ -1,0 +1,53 @@
+import { BattleStream } from "pokemon-showdown";
+
+const battle = new BattleStream({noCatch: false});
+const outputs: string[] = [];
+
+const reader = (async () => {
+  for await (const output of battle) outputs.push(output);
+})();
+
+const pokemon = (name: string, species: string) => ({
+  name,
+  species,
+  item: "",
+  ability: species === "pikachu" ? "static" : "blaze",
+  moves: ["tackle"],
+  nature: "Serious",
+  teraType: "",
+  gender: "",
+  evs: {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
+  ivs: {hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31},
+  level: 50,
+  shiny: false,
+});
+
+await battle.write(`>start {"formatid":"gen9customgame"}`);
+await battle.write(`>player p1 ${JSON.stringify({name: "Player", team: [pokemon("Pikachu", "Pikachu")]})}`);
+await battle.write(`>player p2 ${JSON.stringify({name: "Opponent", team: [pokemon("Charizard", "Charizard")]})}`);
+await battle.write(">p1 team 1");
+await battle.write(">p2 team 1");
+await battle.write(">p1 move tackle");
+
+const sim = battle.battle;
+if (!sim) throw new Error("Showdown did not initialize a Battle instance.");
+const passive = sim.sides[1];
+if (!passive || passive.requestState !== "move" || passive.isChoiceDone()) {
+  throw new Error("Passive opponent did not reach a move request after player move.");
+}
+
+passive.choice.actions.push({choice: "pass"});
+sim.commitChoices();
+
+await new Promise(resolve => setTimeout(resolve, 10));
+const output = outputs.join("");
+if (!output.includes("|move|p1a: Pikachu|Tackle|")) {
+  throw new Error("Showdown did not execute the player's move.");
+}
+if (!output.includes("|-damage|p2a: Charizard|")) {
+  throw new Error("Showdown did not emit authoritative damage for the passive-opponent smoke battle.");
+}
+
+battle.writeEnd();
+await reader;
+console.log("Showdown passive-opponent smoke test passed.");
