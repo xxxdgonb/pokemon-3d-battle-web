@@ -10,6 +10,7 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
   private socket: WebSocket | null = null;
   private readonly listeners = new Set<(block: string) => void>();
   private readonly bufferedBlocks: string[] = [];
+  private readonly blockWaiters: Array<(block: string) => void> = [];
 
   public constructor(private readonly url = "ws://localhost:8787") {}
 
@@ -42,12 +43,22 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
     this.socket.send(JSON.stringify({type: "command", command}));
   }
 
+  public async waitForBlock(): Promise<string> {
+    const buffered = this.bufferedBlocks.shift();
+    if (buffered !== undefined) return buffered;
+
+    return new Promise<string>((resolve) => {
+      this.blockWaiters.push(resolve);
+    });
+  }
+
   public async close(): Promise<void> {
     const socket = this.socket;
     this.socket = null;
     if (!socket) return;
 
     socket.removeEventListener("message", this.handleMessage);
+    for (const waiter of this.blockWaiters.splice(0)) waiter("");
     socket.close();
     await new Promise<void>((resolve) => {
       if (socket.readyState === WebSocket.CLOSED) {
@@ -67,11 +78,13 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
   private readonly handleMessage = (event: MessageEvent): void => {
     const message = JSON.parse(String(event.data)) as RuntimeMessage;
     if (message.type === "showdown" && typeof message.block === "string") {
-      if (this.listeners.size === 0) {
-        this.bufferedBlocks.push(message.block);
+      const waiter = this.blockWaiters.shift();
+      if (waiter) {
+        waiter(message.block);
       } else {
-        for (const listener of this.listeners) listener(message.block);
+        this.bufferedBlocks.push(message.block);
       }
+      for (const listener of this.listeners) listener(message.block);
       return;
     }
     if (message.type === "error") {
