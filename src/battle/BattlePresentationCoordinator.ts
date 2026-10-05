@@ -1,6 +1,6 @@
 import type { BattleState, BattleSide } from "../core/types";
 import type { ShowdownBattleEvent } from "./ShowdownAdapter";
-import { BattleTransactionGuard, type BattleTransaction } from "./BattleTransaction";
+import { BattleTransactionGuard, type BattleTransaction, type MoveResolution } from "./BattleTransaction";
 import { BattleStateMachine } from "./BattleEngine";
 
 function targetSide(event: ShowdownBattleEvent): BattleSide | null {
@@ -56,10 +56,15 @@ export class BattlePresentationCoordinator {
       throw new Error(`No authoritative opponent move resolution for transaction ${transactionId}.`);
     }
 
-    this.transactions.markDamageApplied(transactionId);
+    const resolution = this.resolveOutcome(events);
+    this.transactions.markResolved(transactionId, resolution);
     this.machine.dispatch({type: "DAMAGE_RESOLVED", transactionId});
     this.machine.dispatch({type: "DAMAGE_APPLIED", transactionId});
     return this.machine.state;
+  }
+
+  public get activeTransaction(): BattleTransaction | null {
+    return this.transactions.activeTransaction;
   }
 
   public resolveSecondaryEffects(transactionId: string, _events: readonly ShowdownBattleEvent[]): BattleState {
@@ -84,6 +89,26 @@ export class BattlePresentationCoordinator {
     });
     this.transactions.complete(transactionId);
     return this.machine.state;
+  }
+
+  private resolveOutcome(events: readonly ShowdownBattleEvent[]): MoveResolution {
+    let critical = false;
+    let effectiveness: MoveResolution["effectiveness"] = null;
+
+    for (const event of events) {
+      if (event.kind === "crit") critical = true;
+      if (event.kind === "effectiveness") {
+        const raw = event.source.type;
+        effectiveness = raw === "-supereffective" ? "super-effective" : "resisted";
+      }
+    }
+
+    const damage = events.find(event => event.kind === "damage" && targetSide(event) === "opponent");
+    if (damage) return {kind: "damage", target: "opponent", critical, effectiveness};
+
+    const special = events.find(event => event.kind === "miss" || event.kind === "immune" || event.kind === "failed");
+    if (!special) throw new Error("Unable to classify authoritative move resolution.");
+    return {kind: special.kind, target: "opponent", critical, effectiveness};
   }
 
   public endBattle(): BattleState {
