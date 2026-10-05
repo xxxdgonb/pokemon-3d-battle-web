@@ -59,7 +59,7 @@ async function main(){
 main().catch(error=>{
   document.body.dataset.browserSmoke="failed";
   const detail=(document.body.innerText+"\\nERROR:"+String(error.message)+"\\nBROWSER:"+String(browserError??"none")+"\\nBATTLEDEBUG:"+String(document.body.dataset.battleDebug??"none")).slice(-3000).replace(/[<>&]/g,"");
-  document.body.insertAdjacentHTML("beforeend",'<pre id="browser-smoke-result">BROWSER_SMOKE_FAILED:'+detail+'</pre>');
+  location.href="data:text/html,"+encodeURIComponent("<pre id=browser-smoke-result>BROWSER_SMOKE_FAILED:"+detail+"</pre>");
 });
 </script>
 </body>
