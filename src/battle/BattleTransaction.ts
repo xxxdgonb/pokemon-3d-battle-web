@@ -1,6 +1,6 @@
 import type { MoveSlot } from "../core/types";
 
-export type MoveResolutionKind = "damage" | "miss" | "immune" | "failed";
+export type MoveResolutionKind = "damage" | "success" | "miss" | "immune" | "failed";
 
 export interface MoveResolution {
   readonly kind: MoveResolutionKind;
