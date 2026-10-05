@@ -8,7 +8,7 @@ export interface ShowdownBattleConfig {
 }
 
 export interface ShowdownBattleEvent {
-  readonly kind: "log" | "request" | "damage" | "status" | "faint" | "turn-end";
+  readonly kind: "log" | "request" | "move" | "damage" | "status" | "faint" | "miss" | "immune" | "failed" | "crit" | "effectiveness" | "turn-end";
   readonly payload: unknown;
   readonly source: ShowdownProtocolMessage;
 }
