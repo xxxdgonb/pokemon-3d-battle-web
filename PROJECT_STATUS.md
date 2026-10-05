@@ -57,6 +57,9 @@ Completed in this increment:
 9. browser-to-Node Showdown transport boundary
 10. Showdown protocol parser and command validation
 11. battle transaction guard for single-flight moves and impact/damage ordering
+12. pinned Node Showdown runtime dependency
+13. WebSocket transport and Node BattleStream service boundary
+14. framed Showdown block synchronization
 
 Important implementation boundary:
 - Showdown is not imported into the browser yet. Its execution environment must be verified before selecting browser, worker, or server runtime.
@@ -65,9 +68,12 @@ Important implementation boundary:
 
 Runtime decision:
 - The current Showdown simulator package is Node-only, so it is not a browser dependency.
-- The browser side now talks to an abstract transport boundary.
-- A Node service/worker implementation that owns the pinned Showdown runtime is still required before real battles can execute.
-- The adapter currently does not fabricate local battle state or damage.
+- The browser side now talks to an abstract WebSocket transport boundary.
+- A Node service now owns the pinned Showdown BattleStream runtime.
+- The service validates the incoming battle envelope and converts the configured Pokémon into Showdown team sets.
+- The browser waits for framed Showdown output blocks instead of assuming a synchronous response.
+- The adapter still does not project Showdown protocol into authoritative BattleState.
+- The opponent is currently represented as a real Showdown player, so passive/no-AI single-player turn semantics are NOT solved yet.
 
 Testing:
 - Tests were added but NOT executed in this environment.
@@ -92,7 +98,11 @@ PHASE 14 Final Audit — NOT STARTED
 
 ## Testing status
 
-STATIC RESEARCH ONLY.
+STATIC CHECK ONLY.
+
+This increment was inspected through repository source reads and GitHub writes. npm install, npm test, npm run build, npm run lint, browser launch, WebGL runtime test and the Node Showdown service have NOT been executed in this environment.
+
+Do not interpret the new server/transport code as runtime-verified.
 
 No npm install, npm test, npm run build, npm run lint, browser launch, WebGL runtime test or production build has been executed. The repository currently has no application toolchain to execute.
 
@@ -119,6 +129,22 @@ Impact: no direct CFRU source/assets.
 
 Solution: mechanics and presentation reference only.
 
+## Current blockers
+
+### BLOCKER-004 — authoritative Showdown state projection
+Protocol events are parsed, but the adapter does not yet construct authoritative BattleState from requests, switch/damage/status/faint/turn messages.
+
+Impact: the UI cannot safely drive HP/status/phase from Showdown yet.
+
+Next: implement a pure protocol-to-domain projector and tests for damage/status/faint/request ordering.
+
+### BLOCKER-005 — passive opponent semantics
+A normal Showdown battle expects both sides to submit legal choices. The current runtime supplies a real p2 team but intentionally does not invent an AI decision.
+
+Impact: the requested “enemy has no AI and no active decisions” behavior is not yet implemented.
+
+Next: design a Showdown-compatible single-player/passive-target integration that preserves Showdown as the battle-rule authority without silently introducing AI.
+
 ## Next
 
-PHASE 1 — Architecture implementation.
+PHASE 1 — protocol-to-domain projection and passive-target architecture.
