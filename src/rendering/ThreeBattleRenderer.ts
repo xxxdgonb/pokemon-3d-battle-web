@@ -42,7 +42,8 @@ export class ThreeBattleRenderer {
     }
   }
 
-  public async setupBattle(player:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless";formId?:string},opponent:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless";formId?:string},_generation:number):Promise<void>{
+  public async setupBattle(player:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless";formId?:string},opponent:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless";formId?:string},generation:number):Promise<void>{
+    void generation;
     if(this.playerModel)this.scene.remove(this.playerModel);
     if(this.opponentModel)this.scene.remove(this.opponentModel);
     this.playerModel=await this.loader.load(player);
@@ -85,7 +86,6 @@ export class ThreeBattleRenderer {
       if(t<1)requestAnimationFrame(tick);else model.position.copy(origin);
     };
     requestAnimationFrame(tick);
-    void type;
     this.effects.playTypeImpact(type,this.opponentModel);
   }
 
