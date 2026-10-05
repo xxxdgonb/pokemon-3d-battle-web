@@ -105,15 +105,13 @@ function sendJson(socket: WebSocket, value: unknown): void {
 }
 
 async function run(): Promise<void> {
-  const httpServer = createServer((_request, response) => {
-    response.writeHead(200, {"content-type": "text/plain; charset=utf-8"});
-    response.end("pokemon-3d-battle-web showdown runtime\n");
-  });
-  const wss = new WebSocketServer({server: httpServer});
-
-  httpServer.on("request", (request, response) => {
-    const url = new URL(request.url ?? "/", `http://localhost:${PORT}`);
-    if (url.pathname !== "/api/dex") return;
+  const httpServer = createServer((request, response) => {
+    const url = new URL(request.url ?? "/", "http://localhost:" + PORT);
+    if (url.pathname !== "/api/dex") {
+      response.writeHead(200, {"content-type": "text/plain; charset=utf-8"});
+      response.end("pokemon-3d-battle-web showdown runtime\n");
+      return;
+    }
     const generation = getGeneration(url.searchParams.get("generation"));
     if (!generation) {
       response.writeHead(400, {"content-type": "application/json; charset=utf-8", "access-control-allow-origin": "*"});
@@ -132,6 +130,9 @@ async function run(): Promise<void> {
       response.end(JSON.stringify({error: error instanceof Error ? error.message : String(error)}));
     }
   });
+  const wss = new WebSocketServer({server: httpServer});
+
+
 
   wss.on("connection", (socket) => {
     let battle: BattleStream | null = null;
