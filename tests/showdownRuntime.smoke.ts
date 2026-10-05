@@ -111,15 +111,15 @@ try {
     messages,
     message => message.type === "showdown" && !!message.block && (() => {
       const parsed = parseShowdownBlock(message.block);
-      return parsed.some(item => item.type === "move" && item.args[0] === "p1a: Pikachu" && item.args[1] === "Tackle") &&
-        parsed.some(item => item.type === "-damage" && item.args[0] === "p2a: Charizard");
+      return parsed.some(item => item.type === "move" && item.args[0] === "p1a: p1" && item.args[1] === "Tackle") &&
+        parsed.some(item => item.type === "-damage" && item.args[0] === "p2a: p2");
     })(),
     Date.now() + 5000,
   );
 
   const parsed = parseShowdownBlock(messages.filter(message => message.type === "showdown").map(message => message.block ?? "").join("\n"));
-  const moveCount = parsed.filter(item => item.type === "move" && item.args[0] === "p1a: Pikachu" && item.args[1] === "Tackle").length;
-  const damageCount = parsed.filter(item => item.type === "-damage" && item.args[0] === "p2a: Charizard").length;
+  const moveCount = parsed.filter(item => item.type === "move" && item.args[0] === "p1a: p1" && item.args[1] === "Tackle").length;
+  const damageCount = parsed.filter(item => item.type === "-damage" && item.args[0] === "p2a: p2").length;
   if (moveCount !== 1 || damageCount !== 1) {
     throw new Error(`Runtime integration expected one move and one damage, got move=${moveCount}, damage=${damageCount}.`);
   }
