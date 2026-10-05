@@ -3,9 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": ">=20.19.0"
-  },
+  "engines": {"node": ">=22.18.0"},
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -13,18 +11,23 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "check": "tsc -b && eslint . && vitest run"
+    "check": "tsc -b && tsc -p tsconfig.server.json && eslint . && vitest run",
+    "server": "tsx server/showdownRuntime.ts"
   },
   "dependencies": {
-    "three": "0.186.1"
+    "pokemon-showdown": "0.11.11",
+    "three": "0.186.1",
+    "ws": "8.18.3"
   },
   "devDependencies": {
+    "@eslint/js": "^10.11.0",
     "@types/node": "^24.0.0",
+    "@types/ws": "8.18.1",
     "eslint": "10.11.0",
+    "tsx": "4.20.5",
     "typescript": "7.0.2",
     "typescript-eslint": "8.71.0",
     "vite": "8.3.2",
-    "vitest": "5.0.3",
-    "@eslint/js": "^10.11.0"
+    "vitest": "5.0.3"
   }
 }
