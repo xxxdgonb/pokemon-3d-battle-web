@@ -55,7 +55,9 @@ function parseClientMessage(raw: string): ClientMessage {
 
   if (c.type === "command" && typeof c.command === "string") {
     if (!c.command.startsWith(">")) throw new Error("Simulator commands must start with >.");
-    return {type: "command", command: c.command};
+    if (c.command.startsWith(">start ")) return {type: "command", command: c.command};
+    if (/^>p1 move [a-z0-9-]+$/i.test(c.command)) return {type: "command", command: c.command};
+    throw new Error("Command is not allowed by the browser battle runtime.");
   }
 
   throw new Error("Unknown client message.");
@@ -164,6 +166,10 @@ async function run(): Promise<void> {
             name: "Opponent",
             team: [toPokemonSet(config.opponent)],
           })}`);
+          // The configured teams contain exactly one slot, so team preview has
+          // one deterministic legal selection and requires no opponent strategy.
+          await battle.write(">p1 team 1");
+          await battle.write(">p2 team 1");
           return;
         }
 
