@@ -31,6 +31,7 @@ npm run build
 npm test
 npm run lint
 npm run check
+npm run server
 ```
 
 Runtime testing must be performed in an environment with Node/npm and a browser/WebGL implementation. Until then, repository checks are considered unexecuted rather than assumed successful.
