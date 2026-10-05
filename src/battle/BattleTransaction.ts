@@ -24,7 +24,7 @@ export interface BattleTransaction {
 export class BattleTransactionGuard {
   private active: BattleTransaction | null = null;
 
-  public begin(input: Omit<BattleTransaction, "impactReached" | "damageApplied" | "completed">): BattleTransaction {
+  public begin(input: Omit<BattleTransaction, "impactReached" | "damageApplied" | "resolution" | "completed">): BattleTransaction {
     if (this.active !== null) {
       throw new Error("A battle transaction is already active.");
     }
@@ -56,7 +56,6 @@ export class BattleTransactionGuard {
   }
 
   public markDamageApplied(id: string): BattleTransaction {
-
     const tx = this.require(id);
     if (!tx.impactReached) throw new Error(`Transaction ${id} cannot apply damage before impact.`);
     if (tx.damageApplied) throw new Error(`Transaction ${id} resolution was already applied.`);
