@@ -17,7 +17,7 @@ interface CommandMessage { readonly type: "command"; readonly command: string; }
 type ClientMessage = CreateBattleMessage | CommandMessage;
 
 function isGeneration(value: unknown): value is Generation {
-  return Number.isInteger(value) && value >= 1 && value <= 9;
+  return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 9;
 }
 
 function isPokemonState(value: unknown): value is PokemonBattleState {
