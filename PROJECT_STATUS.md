@@ -62,6 +62,8 @@ Completed in this increment:
 14. framed Showdown block synchronization
 15. pure Showdown protocol-to-BattleState projector
 16. projector tests for request/damage/status/faint/turn
+17. Showdown victory/defeat projection
+18. passive opponent integration using Showdown's explicit no-op pass action
 
 Important implementation boundary:
 - Showdown is not imported into the browser yet. Its execution environment must be verified before selecting browser, worker, or server runtime.
@@ -143,11 +145,11 @@ Impact: the UI cannot safely drive HP/status/phase from Showdown yet.
 Next: implement a pure protocol-to-domain projector and tests for damage/status/faint/request ordering.
 
 ### BLOCKER-005 — passive opponent semantics
-A normal Showdown battle expects both sides to submit legal choices. The current runtime supplies a real p2 team but intentionally does not invent an AI decision.
+Resolved at the architecture level: the Node runtime now injects a Showdown pass action for p2 after a legal p1 move request. This is not a move-selection heuristic or AI decision; Showdown executes the action as an explicit no-op.
 
-Impact: the requested “enemy has no AI and no active decisions” behavior is not yet implemented.
+Constraint: the integration currently relies on the pinned Showdown BattleStream battle reference and Battle/Side choice APIs. It must be runtime-tested against the pinned Showdown version before this blocker can be marked fully closed.
 
-Next: design a Showdown-compatible single-player/passive-target integration that preserves Showdown as the battle-rule authority without silently introducing AI.
+Impact: until runtime tests pass, the single-player turn loop is not verified.
 
 ## Next
 
