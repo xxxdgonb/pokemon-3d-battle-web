@@ -53,14 +53,16 @@ describe("ShowdownStateProjector", () => {
   it("projects damage, status, faint and turn events", () => {
     const block = [
       "|-damage|p2a: Charizard|40/100",
+      "|-heal|p2a: Charizard|60/100",
       "|-status|p2a: Charizard|brn",
+      "|-curestatus|p2a: Charizard|brn",
       "|turn|3",
       "|faint|p2a: Charizard",
     ].join("\n");
 
     const state = projectShowdownBlock(createState(), parseShowdownBlock(block));
     expect(state.opponent.hp).toBe(0);
-    expect(state.opponent.status).toBe("brn");
+    expect(state.opponent.status).toBeNull();
     expect(state.turn).toBe(3);
   });
 });
