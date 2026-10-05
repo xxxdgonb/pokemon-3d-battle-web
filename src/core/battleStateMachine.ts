@@ -40,7 +40,7 @@ export class InvalidBattleTransitionError extends Error {
 }
 
 export function transition(phase: BattlePhase, event: BattleEvent): BattlePhase {
-  const next = transitions[phase][event.type];
+  const next = transitions[phase]?.[event.type];
   if (next === undefined) {
     throw new InvalidBattleTransitionError(phase, event.type);
   }
