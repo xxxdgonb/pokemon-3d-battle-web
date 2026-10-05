@@ -8,6 +8,7 @@ interface ShowdownRequestPokemon {
   readonly details?: string;
   readonly moves?: readonly string[];
   readonly baseAbility?: string;
+  readonly ability?: string;
 }
 
 interface ShowdownRequestActiveMove {
@@ -53,7 +54,7 @@ function parseStatus(condition: string | undefined): StatusCondition {
 
 function updatePokemon(
   pokemon: PokemonBattleState,
-  patch: Partial<Pick<PokemonBattleState, "hp" | "maxHp" | "status" | "moves" | "abilityId">>,
+  patch: Partial<Pick<PokemonBattleState, "hp" | "maxHp" | "status" | "moves" | "abilityId" | "speciesId" | "formId" | "gender">>,
 ): PokemonBattleState {
   return {...pokemon, ...patch};
 }
@@ -93,11 +94,24 @@ function parseRequestMessage(state: BattleState, message: ShowdownProtocolMessag
     }));
 
   const patch: Partial<PokemonBattleState> = {};
+  if (active?.details) {
+    const parts = active.details.split(",");
+    const detailsName = parts[0]?.trim();
+    if (detailsName) {
+      const normalized = detailsName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      patch.speciesId = normalized;
+      patch.formId = "base";
+    }
+    const genderToken = parts.find(part => ["M", "F"].includes(part.trim()));
+    if (genderToken === "M") patch.gender = "male";
+    if (genderToken === "F") patch.gender = "female";
+  }
   if (condition) {
     patch.hp = condition.hp;
     patch.maxHp = condition.maxHp;
   }
-  if (active?.baseAbility) patch.abilityId = active.baseAbility;
+  if (active?.ability) patch.abilityId = active.ability;
+  else if (active?.baseAbility) patch.abilityId = active.baseAbility;
   if (moves.length > 0) patch.moves = moves;
   patch.status = status;
 
