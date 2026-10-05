@@ -95,7 +95,10 @@ function parseRequestMessage(state: BattleState, message: ShowdownProtocolMessag
       maxPp: Number.isFinite(move.maxpp) ? move.maxpp! : move.pp ?? 0,
     }));
 
-  const patch: Partial<PokemonBattleState> = {};
+  const patch: {
+    hp?: number; maxHp?: number; status?: StatusCondition; moves?: readonly MoveSlot[];
+    abilityId?: string; speciesId?: string; formId?: string; gender?: PokemonBattleState["gender"]; shiny?: boolean;
+  } = {};
   if (active?.details) {
     const parts = active.details.split(",").map(part => part.trim()).filter(Boolean);
     const detailsName = parts[0];
