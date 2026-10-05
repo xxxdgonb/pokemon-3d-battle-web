@@ -80,6 +80,8 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
         return { kind: "status", payload: message.args, source: message };
       case "faint":
         return { kind: "faint", payload: message.args, source: message };
+      case "win":
+        return { kind: "battle-end", payload: message.args, source: message };
       case "turn":
         return { kind: "turn-end", payload: message.args, source: message };
       default:
