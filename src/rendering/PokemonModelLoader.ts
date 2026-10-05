@@ -28,7 +28,9 @@ export class PokemonModelLoader {
         const gltf=await this.loader.loadAsync(url);
         this.cache.set(key,gltf.scene);
         return gltf.scene.clone(true);
-      }catch{}
+      }catch(error){
+        void error;
+      }
     }
     return null;
   }
