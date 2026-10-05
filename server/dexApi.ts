@@ -14,6 +14,10 @@ function id(value: {id: string}): string {
   return value.id;
 }
 
+function normalizeId(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
 export function getDexPayload(generation: Generation): unknown {
   const cached = cache.get(generation);
   if (cached) return cached;
@@ -23,7 +27,7 @@ export function getDexPayload(generation: Generation): unknown {
     .filter(s => s.exists && !s.isNonstandard && s.num > 0 && s.num <= 1025)
     .map(s => ({
       id: id(s), name: s.name, num: s.num, baseSpecies: s.baseSpecies,
-      forme: s.forme, types: [...s.types], abilities: {...s.abilities},
+      forme: s.forme, types: [...s.types], abilities: Object.fromEntries(Object.entries(s.abilities).map(([slot, name]) => [slot, normalizeId(name)])),
       gender: s.gender, genderRatio: s.genderRatio, isMega: s.isMega,
       gen: s.gen,
       baseStats: {...s.baseStats},
