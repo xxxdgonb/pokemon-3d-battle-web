@@ -64,6 +64,8 @@ Completed in this increment:
 16. projector tests for request/damage/status/faint/turn
 17. Showdown victory/defeat projection
 18. passive opponent integration using Showdown's explicit no-op pass action
+19. BattlePresentationCoordinator enforcing impact-before-authoritative-damage
+20. activeTransactionId lifecycle bound to BattleState
 
 Important implementation boundary:
 - Showdown is not imported into the browser yet. Its execution environment must be verified before selecting browser, worker, or server runtime.
