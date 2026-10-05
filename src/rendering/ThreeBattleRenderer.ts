@@ -32,7 +32,7 @@ export class ThreeBattleRenderer {
     const key=new THREE.DirectionalLight(0xffffff,2.5);
     key.position.set(5,10,7);key.castShadow=true;this.scene.add(key);
     this.createArena();
-    this.animate();
+    if(new URLSearchParams(window.location.search).get("browserSmoke")!=="1")this.animate();
   }
 
   private createArena():void{
