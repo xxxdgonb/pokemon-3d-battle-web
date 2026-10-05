@@ -19,7 +19,7 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
   private readyResolve: (() => void) | null = null;
   private readyReject: ((error: Error) => void) | null = null;
 
-  public constructor(private readonly url = `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.hostname}:8787`) {}
+  public constructor(private readonly url = (() => { const params=new URLSearchParams(window.location.search); const host=params.get("runtimeHost")??window.location.hostname; return `${window.location.protocol === "https:" ? "wss" : "ws"}://${host}:8787`; })()) {}
 
   public async connect(config: ShowdownBattleConfig): Promise<void> {
     if (this.socket !== null) throw new Error("Showdown transport is already connected.");
@@ -49,7 +49,7 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
       socket.addEventListener("error", onError, {once: true});
     });
 
-    await ready;
+    await Promise.race([ready,new Promise<void>((_,reject)=>window.setTimeout(()=>reject(new Error("Timed out waiting for the Showdown runtime readiness handshake.")),5000))]);
   }
 
   public async send(command: string): Promise<void> {
