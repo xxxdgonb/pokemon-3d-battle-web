@@ -6,6 +6,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       "/api": "http://localhost:8787",
+      "/showdown": {target: "ws://localhost:8787", ws: true},
     },
   },
   build: {
