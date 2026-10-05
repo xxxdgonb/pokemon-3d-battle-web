@@ -22,7 +22,7 @@ export function getDexPayload(generation: Generation): unknown {
       id: id(s), name: s.name, num: s.num, baseSpecies: s.baseSpecies,
       forme: s.forme, types: [...s.types], abilities: {...s.abilities},
       gender: s.gender, genderRatio: s.genderRatio, isMega: s.isMega,
-      isGigantamax: s.isGigantamax, gen: s.gen,
+      gen: s.gen,
       baseStats: {...s.baseStats},
     }));
 
