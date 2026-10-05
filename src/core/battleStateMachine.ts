@@ -48,6 +48,8 @@ export function transition(phase: BattlePhase, event: BattleEvent): BattlePhase 
   if (event.type === "FAINT_CHECK_COMPLETE") {
     if (event.playerFainted && !event.opponentFainted) return "DEFEAT";
     if (event.opponentFainted && !event.playerFainted) return "VICTORY";
+    if (!event.playerFainted && !event.opponentFainted) return "PLAYER_SELECTING_MOVE";
+    throw new InvalidBattleTransitionError(phase, event.type);
   }
 
   return next;
