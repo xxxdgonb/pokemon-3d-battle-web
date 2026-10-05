@@ -66,6 +66,10 @@ Completed in this increment:
 18. passive opponent integration using Showdown's explicit no-op pass action
 19. BattlePresentationCoordinator enforcing impact-before-authoritative-damage
 20. activeTransactionId lifecycle bound to BattleState
+21. authoritative miss/immune/fail outcomes normalized
+22. real Showdown passive-opponent smoke test added
+23. CI workflow added for check/build/smoke
+24. WebSocket transport now awaits runtime readiness and propagates failures
 
 Important implementation boundary:
 - Showdown is not imported into the browser yet. Its execution environment must be verified before selecting browser, worker, or server runtime.
