@@ -24,6 +24,7 @@ export interface ShowdownTransport {
   connect(config: ShowdownBattleConfig): Promise<void>;
   send(command: string): Promise<void>;
   close(): Promise<void>;
+  waitForBlock(): Promise<string>;
   onMessage(listener: (block: string) => void): () => void;
 }
 
