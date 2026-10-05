@@ -11,6 +11,7 @@ export default tseslint.config(
     files: ["tests/**/*.mjs"],
     languageOptions: {
       globals: {
+        process: "readonly",
         console: "readonly",
         fetch: "readonly",
         WebSocket: "readonly",
@@ -19,6 +20,7 @@ export default tseslint.config(
     },
     rules: {
       "no-useless-escape": "off",
+      "no-empty": "off",
     },
   }
 );
