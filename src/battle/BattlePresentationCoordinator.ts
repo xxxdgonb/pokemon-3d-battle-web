@@ -77,7 +77,7 @@ export class BattlePresentationCoordinator {
     return this.transactions.activeTransaction;
   }
 
-  public resolveSecondaryEffects(transactionId: string, _events: readonly ShowdownBattleEvent[]): BattleState {
+  public resolveSecondaryEffects(transactionId: string, __events: readonly ShowdownBattleEvent[]): BattleState {
     this.machine.dispatch({type: "SECONDARY_EFFECTS_RESOLVED", transactionId});
     return this.machine.state;
   }
