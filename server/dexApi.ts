@@ -53,3 +53,10 @@ export function getGeneration(value: string | null): Generation | null {
   const n = Number(value);
   return validGeneration(n) ? n : null;
 }
+
+
+export function getLearnset(generation: Generation, speciesId: string): string[] {
+  const dex = Dex.mod(`gen${generation}`);
+  const data = dex.species.getLearnsetData(speciesId as never);
+  return Object.keys(data.learnset ?? {});
+}
