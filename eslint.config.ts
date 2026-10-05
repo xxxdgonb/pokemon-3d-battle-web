@@ -6,5 +6,19 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   {
     ignores: ["dist/**", "node_modules/**"]
+  },
+  {
+    files: ["tests/**/*.mjs"],
+    languageOptions: {
+      globals: {
+        console: "readonly",
+        fetch: "readonly",
+        WebSocket: "readonly",
+        setTimeout: "readonly",
+      },
+    },
+    rules: {
+      "no-useless-escape": "off",
+    },
   }
 );
