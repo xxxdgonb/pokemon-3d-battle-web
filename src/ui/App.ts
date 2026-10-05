@@ -23,6 +23,7 @@ export class App {
   private battleRenderer:ThreeBattleRenderer|null=null;
   private moveBusy=false;
   private battleEnded=false;
+  private battleResult:"VICTORY"|"DEFEAT"|null=null;
 
   public constructor(root:HTMLElement){this.root=root;this.render();}
 
@@ -164,7 +165,7 @@ export class App {
     const container=this.root.querySelector("#moves") as HTMLElement;
     moves.forEach(m=>{const b=document.createElement("button");b.textContent=`${m.name} · ${m.type} · ${m.category} · PP ${m.pp} · Power ${m.basePower || "—"} · Acc ${m.accuracy === true ? "—" : m.accuracy}`;b.disabled=this.battleEnded;b.onclick=()=>void this.useMove(m);container.appendChild(b);});
     if(this.battleEnded){
-      const result=this.coordinator?.state.phase==="VICTORY"?"Victory!":"Defeat!";
+      const result=this.battleResult==="VICTORY"?"Victory!":"Defeat!";
       const panel=document.createElement("div");
       panel.className="battle-result";
       panel.innerHTML=`<strong>${result}</strong><button data-action="restart-battle">Battle Again</button>`;
@@ -208,7 +209,7 @@ export class App {
       const state=this.coordinator.finishTransaction(id,this.coordinator.state.player.hp<=0,this.coordinator.state.opponent.hp<=0);
       if(state.phase==="VICTORY"||state.phase==="DEFEAT"){
         this.battleEnded=true;
-        const result=state.phase;
+        this.battleResult=state.phase;
         this.coordinator.endBattle();
         this.updateBattleHud();
         this.root.querySelectorAll<HTMLButtonElement>(".move-grid button").forEach(button=>button.disabled=true);
@@ -216,7 +217,7 @@ export class App {
         if(hud&&!hud.querySelector(".battle-result")){
           const panel=document.createElement("div");
           panel.className="battle-result";
-          panel.innerHTML=`<strong>${result==="VICTORY"?"Victory!":"Defeat!"}</strong><button data-action="restart-battle">Battle Again</button>`;
+          panel.innerHTML=`<strong>${this.battleResult==="VICTORY"?"Victory!":"Defeat!"}</strong><button data-action="restart-battle">Battle Again</button>`;
           panel.querySelector("button")?.addEventListener("click",()=>void this.resetBattle());
           hud.appendChild(panel);
         }
@@ -225,9 +226,10 @@ export class App {
     }catch(error){
       console.error(error);
       alert(error instanceof Error?error.message:"Battle move failed.");
+      await this.resetBattle();
     }finally{
       this.moveBusy=false;
-      this.root.querySelectorAll<HTMLButtonElement>(".move-grid button").forEach(button=>button.disabled=false);
+      if(!this.battleEnded)this.root.querySelectorAll<HTMLButtonElement>(".move-grid button").forEach(button=>button.disabled=false);
     }
   }
 
@@ -258,6 +260,7 @@ export class App {
     this.legalMoveIds=[];
     this.moveBusy=false;
     this.battleEnded=false;
+    this.battleResult=null;
     this.stage="menu";
     this.render();
   }
