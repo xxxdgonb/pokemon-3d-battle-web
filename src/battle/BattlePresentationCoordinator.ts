@@ -19,6 +19,12 @@ export class BattlePresentationCoordinator {
     this.machine = new BattleStateMachine(initialState);
   }
 
+  public initializeBattle(): BattleState {
+    this.machine.dispatch({type:"INIT_COMPLETE"});
+    this.machine.dispatch({type:"INTRO_COMPLETE"});
+    return this.machine.state;
+  }
+
   public get state(): BattleState {
     return this.machine.state;
   }
