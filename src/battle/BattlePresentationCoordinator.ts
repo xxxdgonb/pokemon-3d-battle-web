@@ -60,7 +60,7 @@ export class BattlePresentationCoordinator {
   public applyAuthoritativeResolution(transactionId: string, events: readonly ShowdownBattleEvent[]): BattleState {
     const hasAuthoritativeResolution = events.some(event => {
       if (event.kind === "damage") return targetSide(event) === "opponent";
-      return event.kind === "miss" || event.kind === "immune" || event.kind === "failed";
+      return event.kind === "miss" || event.kind === "immune" || event.kind === "failed" || event.kind === "move" || event.kind === "heal" || event.kind === "status";
     });
     if (!hasAuthoritativeResolution) {
       throw new Error(`No authoritative opponent move resolution for transaction ${transactionId}.`);
