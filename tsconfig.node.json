@@ -6,7 +6,14 @@
     "strict": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ],
+    "skipLibCheck": true
   },
-  "include": ["vite.config.ts", "eslint.config.ts", "vitest.config.ts"]
+  "include": [
+    "vite.config.ts",
+    "eslint.config.ts",
+    "vitest.config.ts"
+  ]
 }
