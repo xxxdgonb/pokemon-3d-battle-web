@@ -134,6 +134,7 @@ export class App {
   private async resolveMove(id:string,m:DexMove):Promise<void>{
     if(!this.adapter||!this.coordinator)return;
     const events=await this.adapter.submitPlayerMove(m.id);
+    this.coordinator.syncAuthoritativeState(await this.adapter.getState());
     this.coordinator.markAnimationImpact(id);
     this.coordinator.applyAuthoritativeResolution(id,events);
     this.updateBattleHud();
