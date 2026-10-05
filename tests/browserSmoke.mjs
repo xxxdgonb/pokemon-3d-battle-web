@@ -74,8 +74,6 @@ try{
   const ws=new WebSocket(version.webSocketDebuggerUrl);
   await new Promise((resolve,reject)=>{ws.addEventListener("open",resolve,{once:true});ws.addEventListener("error",reject,{once:true});});
   const cdp=cdpClient(ws);
-  await cdp.call("Runtime.enable");
-  await cdp.call("Page.enable");
   const target=await cdp.call("Target.createTarget",{url:"http://127.0.0.1:5173/"});
   const pageWs=await (async()=>{
     const deadline=Date.now()+5000;
