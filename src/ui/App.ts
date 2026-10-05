@@ -111,7 +111,7 @@ export class App {
     this.root.innerHTML='<section id="battle-root" class="battle-screen"><div id="battle-canvas" class="battle-canvas"></div><div class="battle-hud"><div><strong>Player</strong><span id="player-hp"></span></div><div><strong>Opponent</strong><span id="opponent-hp"></span></div><div id="moves" class="move-grid"></div></div></section>';
     const host=this.root.querySelector("#battle-canvas") as HTMLElement;
     this.battleRenderer=new ThreeBattleRenderer(host);
-    this.battleRenderer.setupBattle(this.pokemon!.speciesId,"charizard",this.generation);
+    this.battleRenderer.setupBattle(this.species!.num,6,this.generation);
     const moves=this.selectedMoves;
     const container=this.root.querySelector("#moves") as HTMLElement;
     moves.forEach(m=>{const b=document.createElement("button");b.textContent=`${m.name} · PP ${m.pp}`;b.onclick=()=>void this.useMove(m);container.appendChild(b);});
