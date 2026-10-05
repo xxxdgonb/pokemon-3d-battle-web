@@ -31,7 +31,13 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
 
     await this.transport.connect(config);
     await this.transport.send(`>start {"formatid":"gen${config.generation}customgame"}`);
-    await this.transport.waitForBlock();
+    for(let attempt=0;attempt<16;attempt++){
+      if(this.pending.some(event=>event.kind==="request"))break;
+      await this.transport.waitForBlock();
+    }
+    if(!this.pending.some(event=>event.kind==="request")){
+      throw new Error("Showdown battle did not produce an initial request.");
+    }
     this.pending.splice(0);
   }
 
