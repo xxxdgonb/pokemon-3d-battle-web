@@ -78,6 +78,7 @@ export class BattlePresentationCoordinator {
   }
 
   public resolveSecondaryEffects(transactionId: string, events: readonly ShowdownBattleEvent[]): BattleState {
+    void events;
     this.machine.dispatch({type: "SECONDARY_EFFECTS_RESOLVED", transactionId});
     return this.machine.state;
   }
