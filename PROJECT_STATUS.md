@@ -60,6 +60,8 @@ Completed in this increment:
 12. pinned Node Showdown runtime dependency
 13. WebSocket transport and Node BattleStream service boundary
 14. framed Showdown block synchronization
+15. pure Showdown protocol-to-BattleState projector
+16. projector tests for request/damage/status/faint/turn
 
 Important implementation boundary:
 - Showdown is not imported into the browser yet. Its execution environment must be verified before selecting browser, worker, or server runtime.
@@ -72,7 +74,9 @@ Runtime decision:
 - A Node service now owns the pinned Showdown BattleStream runtime.
 - The service validates the incoming battle envelope and converts the configured Pokémon into Showdown team sets.
 - The browser waits for framed Showdown output blocks instead of assuming a synchronous response.
-- The adapter still does not project Showdown protocol into authoritative BattleState.
+- The adapter now owns a pure protocol-to-BattleState projector for HP/max HP, status, move PP, ability and turn updates.
+- Projector tests cover request, damage, status, faint and turn messages.
+
 - The opponent is currently represented as a real Showdown player, so passive/no-AI single-player turn semantics are NOT solved yet.
 
 Testing:
