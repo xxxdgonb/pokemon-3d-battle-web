@@ -150,6 +150,12 @@ export function projectShowdownMessage(
       return parseStatusMessage(state, message);
     case "faint":
       return parseFaintMessage(state, message);
+    case "win": {
+      const winner = message.args[0];
+      if (winner === "Player") return {...state, phase: "VICTORY"};
+      if (winner === "Opponent") return {...state, phase: "DEFEAT"};
+      return state;
+    }
     case "turn": {
       const turn = Number(message.args[0]);
       return Number.isInteger(turn) ? {...state, turn} : state;
