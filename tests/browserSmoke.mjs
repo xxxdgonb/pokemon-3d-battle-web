@@ -58,6 +58,7 @@ const chromium=start("chromium",[
   "--disable-background-networking",
   "--remote-debugging-address=127.0.0.1",
   `--remote-debugging-port=${PORT}`,
+  "--remote-allow-origins=*",
   "--use-gl=swiftshader",
   "--enable-unsafe-swiftshader",
   `--user-data-dir=${browserData}`,
