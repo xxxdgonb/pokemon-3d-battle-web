@@ -1,0 +1,30 @@
+export interface ShowdownProtocolMessage {
+  readonly type: string;
+  readonly args: readonly string[];
+  readonly raw: string;
+}
+
+export function parseShowdownLine(line: string): ShowdownProtocolMessage | null {
+  const raw = line.trimEnd();
+  if (!raw.startsWith("|")) return null;
+
+  const parts = raw.slice(1).split("|");
+  const [type, ...args] = parts;
+  if (!type) return null;
+
+  return { type, args, raw };
+}
+
+export function parseShowdownBlock(block: string): readonly ShowdownProtocolMessage[] {
+  return block
+    .split(/\n+/)
+    .map(parseShowdownLine)
+    .filter((message): message is ShowdownProtocolMessage => message !== null);
+}
+
+export function encodeChoice(moveId: string): string {
+  if (!/^[a-z0-9-]+$/i.test(moveId)) {
+    throw new Error(`Invalid move identifier: ${moveId}`);
+  }
+  return `move ${moveId}`;
+}
