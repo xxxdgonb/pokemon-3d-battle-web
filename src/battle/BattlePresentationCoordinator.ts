@@ -47,7 +47,7 @@ export class BattlePresentationCoordinator {
     return this.machine.state;
   }
 
-  public applyAuthoritativeDamage(transactionId: string, events: readonly ShowdownBattleEvent[]): BattleState {
+  public applyAuthoritativeResolution(transactionId: string, events: readonly ShowdownBattleEvent[]): BattleState {
     const hasAuthoritativeResolution = events.some(event => {
       if (event.kind === "damage") return targetSide(event) === "opponent";
       return event.kind === "miss" || event.kind === "immune" || event.kind === "failed";
