@@ -14,6 +14,10 @@ describe("battle state machine", () => {
     expect(transition("STATUS_PROCESSING", { type: "FAINT_CHECK_COMPLETE", playerFainted: false, opponentFainted: true })).toBe("VICTORY");
   });
 
+  it("returns to move selection when neither side has fainted", () => {
+    expect(transition("STATUS_PROCESSING", { type: "FAINT_CHECK_COMPLETE", playerFainted: false, opponentFainted: false })).toBe("PLAYER_SELECTING_MOVE");
+  });
+
   it("rejects illegal transitions", () => {
     expect(() => transition("PLAYER_SELECTING_MOVE", { type: "DAMAGE_APPLIED", transactionId: "tx-1" })).toThrow(InvalidBattleTransitionError);
   });
