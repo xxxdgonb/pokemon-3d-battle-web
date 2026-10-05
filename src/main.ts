@@ -1,21 +1,6 @@
 import "./styles.css";
-import { ThreeBattleRenderer } from "./rendering/ThreeBattleRenderer";
+import { App } from "./ui/App";
 
-const app = document.querySelector<HTMLElement>("#app");
-
-if (!app) {
-  throw new Error("Application root #app was not found.");
-}
-
-const viewport = document.createElement("section");
-viewport.className = "battle-viewport";
-app.appendChild(viewport);
-
-const renderer = new ThreeBattleRenderer(viewport);
-renderer.resize();
-renderer.render();
-
-window.addEventListener("resize", () => {
-  renderer.resize();
-  renderer.render();
-});
+const root=document.querySelector<HTMLElement>("#app");
+if(!root)throw new Error("Application root #app was not found.");
+new App(root);
