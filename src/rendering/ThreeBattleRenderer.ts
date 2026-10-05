@@ -38,11 +38,11 @@ export class ThreeBattleRenderer {
     }
   }
 
-  public async setupBattle(playerDex:number,opponentDex:number,_generation:number):Promise<void>{
+  public async setupBattle(player:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless"},opponent:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless"},_generation:number):Promise<void>{
     if(this.playerModel)this.scene.remove(this.playerModel);
     if(this.opponentModel)this.scene.remove(this.opponentModel);
-    this.playerModel=await this.loader.load({nationalDex:playerDex,shiny:false,gender:"genderless"});
-    this.opponentModel=await this.loader.load({nationalDex:opponentDex,shiny:false,gender:"genderless"});
+    this.playerModel=await this.loader.load(player);
+    this.opponentModel=await this.loader.load(opponent);
     if(this.playerModel){this.playerModel.position.set(-2,0,2.7);this.playerModel.rotation.y=Math.PI;this.playerModel.scale.setScalar(1.5);this.addModel(this.playerModel);}
     if(this.opponentModel){this.opponentModel.position.set(2,0,-2.5);this.opponentModel.scale.setScalar(1.5);this.addModel(this.opponentModel);}
     this.render();
