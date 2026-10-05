@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Pokémon 3D Battle Browser Smoke</title></head>
+<body>
+<div id="app"></div>
+<script type="module">
+import "/src/main.ts";
+
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function waitFor(selector,timeout=10000){
+  const deadline=Date.now()+timeout;
+  while(Date.now()<deadline){
+    const node=document.querySelector(selector);
+    if(node)return node;
+    await sleep(50);
+  }
+  throw new Error("Timed out waiting for "+selector);
+}
+async function click(selector){
+  const node=await waitFor(selector);
+  node.click();
+  await sleep(20);
+}
+async function main(){
+  await waitFor("#app");
+  await click('[data-action="start"]');
+  await click('[data-action="generation"][data-value="9"]');
+  await click('[data-action="species"][data-value="pikachu"]');
+  await click('[data-action="next"]');
+  await click('[data-action="form"][data-value="pikachu"]');
+  await click('[data-action="gender"][data-value="male"]');
+  await click('[data-action="shiny"][data-value="false"]');
+  await click('[data-action="ability"]');
+  await click('[data-action="item"][data-value=""]');
+  await click('[data-action="level"]');
+  await waitFor('[data-action="move"]');
+  Array.from(document.querySelectorAll('[data-action="move"]')).slice(0,4).forEach(button=>button.click());
+  await click('[data-action="battle"]');
+  await waitFor(".battle-screen",15000);
+  await waitFor(".battle-canvas canvas",10000);
+  await waitFor(".move-grid button",10000);
+  const before=document.querySelector("#opponent-hp")?.textContent ?? "";
+  document.querySelector(".move-grid button").click();
+  const deadline=Date.now()+15000;
+  while(Date.now()<deadline){
+    const after=document.querySelector("#opponent-hp")?.textContent ?? "";
+    if(after && after!==before){
+      document.body.dataset.browserSmoke="passed";
+      document.body.insertAdjacentHTML("beforeend",'<div id="browser-smoke-result">BROWSER_SMOKE_PASSED</div>');
+      return;
+    }
+    await sleep(50);
+  }
+  throw new Error("Opponent HP did not change: "+before);
+}
+main().catch(error=>{
+  document.body.dataset.browserSmoke="failed";
+  document.body.insertAdjacentHTML("beforeend",'<div id="browser-smoke-result">BROWSER_SMOKE_FAILED:'+String(error.message).replace(/[<>&]/g,"")+'</div>');
+});
+</script>
+</body>
+</html>
