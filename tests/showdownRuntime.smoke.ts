@@ -31,35 +31,33 @@ function waitForServer(process: ChildProcessWithoutNullStreams): Promise<void> {
     };
     process.stdout.on("data", onData);
     process.once("error", reject);
-    process.once("exit", (code) => {
+    process.once("exit", code => {
       if (code !== 0) reject(new Error(`Showdown runtime exited before startup: ${code}`));
     });
   });
 }
 
-function waitFor(
-  socket: WebSocket,
-  predicate: (message: {type: string; block?: string; message?: string}) => boolean,
-): Promise<{type: string; block?: string; message?: string}> {
+type RuntimeMessage = {type: string; block?: string; message?: string};
+
+function waitForMessage(
+  messages: readonly RuntimeMessage[],
+  predicate: (message: RuntimeMessage) => boolean,
+  deadline: number,
+): Promise<RuntimeMessage> {
   return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      socket.off("message", onMessage);
-      reject(new Error("Timed out waiting for Showdown runtime message."));
-    }, 5000);
-    const onMessage = (data: Buffer | ArrayBuffer | Buffer[]): void => {
-      const message = JSON.parse(data.toString()) as {type: string; block?: string; message?: string};
-      if (message.type === "error") {
-        clearTimeout(timeout);
-        socket.off("message", onMessage);
-        reject(new Error(message.message ?? "Showdown runtime error."));
+    const check = (): void => {
+      const match = messages.find(predicate);
+      if (match) {
+        resolve(match);
         return;
       }
-      if (!predicate(message)) return;
-      clearTimeout(timeout);
-      socket.off("message", onMessage);
-      resolve(message);
+      if (Date.now() >= deadline) {
+        reject(new Error("Timed out waiting for Showdown runtime message."));
+        return;
+      }
+      setTimeout(check, 10);
     };
-    socket.on("message", onMessage);
+    check();
   });
 }
 
@@ -72,6 +70,15 @@ try {
   await waitForServer(runtime);
 
   const socket = new WebSocket(URL);
+  const messages: RuntimeMessage[] = [];
+  socket.on("message", data => {
+    const message = JSON.parse(data.toString()) as RuntimeMessage;
+    if (message.type === "error") {
+      messages.push(message);
+      return;
+    }
+    messages.push(message);
+  });
   await new Promise<void>((resolve, reject) => {
     socket.once("open", () => resolve());
     socket.once("error", reject);
@@ -85,25 +92,27 @@ try {
       opponent: pokemon("p2", "charizard", "blaze"),
     },
   }));
-  await waitFor(socket, message => message.type === "ready");
+  await waitForMessage(messages, message => message.type === "ready", Date.now() + 5000);
 
   socket.send(JSON.stringify({type: "command", command: '>start {"formatid":"gen9customgame"}'}));
-  await waitFor(socket, message => message.type === "showdown" && !!message.block && message.block.includes("|request|") && message.block.includes("\"active\"") && !message.block.includes("\"teamPreview\":true"));
+  await waitForMessage(
+    messages,
+    message => message.type === "showdown" && !!message.block && message.block.includes("|request|") && message.block.includes("\"active\"") && !message.block.includes("\"teamPreview\":true"),
+    Date.now() + 5000,
+  );
 
   socket.send(JSON.stringify({type: "command", command: ">p1 move tackle"}));
+  await waitForMessage(
+    messages,
+    message => message.type === "showdown" && !!message.block && (() => {
+      const parsed = parseShowdownBlock(message.block);
+      return parsed.some(item => item.type === "move" && item.args[0] === "p1a: Pikachu" && item.args[1] === "Tackle") &&
+        parsed.some(item => item.type === "-damage" && item.args[0] === "p2a: Charizard");
+    })(),
+    Date.now() + 5000,
+  );
 
-  const received: string[] = [];
-  const deadline = Date.now() + 5000;
-  while (Date.now() < deadline) {
-    const message = await waitFor(socket, message => message.type === "showdown" && !!message.block);
-    received.push(message.block ?? "");
-    const parsed = parseShowdownBlock(received.join("\n"));
-    const moveCount = parsed.filter(item => item.type === "move" && item.args[0] === "p1a: Pikachu" && item.args[1] === "Tackle").length;
-    const damageCount = parsed.filter(item => item.type === "-damage" && item.args[0] === "p2a: Charizard").length;
-    if (moveCount === 1 && damageCount === 1) break;
-  }
-
-  const parsed = parseShowdownBlock(received.join("\n"));
+  const parsed = parseShowdownBlock(messages.filter(message => message.type === "showdown").map(message => message.block ?? "").join("\n"));
   const moveCount = parsed.filter(item => item.type === "move" && item.args[0] === "p1a: Pikachu" && item.args[1] === "Tackle").length;
   const damageCount = parsed.filter(item => item.type === "-damage" && item.args[0] === "p2a: Charizard").length;
   if (moveCount !== 1 || damageCount !== 1) {
