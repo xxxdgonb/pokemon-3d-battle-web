@@ -11,6 +11,10 @@ interface ShowdownRequestPokemon {
   readonly ability?: string;
 }
 
+interface ShowdownRequestActive {
+  readonly moves?: readonly ShowdownRequestActiveMove[];
+}
+
 interface ShowdownRequestActiveMove {
   readonly move?: string;
   readonly id?: string;
@@ -23,9 +27,7 @@ interface ShowdownRequest {
     readonly id?: string;
     readonly pokemon?: readonly ShowdownRequestPokemon[];
   };
-  readonly active?: readonly [{
-    readonly moves?: readonly ShowdownRequestActiveMove[];
-  }];
+  readonly active?: readonly ShowdownRequestActive[];
 }
 
 function sideFromIdent(ident: string): BattleSide | null {
@@ -124,10 +126,9 @@ function parseHpMessage(state: BattleState, message: ShowdownProtocolMessage): B
   if (!target || !condition) return state;
   const side = sideFromIdent(target);
   if (!side) return state;
-  const hp = parseCondition(condition)?.hp;
-  if (hp === undefined) return state;
-  const pokemon = side === "player" ? state.player : state.opponent;
-  return updateSide(state, side, {hp: Math.max(0, Math.min(pokemon.maxHp, hp))});
+  const parsed = parseCondition(condition);
+  if (!parsed) return state;
+  return updateSide(state, side, {hp: Math.max(0, Math.min(parsed.maxHp, parsed.hp)), maxHp: parsed.maxHp});
 }
 
 function parseDamageMessage(state: BattleState, message: ShowdownProtocolMessage): BattleState {
@@ -137,10 +138,9 @@ function parseDamageMessage(state: BattleState, message: ShowdownProtocolMessage
   const side = sideFromIdent(target);
   if (!side) return state;
 
-  const hp = parseCondition(condition)?.hp;
-  if (hp === undefined) return state;
-  const pokemon = side === "player" ? state.player : state.opponent;
-  return updateSide(state, side, {hp: Math.max(0, Math.min(pokemon.maxHp, hp))});
+  const parsed = parseCondition(condition);
+  if (!parsed) return state;
+  return updateSide(state, side, {hp: Math.max(0, Math.min(parsed.maxHp, parsed.hp)), maxHp: parsed.maxHp});
 }
 
 function parseStatusMessage(state: BattleState, message: ShowdownProtocolMessage): BattleState {
