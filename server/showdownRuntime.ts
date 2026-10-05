@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 import { WebSocketServer, type WebSocket } from "ws";
-import { BattleStream, type PokemonSet } from "pokemon-showdown";
+import { BattleStream } from "pokemon-showdown";
 import type { Generation, PokemonBattleState } from "../src/core/types";
 
 const PORT = Number(process.env.PORT ?? 8787);
@@ -61,7 +61,22 @@ function parseClientMessage(raw: string): ClientMessage {
   throw new Error("Unknown client message.");
 }
 
-function toPokemonSet(state: PokemonBattleState): PokemonSet {
+interface ShowdownPokemonSet {
+  readonly name: string;
+  readonly species: string;
+  readonly item: string;
+  readonly ability: string;
+  readonly moves: string[];
+  readonly nature: string;
+  readonly teraType: string;
+  readonly gender: string;
+  readonly evs: Record<string, number>;
+  readonly ivs: Record<string, number>;
+  readonly level: number;
+  readonly shiny: boolean;
+}
+
+function toPokemonSet(state: PokemonBattleState): ShowdownPokemonSet {
   const species = state.formId && state.formId !== "base"
     ? `${state.speciesId}-${state.formId}`
     : state.speciesId;
