@@ -109,7 +109,7 @@ function parseRequestMessage(state: BattleState, message: ShowdownProtocolMessag
       patch.formId = formMarker?.[2] ?? "base";
     }
     const formName = parts[1];
-    if (formName && !/^l\\d+$/i.test(formName) && !["M", "F", "shiny"].includes(formName)) {
+    if (formName && !/^l\d+$/i.test(formName) && !["M", "F", "shiny"].includes(formName)) {
       patch.formId = formName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
     }
     const genderToken = parts.find(part => part === "M" || part === "F");
