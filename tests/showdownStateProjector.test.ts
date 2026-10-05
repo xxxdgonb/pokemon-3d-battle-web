@@ -43,7 +43,23 @@ describe("ShowdownStateProjector", () => {
     expect(state.player.hp).toBe(73);
     expect(state.player.maxHp).toBe(100);
     expect(state.player.moves[0]?.pp).toBe(12);
+    expect(state.player.speciesId).toBe("pikachu");
+    expect(state.player.gender).toBe("male");
+  
+
+  it("projects authoritative active identity and ability", () => {
+    const block = "|request|" + JSON.stringify({
+      side:{id:"p2",pokemon:[{active:true,details:"Charizard, L50, M",condition:"120/120",ability:"blaze"}]},
+      active:[{moves:[{id:"flamethrower",pp:10,maxpp:15}]}],
+    });
+    const state = projectShowdownBlock(createState(), parseShowdownBlock(block));
+    expect(state.opponent.speciesId).toBe("charizard");
+    expect(state.opponent.gender).toBe("male");
+    expect(state.opponent.abilityId).toBe("blaze");
+    expect(state.opponent.moves[0]?.pp).toBe(10);
   });
+
+});
 
   it("does not let raw win events bypass the application state machine", () => {
     const victory = projectShowdownBlock(createState(), parseShowdownBlock("|win|Player"));
