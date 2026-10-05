@@ -117,7 +117,10 @@ export class BattlePresentationCoordinator {
     if (damage) return {kind:"damage", target:targetSide(damage) ?? "opponent", critical, effectiveness};
 
     const special = events.find(event => event.kind === "miss" || event.kind === "immune" || event.kind === "failed");
-    if (special) {\n      const kind = special.kind === "miss" || special.kind === "immune" || special.kind === "failed" ? special.kind : "failed";\n      return {kind, target:targetSide(special) ?? "opponent", critical, effectiveness};\n    }
+    if (special) {
+      const kind = special.kind === "miss" || special.kind === "immune" || special.kind === "failed" ? special.kind : "failed";
+      return {kind, target:targetSide(special) ?? "opponent", critical, effectiveness};
+    }
 
     const effect = events.find(event => ["heal","status","curestatus","boost","unboost"].includes(event.kind));
     return {kind:"success", target:effect ? (targetSide(effect) ?? "player") : "player", critical, effectiveness};
