@@ -1,37 +1,78 @@
 # Pokémon 3D Battle Web
 
-A browser-based 3D Pokémon-style 1v1 battle project.
+A browser-based 3D Pokémon-style 1v1 battle application using:
 
-## Development status
+- Three.js for 3D presentation
+- Pokémon Showdown as the authoritative battle simulator
+- a Node.js WebSocket runtime boundary for Showdown
+- generation-scoped Showdown Dex/learnset data
+- TypeScript state/transaction guards
+- Vitest + ESLint + CI verification
 
-PHASE 1 — Architecture implementation.
+## Current status
 
-The current increment establishes:
-- Vite + TypeScript application foundation
-- Three.js renderer shell
-- typed battle domain contracts
-- explicit battle state machine
-- Showdown adapter boundary
-- Vitest and ESLint configuration
+The repository currently has a working implementation through the Node/WebSocket/Showdown integration boundary.
 
-The battle simulator is deliberately not imported into the browser until its supported execution environment is verified. No fabricated Pokémon, move, damage, model or animation data is included.
+Verified in GitHub Actions:
+- TypeScript + server compilation
+- ESLint
+- 20 unit tests
+- production Vite build
+- direct pinned-Showdown passive-opponent smoke test
+- real WebSocket runtime smoke test covering battle creation, active move request, move execution and authoritative damage
 
-See:
+The browser/WebGL client has not been visually exercised by browser automation in the current development environment, so browser presentation and GPU performance remain explicitly unverified.
+
+See [PROJECT_STATUS.md](./PROJECT_STATUS.md) for the exact completion matrix and remaining blockers.
+
+## Architecture
+
+`Browser UI -> WebSocket transport -> Node Showdown runtime -> normalized protocol events -> BattleState -> presentation`
+
+The battle engine does not import Three.js, and the renderer does not calculate damage.
+
+The single-player opponent has no AI or active move-selection logic. The Node runtime supplies an explicit internal no-op/pass action after the player's legal choice so Showdown can resolve the turn without inventing opponent behavior.
+
+## Development
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run the browser client:
+
+```bash
+npm run dev
+```
+
+Run the Showdown runtime in another terminal:
+
+```bash
+npm run server
+```
+
+The default runtime listens on `ws://localhost:8787`.
+
+Validation:
+
+```bash
+npm run check
+npm run build
+npx tsx tests/showdownPassiveOpponent.smoke.ts
+npx tsx tests/showdownRuntime.smoke.ts
+```
+
+## Asset and licensing policy
+
+Third-party Pokémon models, animation packs and audio are not automatically vendored merely because they are technically accessible. See [LICENSES.md](./LICENSES.md) for the current provenance and redistribution decisions.
+
+No ROM, ROM patch, ROM-dependent asset or CFRU ROM material is bundled.
+
+## Research and design records
+
 - [ARCHITECTURE.md](./ARCHITECTURE.md)
 - [SOURCE_RESEARCH.md](./SOURCE_RESEARCH.md)
 - [LICENSES.md](./LICENSES.md)
 - [PROJECT_STATUS.md](./PROJECT_STATUS.md)
-
-## Commands
-
-```bash
-npm install
-npm run dev
-npm run build
-npm test
-npm run lint
-npm run check
-npm run server
-```
-
-Runtime testing must be performed in an environment with Node/npm and a browser/WebGL implementation. Until then, repository checks are considered unexecuted rather than assumed successful.
