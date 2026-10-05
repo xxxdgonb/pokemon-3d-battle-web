@@ -39,9 +39,9 @@ describe("BattlePresentationCoordinator", () => {
     coordinator.selectMove("thunderbolt");
     coordinator.startMove("tx-1", "thunderbolt");
 
-    expect(() => coordinator.applyAuthoritativeDamage("tx-1", [damage])).toThrow();
+    expect(() => coordinator.applyAuthoritativeResolution("tx-1", [damage])).toThrow();
     coordinator.markAnimationImpact("tx-1");
-    coordinator.applyAuthoritativeDamage("tx-1", [damage]);
+    coordinator.applyAuthoritativeResolution("tx-1", [damage]);
 
     expect(coordinator.state.phase).toBe("DAMAGE_APPLICATION");
   });
@@ -51,7 +51,7 @@ describe("BattlePresentationCoordinator", () => {
     coordinator.selectMove("thunderbolt");
     coordinator.startMove("tx-miss", "thunderbolt");
     coordinator.markAnimationImpact("tx-miss");
-    coordinator.applyAuthoritativeDamage("tx-miss", [{
+    coordinator.applyAuthoritativeResolution("tx-miss", [{
       kind: "miss",
       payload: ["p1a: Pikachu", "p2a: Charizard"],
       source: {type: "-miss", args: ["p1a: Pikachu", "p2a: Charizard"], raw: "|-miss|p1a: Pikachu|p2a: Charizard"},
@@ -64,7 +64,7 @@ describe("BattlePresentationCoordinator", () => {
     coordinator.selectMove("thunderbolt");
     coordinator.startMove("tx-2", "thunderbolt");
     coordinator.markAnimationImpact("tx-2");
-    coordinator.applyAuthoritativeDamage("tx-2", [damage]);
+    coordinator.applyAuthoritativeResolution("tx-2", [damage]);
     coordinator.resolveSecondaryEffects("tx-2", []);
     coordinator.processStatus("tx-2");
     coordinator.finishTransaction("tx-2", false, false);
