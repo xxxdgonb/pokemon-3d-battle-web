@@ -1,4 +1,7 @@
-import { Dex } from "pokemon-showdown";
+import { createRequire } from "node:module";
+import type { Dex as DexType } from "pokemon-showdown";
+const require = createRequire(import.meta.url);
+const {Dex} = require("pokemon-showdown") as {Dex: typeof DexType};
 import type { Generation } from "../src/core/types";
 
 const cache = new Map<Generation, unknown>();
