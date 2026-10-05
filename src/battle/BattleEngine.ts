@@ -22,6 +22,12 @@ export class BattleStateMachine implements BattleEngine {
   }
 
   public dispatch(event: BattleEvent): BattleState {
+    if ("transactionId" in event && event.type !== "PLAYER_MOVE_SELECTED") {
+      const activeId = this.state.activeTransactionId;
+      if (activeId === null || event.transactionId !== activeId) {
+        throw new Error(`Transaction mismatch: active=${activeId ?? "none"}, event=${event.transactionId}`);
+      }
+    }
     const phase = transition(this.state.phase, event);
     let nextState: BattleState = {...this.state, phase};
 
