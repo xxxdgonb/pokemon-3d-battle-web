@@ -44,7 +44,10 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
   public async submitPlayerMove(move: MoveSlot["moveId"]): Promise<readonly ShowdownBattleEvent[]> {
     const pendingBefore = this.pending.length;
     await this.transport.send(`>p1 ${encodeChoice(move)}`);
-    await this.transport.waitForBlock();
+    for(let attempt=0;attempt<16;attempt++){
+      if(this.pending.some(event=>event.kind==="request"||event.kind==="battle-end"))break;
+      await this.transport.waitForBlock();
+    }
     return this.pending.splice(pendingBefore);
   }
 
