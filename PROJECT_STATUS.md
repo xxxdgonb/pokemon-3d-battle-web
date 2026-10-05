@@ -162,7 +162,7 @@ Impact: until runtime tests pass, the single-player turn loop is not verified.
 
 ## Next
 
-1. Obtain a green CI run on the current head.
+1. Obtain a green CI run on the current head; previous runs exposed compile-only issues and were used to harden the code.
 2. Execute the real passive-opponent smoke test in CI and use failures to harden the Node runtime.
 3. Expand authoritative event projection and tests for advanced effects.
 4. Run browser/WebGL smoke and repeated-battle checks.
