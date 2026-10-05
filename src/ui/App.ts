@@ -193,6 +193,7 @@ export class App {
       this.moveBusy=false;
       if(!this.battleEnded)this.root.querySelectorAll<HTMLButtonElement>(".move-grid button").forEach(button=>button.disabled=false);
       console.error(error);
+      await this.resetBattle();
     }
   }
 
