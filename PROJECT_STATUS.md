@@ -182,7 +182,7 @@ PHASE 1 — protocol-to-domain projection and passive-target architecture.
 - PHASE 14 Final Audit: NOT CLOSED until CI/browser runtime execution, asset availability, licenses, and repeated-battle soak checks are observed.
 
 ## Remaining hard blockers
-1. Runtime/CI execution evidence is still required.
+1. Runtime/CI execution evidence is still required; latest dependency fix is queued as CI run #84.
 2. Full browser/WebGL smoke test is still required.
 3. Complete protocol projection for every advanced effect (weather/terrain/side conditions/volatile effects/stat stages) still requires expansion before claiming full battle-state fidelity.
 4. Official/third-party animation and model redistribution rights must be audited individually; current 3D provider explicitly identifies Pokémon models as Nintendo/Creatures/GAME FREAK property. 
