@@ -113,7 +113,7 @@ export class App {
   }
 
   private renderBattle():void{
-    this.root.innerHTML='<section id="battle-root" class="battle-screen"><div id="battle-canvas" class="battle-canvas"></div><div class="battle-hud"><div><strong>Player</strong><span id="player-hp"></span></div><div><strong>Opponent</strong><span id="opponent-hp"></span></div><div id="moves" class="move-grid"></div></div></section>';
+    this.root.innerHTML='<section id="battle-root" class="battle-screen"><div id="battle-canvas" class="battle-canvas"></div><div class="battle-hud"><div><strong>Player</strong><div class="hpbar"><i id="player-hpbar"></i></div><span id="player-hp"></span><small id="player-status"></small></div><div><strong>Opponent</strong><div class="hpbar"><i id="opponent-hpbar"></i></div><span id="opponent-hp"></span><small id="opponent-status"></small></div><div id="moves" class="move-grid"></div></div></section>';
     const host=this.root.querySelector("#battle-canvas") as HTMLElement;
     this.battleRenderer=new ThreeBattleRenderer(host);
     this.battleRenderer.setupBattle({nationalDex:this.species!.num,shiny:this.pokemon!.shiny,gender:this.pokemon!.gender,formId:this.pokemon!.formId},{nationalDex:6,shiny:false,gender:"male",formId:"base"},this.generation);
@@ -170,5 +170,11 @@ export class App {
     const p=this.root.querySelector("#player-hp"); const o=this.root.querySelector("#opponent-hp");
     if(p)p.textContent=`HP ${s.player.hp}/${s.player.maxHp}`;
     if(o)o.textContent=`HP ${s.opponent.hp}/${s.opponent.maxHp}`;
+    const pb=this.root.querySelector<HTMLElement>("#player-hpbar"); const ob=this.root.querySelector<HTMLElement>("#opponent-hpbar");
+    if(pb)pb.style.width=`${Math.max(0,100*s.player.hp/Math.max(1,s.player.maxHp))}%`;
+    if(ob)ob.style.width=`${Math.max(0,100*s.opponent.hp/Math.max(1,s.opponent.maxHp))}%`;
+    const ps=this.root.querySelector("#player-status"); const os=this.root.querySelector("#opponent-status");
+    if(ps)ps.textContent=s.player.status ? `Status: ${s.player.status}` : "";
+    if(os)os.textContent=s.opponent.status ? `Status: ${s.opponent.status}` : "";
   }
 }
