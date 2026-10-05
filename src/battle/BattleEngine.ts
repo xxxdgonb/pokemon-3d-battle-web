@@ -12,7 +12,15 @@ export class BattleStateMachine implements BattleEngine {
 
   public dispatch(event: BattleEvent): BattleState {
     const phase = transition(this.state.phase, event);
-    this.state = { ...this.state, phase };
+    let nextState: BattleState = {...this.state, phase};
+
+    if (event.type === "MOVE_STARTED") {
+      nextState = {...nextState, activeTransactionId: event.transactionId};
+    } else if (event.type === "FAINT_CHECK_COMPLETE") {
+      nextState = {...nextState, activeTransactionId: null};
+    }
+
+    this.state = nextState;
     return this.state;
   }
 }
