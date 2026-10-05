@@ -46,6 +46,11 @@ function waitForMessage(
 ): Promise<RuntimeMessage> {
   return new Promise((resolve, reject) => {
     const check = (): void => {
+      const error = messages.find(message => message.type === "error");
+      if (error) {
+        reject(new Error(error.message ?? "Showdown runtime returned an error."));
+        return;
+      }
       const match = messages.find(predicate);
       if (match) {
         resolve(match);
