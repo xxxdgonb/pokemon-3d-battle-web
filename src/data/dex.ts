@@ -20,10 +20,14 @@ export async function loadDex(generation:Generation):Promise<DexPayload>{
   return await response.json() as DexPayload;
 }
 
+export function calculateHp(species:DexSpecies, level:number):number {
+  return Math.floor(((2 * (species.baseStats.hp ?? 1) + 31) * level) / 100) + level + 10;
+}
+
 export function initialPokemon(species:DexSpecies, level=50):PokemonBattleState{
   const abilityId=Object.values(species.abilities)[0] ?? "";
   const gender:Gender=species.gender==="N"?"genderless":species.gender==="F"?"female":"male";
-  const hp = Math.floor(((2 * (species.baseStats.hp ?? 1) + 31) * level) / 100) + level + 10;
+  const hp = calculateHp(species, level);
   return {id:"player",speciesId:species.id,formId:species.forme?.toLowerCase()||"base",gender,shiny:false,level,abilityId,heldItemId:null,hp,maxHp:hp,status:null,moves:[]};
 }
 
