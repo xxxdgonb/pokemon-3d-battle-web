@@ -39,6 +39,16 @@ describe("ShowdownStateProjector",()=>{
     expect(state.opponent.moves[0]?.pp).toBe(10);
   });
 
+  it("projects ability and held-item changes",()=>{
+    const state=projectShowdownBlock(createState(),parseShowdownBlock([
+      "|-ability|p2a: Charizard|intimidate",
+      "|-item|p2a: Charizard|leftovers",
+      "|-enditem|p2a: Charizard|leftovers",
+    ].join("\n")));
+    expect(state.opponent.abilityId).toBe("intimidate");
+    expect(state.opponent.heldItemId).toBeNull();
+  });
+
   it("does not let raw win events bypass the application state machine",()=>{
     const state=projectShowdownBlock(createState(),parseShowdownBlock("|win|Player"));
     expect(state.phase).toBe("PLAYER_SELECTING_MOVE");
