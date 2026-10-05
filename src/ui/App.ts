@@ -69,7 +69,11 @@ export class App {
     return `<div class="grid-list">${forms.map(s=>`<button data-action="form" data-value="${s.id}">${s.name}</button>`).join("")}</div>`;
   }
 
-  private gender():string{return ["male","female","genderless"].map(g=>`<button data-action="gender" data-value="${g}">${g}</button>`).join("");}
+  private gender():string{
+    const rule=this.species?.gender;
+    const genders=rule==="M"?["male"]:rule==="F"?["female"]:rule==="N"?["genderless"]:["male","female"];
+    return genders.map(g=>`<button data-action="gender" data-value="${g}">${g}</button>`).join("");
+  }
   private shiny():string{return '<button data-action="shiny" data-value="false">Normal</button><button data-action="shiny" data-value="true">Shiny</button>';}
   private ability():string{
     const a=this.dex?.abilities.filter(x=>Object.values(this.species!.abilities).includes(x.id))??[];
