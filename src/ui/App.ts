@@ -128,25 +128,40 @@ export class App {
     this.moveBusy=true;
     this.root.querySelectorAll<HTMLButtonElement>(".move-grid button").forEach(button=>button.disabled=true);
     const id=`tx-${Date.now()}-${m.id}`;
-    this.coordinator.selectMove(m.id);
-    this.coordinator.startMove(id,m.id);
-    this.battleRenderer?.playMove(m.type);
-    this.battleRenderer?.markImpactWhenReady(id,()=>{void this.resolveMove(id,m);});
+    try{
+      this.coordinator.selectMove(m.id);
+      this.coordinator.startMove(id,m.id);
+      this.battleRenderer?.playMove(m.type);
+      this.battleRenderer?.markImpactWhenReady(id,()=>{void this.resolveMove(id,m);});
+    }catch(error){
+      this.moveBusy=false;
+      this.root.querySelectorAll<HTMLButtonElement>(".move-grid button").forEach(button=>button.disabled=false);
+      console.error(error);
+    }
   }
 
   private async resolveMove(id:string,m:DexMove):Promise<void>{
     if(!this.adapter||!this.coordinator)return;
-    this.coordinator.markAnimationImpact(id);
-    const events=await this.adapter.submitPlayerMove(m.id);
-    this.coordinator.syncAuthoritativeState(await this.adapter.getState());
-    this.coordinator.applyAuthoritativeResolution(id,events);
-    this.updateBattleHud();
-    this.coordinator.resolveSecondaryEffects(id,events);
-    this.coordinator.processStatus(id);
-    const state=this.coordinator.finishTransaction(id,this.coordinator.state.player.hp<=0,this.coordinator.state.opponent.hp<=0);
-    if(state.phase==="VICTORY"||state.phase==="DEFEAT"){alert(state.phase==="VICTORY"?"Victory!":"Defeat!");this.moveBusy=false;return;}
-    this.moveBusy=false;
-    this.root.querySelectorAll<HTMLButtonElement>(".move-grid button").forEach(button=>button.disabled=false);
+    try{
+      this.coordinator.markAnimationImpact(id);
+      const events=await this.adapter.submitPlayerMove(m.id);
+      this.coordinator.syncAuthoritativeState(await this.adapter.getState());
+      this.coordinator.applyAuthoritativeResolution(id,events);
+      this.updateBattleHud();
+      this.coordinator.resolveSecondaryEffects(id,events);
+      this.coordinator.processStatus(id);
+      const state=this.coordinator.finishTransaction(id,this.coordinator.state.player.hp<=0,this.coordinator.state.opponent.hp<=0);
+      if(state.phase==="VICTORY"||state.phase==="DEFEAT"){
+        alert(state.phase==="VICTORY"?"Victory!":"Defeat!");
+        return;
+      }
+    }catch(error){
+      console.error(error);
+      alert(error instanceof Error?error.message:"Battle move failed.");
+    }finally{
+      this.moveBusy=false;
+      this.root.querySelectorAll<HTMLButtonElement>(".move-grid button").forEach(button=>button.disabled=false);
+    }
   }
 
   private updateBattleHud():void{
