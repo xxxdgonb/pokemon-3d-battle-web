@@ -22,7 +22,7 @@ export async function loadDex(generation:Generation):Promise<DexPayload>{
 
 export function initialPokemon(species:DexSpecies, level=50):PokemonBattleState{
   const abilityId=Object.values(species.abilities)[0] ?? "";
-  const gender:Gender=species.gender==="M"?"male":species.gender==="F"?"female":"genderless";
+  const gender:Gender=species.gender==="N"?"genderless":species.gender==="F"?"female":"male";
   return {id:"player",speciesId:species.id,formId:species.forme?.toLowerCase()||"base",gender,shiny:false,level,abilityId,heldItemId:null,hp:100,maxHp:100,status:null,moves:[]};
 }
 
