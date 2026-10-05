@@ -14,7 +14,11 @@ export class PokemonModelLoader {
 
   public async load(request:PokemonModelRequest):Promise<THREE.Group|null>{
     const categories=[request.shiny?"shiny":"regular"];
-    if(request.formId && request.formId!=="base") categories.unshift(request.formId.toLowerCase());
+    if(request.formId && request.formId!=="base"){
+      const form=request.formId.toLowerCase();
+      const aliases=form.includes("mega")?["mega"]:form.includes("gigantamax")?["gigantamax"]:form.includes("alola")?["alolan"]:form.includes("galar")?["galarian"]:form.includes("hisui")?["hisuian"]:[form];
+      categories.unshift(...aliases);
+    }
     for(const category of categories){
       const key=`${category}/${request.nationalDex}`;
       const cached=this.cache.get(key);
