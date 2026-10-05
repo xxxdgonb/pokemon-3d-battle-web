@@ -2,6 +2,7 @@ import { createServer } from "node:http";
 import { WebSocketServer, type WebSocket } from "ws";
 import { BattleStream } from "pokemon-showdown";
 import type { Generation, PokemonBattleState } from "../src/core/types";
+import { getDexPayload, getGeneration } from "./dexApi";
 
 const PORT = Number(process.env.PORT ?? 8787);
 const MAX_MESSAGE_BYTES = 256 * 1024;
@@ -109,6 +110,28 @@ async function run(): Promise<void> {
     response.end("pokemon-3d-battle-web showdown runtime\n");
   });
   const wss = new WebSocketServer({server: httpServer});
+
+  httpServer.on("request", (request, response) => {
+    const url = new URL(request.url ?? "/", `http://localhost:${PORT}`);
+    if (url.pathname !== "/api/dex") return;
+    const generation = getGeneration(url.searchParams.get("generation"));
+    if (!generation) {
+      response.writeHead(400, {"content-type": "application/json; charset=utf-8", "access-control-allow-origin": "*"});
+      response.end(JSON.stringify({error: "generation must be 1-9"}));
+      return;
+    }
+    try {
+      response.writeHead(200, {
+        "content-type": "application/json; charset=utf-8",
+        "cache-control": "public, max-age=3600",
+        "access-control-allow-origin": "*",
+      });
+      response.end(JSON.stringify(getDexPayload(generation)));
+    } catch (error) {
+      response.writeHead(500, {"content-type": "application/json; charset=utf-8", "access-control-allow-origin": "*"});
+      response.end(JSON.stringify({error: error instanceof Error ? error.message : String(error)}));
+    }
+  });
 
   wss.on("connection", (socket) => {
     let battle: BattleStream | null = null;
