@@ -1,5 +1,5 @@
 import type { Generation, Gender, PokemonBattleState } from "../core/types";
-import { loadDex, loadLearnset, initialPokemon, toMoveSlots, type DexMove, type DexPayload, type DexSpecies } from "../data/dex";
+import { loadDex, loadLearnset, initialPokemon, calculateHp, toMoveSlots, type DexMove, type DexPayload, type DexSpecies } from "../data/dex";
 import { RemoteShowdownAdapter } from "../battle/RemoteShowdownAdapter";
 import { WebSocketShowdownTransport } from "../battle/WebSocketShowdownTransport";
 import { BattlePresentationCoordinator } from "../battle/BattlePresentationCoordinator";
@@ -22,6 +22,7 @@ export class App {
   private readonly root:HTMLElement;
   private battleRenderer:ThreeBattleRenderer|null=null;
   private moveBusy=false;
+  private battleEnded=false;
 
   public constructor(root:HTMLElement){this.root=root;this.render();}
 
@@ -30,7 +31,7 @@ export class App {
   }
 
   private async selectSpecies(s:DexSpecies):Promise<void>{
-    this.species=s; this.pokemon=initialPokemon(s);
+    this.species=s; this.pokemon=initialPokemon(s); this.selectedMoves=[];
     this.legalMoveIds=await loadLearnset(this.generation,s.id);
     this.stage="details"; this.render();
   }
@@ -108,7 +109,8 @@ export class App {
       if(s){
         this.species=s;
         this.legalMoveIds=await loadLearnset(this.generation,s.id);
-        if(this.pokemon)this.pokemon={...this.pokemon,speciesId:this.speciesIdForForm(s),formId:this.formIdForForm(s),abilityId:Object.values(s.abilities)[0]??""};
+        const gender:Gender=s.gender==="N"?"genderless":s.gender==="F"?"female":"male";
+        if(this.pokemon)this.pokemon={...this.pokemon,speciesId:this.speciesIdForForm(s),formId:this.formIdForForm(s),abilityId:Object.values(s.abilities)[0]??"",gender};
         this.stage="gender";
         this.render();
       }
@@ -118,7 +120,7 @@ export class App {
     if(action==="shiny"){if(this.pokemon)this.pokemon={...this.pokemon,shiny:value==="true"};this.stage="ability";this.render();return;}
     if(action==="ability"){if(this.pokemon)this.pokemon={...this.pokemon,abilityId:value??""};this.stage="item";this.render();return;}
     if(action==="item"){if(this.pokemon)this.pokemon={...this.pokemon,heldItemId:value||null};this.stage="level";this.render();return;}
-    if(action==="level"){const input=this.root.querySelector<HTMLInputElement>("#level");const level=Math.max(1,Math.min(100,Number(input?.value)||50));if(this.pokemon)this.pokemon={...this.pokemon,level};this.stage="moves";this.render();return;}
+    if(action==="level"){const input=this.root.querySelector<HTMLInputElement>("#level");const level=Math.max(1,Math.min(100,Number(input?.value)||50));if(this.pokemon&&this.species){const hp=calculateHp(this.species,level);this.pokemon={...this.pokemon,level,hp,maxHp:hp};}this.stage="moves";this.render();return;}
     if(action==="move"){const m=this.dex?.moves.find(x=>x.id===value);if(!m)return;if(this.selectedMoves.some(x=>x.id===m.id))this.selectedMoves=this.selectedMoves.filter(x=>x.id!==m.id);else if(this.selectedMoves.length<4)this.selectedMoves=[...this.selectedMoves,m];this.render();return;}
     if(action==="battle" && this.selectedMoves.length===4){await this.startBattle();return;}
   }
@@ -128,6 +130,7 @@ export class App {
   private async startBattle():Promise<void>{
     if(!this.pokemon||!this.dex)return;
     this.pokemon={...this.pokemon,moves:toMoveSlots(this.selectedMoves)};
+    this.battleEnded=false;
     const charizard=this.dex.species.find(s=>s.id==="charizard" || s.baseSpecies==="Charizard");
     if(!charizard)throw new Error("Charizard is unavailable in the selected generation.");
     const enemyLearnset=await loadLearnset(this.generation,charizard.id);
@@ -159,12 +162,20 @@ export class App {
     void this.battleRenderer.setupBattle({nationalDex:this.species!.num,shiny:this.pokemon!.shiny,gender:this.pokemon!.gender,formId:this.pokemon!.formId},{nationalDex:this.opponentSpecies!.num,shiny:this.opponentPokemon!.shiny,gender:this.opponentPokemon!.gender,formId:this.opponentPokemon!.formId},this.generation).catch(error=>console.error("3D battle setup failed",error));
     const moves=this.selectedMoves;
     const container=this.root.querySelector("#moves") as HTMLElement;
-    moves.forEach(m=>{const b=document.createElement("button");b.textContent=`${m.name} · ${m.type} · ${m.category} · PP ${m.pp} · Power ${m.basePower || "—"} · Acc ${m.accuracy === true ? "—" : m.accuracy}`;b.onclick=()=>void this.useMove(m);container.appendChild(b);});
+    moves.forEach(m=>{const b=document.createElement("button");b.textContent=`${m.name} · ${m.type} · ${m.category} · PP ${m.pp} · Power ${m.basePower || "—"} · Acc ${m.accuracy === true ? "—" : m.accuracy}`;b.disabled=this.battleEnded;b.onclick=()=>void this.useMove(m);container.appendChild(b);});
+    if(this.battleEnded){
+      const result=this.coordinator?.state.phase==="VICTORY"?"Victory!":"Defeat!";
+      const panel=document.createElement("div");
+      panel.className="battle-result";
+      panel.innerHTML=`<strong>${result}</strong><button data-action="restart-battle">Battle Again</button>`;
+      panel.querySelector("button")?.addEventListener("click",()=>void this.resetBattle());
+      this.root.querySelector(".battle-hud")?.appendChild(panel);
+    }
     this.updateBattleHud();
   }
 
   private async useMove(m:DexMove):Promise<void>{
-    if(this.moveBusy||!this.adapter||!this.coordinator)return;
+    if(this.moveBusy||this.battleEnded||!this.adapter||!this.coordinator)return;
     this.moveBusy=true;
     this.root.querySelectorAll<HTMLButtonElement>(".move-grid button").forEach(button=>button.disabled=true);
     const id=`tx-${Date.now()}-${m.id}`;
@@ -172,10 +183,14 @@ export class App {
       this.coordinator.selectMove(m.id);
       this.coordinator.startMove(id,m.id);
       this.battleRenderer?.playMove(m.type);
-      this.battleRenderer?.markImpactWhenReady(id,()=>{void this.resolveMove(id,m);});
+      let resolved=false;
+      const resolveOnce=():void=>{if(resolved)return;resolved=true;void this.resolveMove(id,m);};
+      if(this.battleRenderer)this.battleRenderer.markImpactWhenReady(id,resolveOnce);
+      else window.setTimeout(resolveOnce,0);
+      window.setTimeout(resolveOnce,1500);
     }catch(error){
       this.moveBusy=false;
-      this.root.querySelectorAll<HTMLButtonElement>(".move-grid button").forEach(button=>button.disabled=false);
+      if(!this.battleEnded)this.root.querySelectorAll<HTMLButtonElement>(".move-grid button").forEach(button=>button.disabled=false);
       console.error(error);
     }
   }
@@ -192,7 +207,19 @@ export class App {
       this.coordinator.processStatus(id);
       const state=this.coordinator.finishTransaction(id,this.coordinator.state.player.hp<=0,this.coordinator.state.opponent.hp<=0);
       if(state.phase==="VICTORY"||state.phase==="DEFEAT"){
-        alert(state.phase==="VICTORY"?"Victory!":"Defeat!");
+        this.battleEnded=true;
+        const result=state.phase;
+        this.coordinator.endBattle();
+        this.updateBattleHud();
+        this.root.querySelectorAll<HTMLButtonElement>(".move-grid button").forEach(button=>button.disabled=true);
+        const hud=this.root.querySelector(".battle-hud");
+        if(hud&&!hud.querySelector(".battle-result")){
+          const panel=document.createElement("div");
+          panel.className="battle-result";
+          panel.innerHTML=`<strong>${result==="VICTORY"?"Victory!":"Defeat!"}</strong><button data-action="restart-battle">Battle Again</button>`;
+          panel.querySelector("button")?.addEventListener("click",()=>void this.resetBattle());
+          hud.appendChild(panel);
+        }
         return;
       }
     }catch(error){
@@ -217,4 +244,23 @@ export class App {
     if(ps)ps.textContent=s.player.status ? `Status: ${s.player.status}` : "";
     if(os)os.textContent=s.opponent.status ? `Status: ${s.opponent.status}` : "";
   }
+  private async resetBattle():Promise<void>{
+    await this.adapter?.dispose();
+    this.adapter=null;
+    this.coordinator=null;
+    this.battleRenderer?.dispose();
+    this.battleRenderer=null;
+    this.pokemon=null;
+    this.opponentPokemon=null;
+    this.opponentSpecies=null;
+    this.species=null;
+    this.selectedMoves=[];
+    this.legalMoveIds=[];
+    this.moveBusy=false;
+    this.battleEnded=false;
+    this.stage="menu";
+    this.render();
+  }
 }
+
+
