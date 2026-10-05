@@ -35,7 +35,6 @@ try{
     "--headless=new",
     "--no-sandbox",
     "--disable-dev-shm-usage",
-    "--disable-background-networking",
     "--use-gl=swiftshader",
     "--enable-unsafe-swiftshader",
     "--virtual-time-budget=30000",
