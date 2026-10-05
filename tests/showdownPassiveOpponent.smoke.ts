@@ -42,7 +42,11 @@ if (!passive || passive.requestState !== "move" || passive.isChoiceDone()) {
 passive.choice.actions.push({choice: "pass"});
 sim.commitChoices();
 
-await new Promise(resolve => setTimeout(resolve, 10));
+const moveMarker = "|move|p1a: Pikachu|Tackle|";
+const deadline = Date.now() + 2000;
+while (!outputs.join("").includes(moveMarker) && Date.now() < deadline) {
+  await new Promise(resolve => setTimeout(resolve, 10));
+}
 const output = outputs.join("");
 if (!output.includes("|move|p1a: Pikachu|Tackle|")) {
   throw new Error("Showdown did not execute the player's move.");
