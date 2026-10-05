@@ -1,4 +1,7 @@
-import { BattleStream } from "pokemon-showdown";
+import { createRequire } from "node:module";
+import type { BattleStream as BattleStreamType } from "pokemon-showdown";
+const require = createRequire(import.meta.url);
+const {BattleStream} = require("pokemon-showdown") as {BattleStream: typeof BattleStreamType};
 
 const battle = new BattleStream({noCatch: false});
 const outputs: string[] = [];
