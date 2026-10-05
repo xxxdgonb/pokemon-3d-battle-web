@@ -62,6 +62,19 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
       case "damage":
       case "-damage":
         return { kind: "damage", payload: message.args, source: message };
+      case "move":
+        return { kind: "move", payload: message.args, source: message };
+      case "-miss":
+        return { kind: "miss", payload: message.args, source: message };
+      case "-immune":
+        return { kind: "immune", payload: message.args, source: message };
+      case "-fail":
+        return { kind: "failed", payload: message.args, source: message };
+      case "-crit":
+        return { kind: "crit", payload: message.args, source: message };
+      case "-supereffective":
+      case "-resisted":
+        return { kind: "effectiveness", payload: message.args, source: message };
       case "status":
       case "-status":
         return { kind: "status", payload: message.args, source: message };
