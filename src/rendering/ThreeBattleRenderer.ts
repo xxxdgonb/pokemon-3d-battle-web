@@ -14,6 +14,8 @@ export class ThreeBattleRenderer {
   private opponentModel:THREE.Group|null=null;
   private impactTimer:number|null=null;
   private impactCallback:(()=>void)|null=null;
+  private animationFrame:number|null=null;
+  private disposed=false;
 
   public constructor(private readonly host:HTMLElement){
     this.renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:"high-performance"});
@@ -100,6 +102,6 @@ export class ThreeBattleRenderer {
     this.camera.aspect=width/height;this.camera.updateProjectionMatrix();this.renderer.setSize(width,height,false);
   }
   public render():void{this.renderer.render(this.scene,this.camera);}
-  private animate=():void=>{this.render();requestAnimationFrame(this.animate);};
-  public dispose():void{if(this.impactTimer!==null)window.clearTimeout(this.impactTimer);this.loader.dispose();this.renderer.dispose();this.renderer.domElement.remove();}
+  private animate=():void=>{if(this.disposed)return;this.render();this.animationFrame=requestAnimationFrame(this.animate);};
+  public dispose():void{if(this.disposed)return;this.disposed=true;if(this.impactTimer!==null)window.clearTimeout(this.impactTimer);if(this.animationFrame!==null)cancelAnimationFrame(this.animationFrame);this.impactCallback=null;this.effects.dispose();this.loader.dispose();this.renderer.dispose();this.renderer.domElement.remove();}
 }
