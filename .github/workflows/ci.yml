@@ -19,3 +19,4 @@ jobs:
       - run: npm run check
       - run: npm run build
       - run: npx tsx tests/showdownPassiveOpponent.smoke.ts
+      - run: npx tsx tests/showdownRuntime.smoke.ts
