@@ -88,7 +88,7 @@ try {
   await waitFor(socket, message => message.type === "ready");
 
   socket.send(JSON.stringify({type: "command", command: '>start {"formatid":"gen9customgame"}'}));
-  await waitFor(socket, message => message.type === "showdown" && !!message.block && message.block.includes("|request|"));
+  await waitFor(socket, message => message.type === "showdown" && !!message.block && message.block.includes("|request|") && message.block.includes("\"active\"") && !message.block.includes("\"teamPreview\":true"));
 
   socket.send(JSON.stringify({type: "command", command: ">p1 move tackle"}));
 
