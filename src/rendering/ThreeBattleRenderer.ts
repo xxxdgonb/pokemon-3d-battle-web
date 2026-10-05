@@ -1,11 +1,15 @@
 import * as THREE from "three";
 import { PokemonModelLoader } from "./PokemonModelLoader";
+import { CameraController } from "./CameraController";
+import { EffectsRenderer } from "../effects/EffectsRenderer";
 
 export class ThreeBattleRenderer {
   public readonly scene=new THREE.Scene();
   public readonly camera=new THREE.PerspectiveCamera(42,1,0.1,1000);
   public readonly renderer:THREE.WebGLRenderer;
   private readonly loader=new PokemonModelLoader();
+  private readonly cameraController:CameraController;
+  private readonly effects:EffectsRenderer;
   private playerModel:THREE.Group|null=null;
   private opponentModel:THREE.Group|null=null;
   private impactTimer:number|null=null;
@@ -18,8 +22,8 @@ export class ThreeBattleRenderer {
     this.renderer.shadowMap.enabled=true;
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
     host.appendChild(this.renderer.domElement);
-    this.camera.position.set(0,4.5,10);
-    this.camera.lookAt(0,1.5,0);
+    this.cameraController=new CameraController(this.camera);
+    this.effects=new EffectsRenderer(this.scene);
     this.scene.background=new THREE.Color(0x0b1220);
     const hemi=new THREE.HemisphereLight(0xddeeff,0x223344,2);
     this.scene.add(hemi);
@@ -43,9 +47,22 @@ export class ThreeBattleRenderer {
     if(this.opponentModel)this.scene.remove(this.opponentModel);
     this.playerModel=await this.loader.load(player);
     this.opponentModel=await this.loader.load(opponent);
+    if(!this.playerModel)this.showModelUnavailable("Player model unavailable");
+    if(!this.opponentModel)this.showModelUnavailable("Opponent model unavailable");
     if(this.playerModel){this.playerModel.position.set(-2,0,2.7);this.playerModel.rotation.y=Math.PI;this.playerModel.scale.setScalar(1.5);this.addModel(this.playerModel);}
     if(this.opponentModel){this.opponentModel.position.set(2,0,-2.5);this.opponentModel.scale.setScalar(1.5);this.addModel(this.opponentModel);}
+    this.cameraController.set("default");
     this.render();
+  }
+
+  private showModelUnavailable(message:string):void{
+    const existing=this.host.querySelector(".model-unavailable");
+    if(existing)return;
+    const label=document.createElement("div");
+    label.className="model-unavailable";
+    label.textContent=message;
+    label.style.cssText="position:absolute;top:12px;left:12px;padding:6px 10px;background:#111c;color:#fff;border:1px solid #789;border-radius:8px;font:12px system-ui;z-index:2";
+    this.host.appendChild(label);
   }
 
   private addModel(model:THREE.Group):void{
@@ -56,6 +73,7 @@ export class ThreeBattleRenderer {
   public playMove(type:string):void{
     const model=this.playerModel;
     if(!model)return;
+    this.cameraController.set("move");
     const origin=model.position.clone();
     const start=performance.now();
     const duration=650;
@@ -68,6 +86,7 @@ export class ThreeBattleRenderer {
     };
     requestAnimationFrame(tick);
     void type;
+    this.effects.playTypeImpact(type,this.opponentModel);
   }
 
   public markImpactWhenReady(_transactionId:string,callback:()=>void):void{
