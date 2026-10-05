@@ -57,7 +57,7 @@ function waitForMessage(
         return;
       }
       if (Date.now() >= deadline) {
-        reject(new Error("Timed out waiting for Showdown runtime message."));
+        reject(new Error(`Timed out waiting for Showdown runtime message. Received: ${messages.map(message => message.type + ":" + (message.block?.slice(0, 120) ?? message.message ?? "")).join(" || ")}`));
         return;
       }
       setTimeout(check, 10);
