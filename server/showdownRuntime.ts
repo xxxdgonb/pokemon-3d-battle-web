@@ -221,8 +221,9 @@ async function run(): Promise<void> {
           }
 
           if (passiveSide.requestState === "move" && !passiveSide.isChoiceDone()) {
-            passiveSide.choice.actions.push({choice: "pass"});
-            simulator.commitChoices();
+            if (!passiveSide.choose("pass")) {
+              throw new Error("Showdown rejected the passive opponent pass choice.");
+            }
           }
         }
       } catch (error) {
