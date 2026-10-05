@@ -5,6 +5,12 @@ export class AudioManager{
   public play(cue:AudioCue):void{
     const url=this.sources.get(cue);
     if(!url)return;
-    try{const audio=new Audio(url);audio.volume=.7;void audio.play().catch(()=>{});}catch{}
+    try{
+      const audio=new Audio(url);
+      audio.volume=.7;
+      void audio.play().catch(()=>undefined);
+    }catch(error){
+      void error;
+    }
   }
 }
