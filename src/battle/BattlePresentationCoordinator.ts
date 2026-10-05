@@ -1,7 +1,6 @@
 import type { BattleState, BattleSide } from "../core/types";
 import type { ShowdownBattleEvent } from "./ShowdownAdapter";
 import { BattleTransactionGuard, type BattleTransaction } from "./BattleTransaction";
-import type { BattleEvent } from "../core/battleStateMachine";
 import { BattleStateMachine } from "./BattleEngine";
 
 function targetSide(event: ShowdownBattleEvent): BattleSide | null {
@@ -60,7 +59,7 @@ export class BattlePresentationCoordinator {
     return this.machine.state;
   }
 
-  public resolveSecondaryEffects(transactionId: string, events: readonly ShowdownBattleEvent[]): BattleState {
+  public resolveSecondaryEffects(transactionId: string, _events: readonly ShowdownBattleEvent[]): BattleState {
     this.machine.dispatch({type: "SECONDARY_EFFECTS_RESOLVED", transactionId});
     return this.machine.state;
   }
