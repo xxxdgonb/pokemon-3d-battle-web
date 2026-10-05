@@ -54,15 +54,25 @@ Completed in this increment:
 6. Vitest configuration and first state-machine tests
 7. ESLint + TypeScript-ESLint configuration
 8. build/lint/check scripts
+9. browser-to-Node Showdown transport boundary
+10. Showdown protocol parser and command validation
+11. battle transaction guard for single-flight moves and impact/damage ordering
 
 Important implementation boundary:
 - Showdown is not imported into the browser yet. Its execution environment must be verified before selecting browser, worker, or server runtime.
 - Renderer owns presentation only; battle state and damage authority remain outside Three.js.
 - No Pokémon, move, ability, item or model data is fabricated in this phase.
 
+Runtime decision:
+- The current Showdown simulator package is Node-only, so it is not a browser dependency.
+- The browser side now talks to an abstract transport boundary.
+- A Node service/worker implementation that owns the pinned Showdown runtime is still required before real battles can execute.
+- The adapter currently does not fabricate local battle state or damage.
+
 Testing:
 - Tests were added but NOT executed in this environment.
 - No npm install, build, lint, browser or WebGL runtime test has been claimed.
+- Static source review only.
 
 ## Later phases
 
