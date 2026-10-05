@@ -22,7 +22,7 @@ export class BattleStateMachine implements BattleEngine {
   }
 
   public dispatch(event: BattleEvent): BattleState {
-    if ("transactionId" in event && event.type !== "PLAYER_MOVE_SELECTED") {
+    if ("transactionId" in event) {
       const activeId = this.state.activeTransactionId;
       if (activeId === null || event.transactionId !== activeId) {
         throw new Error(`Transaction mismatch: active=${activeId ?? "none"}, event=${event.transactionId}`);
