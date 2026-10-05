@@ -14,6 +14,10 @@ export interface DexMove {
 export interface DexNamed {readonly id:string; readonly name:string; readonly shortDesc:string; readonly gen:number;}
 export interface DexPayload {readonly generation:Generation; readonly species:readonly DexSpecies[]; readonly moves:readonly DexMove[]; readonly abilities:readonly DexNamed[]; readonly items:readonly DexNamed[];}
 
+export function normalizeId(value:string):string{
+  return value.toLowerCase().replace(/[^a-z0-9]+/g,"");
+}
+
 export async function loadDex(generation:Generation):Promise<DexPayload>{
   const response=await fetch(`/api/dex?generation=${generation}`);
   if(!response.ok) throw new Error(`Dex request failed: ${response.status}`);
@@ -25,7 +29,7 @@ export function calculateHp(species:DexSpecies, level:number):number {
 }
 
 export function initialPokemon(species:DexSpecies, level=50):PokemonBattleState{
-  const abilityId=Object.values(species.abilities)[0] ?? "";
+  const abilityId=normalizeId(Object.values(species.abilities)[0] ?? "");
   const gender:Gender=species.gender==="N"?"genderless":species.gender==="F"?"female":"male";
   const hp = calculateHp(species, level);
   return {id:"player",speciesId:species.id,formId:species.forme?.toLowerCase()||"base",gender,shiny:false,level,abilityId,heldItemId:null,hp,maxHp:hp,status:null,moves:[]};
