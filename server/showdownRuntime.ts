@@ -154,10 +154,9 @@ async function run(): Promise<void> {
         if (!battle || !config) throw new Error("Battle has not been created.");
 
         if (message.command.startsWith(">start ")) {
-          const startOptions = JSON.parse(message.command.slice(">start ".length)) as Record<string, unknown>;
-          startOptions.formatid = `gen${config.generation}customgame`;
-
-          await battle.write(`>start ${JSON.stringify(startOptions)}`);
+          await battle.write(`>start ${JSON.stringify({
+            formatid: `gen${config.generation}customgame`,
+          })}`);
           await battle.write(`>player p1 ${JSON.stringify({
             name: "Player",
             team: [toPokemonSet(config.player)],
