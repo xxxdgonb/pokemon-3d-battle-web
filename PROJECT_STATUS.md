@@ -4,7 +4,7 @@
 
 PHASE 0 — Research: COMPLETE
 
-PHASE 1 — Architecture: READY TO START
+PHASE 1 — Architecture: IN PROGRESS
 
 No gameplay implementation is claimed.
 
@@ -43,16 +43,26 @@ This is a foundation-from-zero project.
 
 ## PHASE 1
 
-Status: READY
+Status: IN PROGRESS
 
-First deliverables:
+Completed in this increment:
 1. Vite + TypeScript foundation
-2. Three.js renderer shell
-3. typed domain contracts
-4. Showdown adapter boundary
-5. explicit battle state machine
-6. test runner
-7. build/lint scripts
+2. Three.js renderer shell with resize/dispose boundary
+3. typed battle domain contracts
+4. Showdown adapter boundary without assuming browser runtime compatibility
+5. explicit battle state machine with illegal-transition rejection
+6. Vitest configuration and first state-machine tests
+7. ESLint + TypeScript-ESLint configuration
+8. build/lint/check scripts
+
+Important implementation boundary:
+- Showdown is not imported into the browser yet. Its execution environment must be verified before selecting browser, worker, or server runtime.
+- Renderer owns presentation only; battle state and damage authority remain outside Three.js.
+- No Pokémon, move, ability, item or model data is fabricated in this phase.
+
+Testing:
+- Tests were added but NOT executed in this environment.
+- No npm install, build, lint, browser or WebGL runtime test has been claimed.
 
 ## Later phases
 
