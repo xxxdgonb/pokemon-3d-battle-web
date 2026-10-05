@@ -25,6 +25,10 @@ export class BattlePresentationCoordinator {
     return this.machine.state;
   }
 
+  public syncAuthoritativeState(state: BattleState): BattleState {
+    return this.machine.syncAuthoritativeFacts(state);
+  }
+
   public get state(): BattleState {
     return this.machine.state;
   }
