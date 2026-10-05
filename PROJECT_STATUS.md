@@ -72,6 +72,7 @@ Completed in this increment:
 24. WebSocket transport now awaits runtime readiness and propagates failures
 25. centralized win-event phase ownership
 26. normalized heal/sethp/curestatus/boost/unboost/formechange event boundary
+27. authoritative move transaction now retains outcome kind/crit/effectiveness metadata
 
 Important implementation boundary:
 - Showdown is not imported into the browser yet. Its execution environment must be verified before selecting browser, worker, or server runtime.
