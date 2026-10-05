@@ -39,8 +39,7 @@ if (!passive || passive.requestState !== "move" || passive.isChoiceDone()) {
   throw new Error("Passive opponent did not reach a move request after player move.");
 }
 
-passive.choice.actions.push({choice: "pass"});
-sim.commitChoices();
+if (!passive.choose("pass")) throw new Error("Showdown rejected the passive pass choice.");
 
 const moveMarker = "|move|p1a: Pikachu|Tackle|";
 const deadline = Date.now() + 2000;
