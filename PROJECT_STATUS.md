@@ -6,7 +6,7 @@
 
 Phases 0–11 have implementation or verification evidence as described below. PHASE 14 is intentionally not closed until browser/WebGL verification, advanced battle-event coverage, asset/license audit, and repeated-battle soak evidence exist.
 
-Current head: `6f9f724ef40632c770c05a84146975b00011872c`
+Current head: `0c86a6c53e68cd853197df08507860f430af6307`
 
 ## Evidence
 
