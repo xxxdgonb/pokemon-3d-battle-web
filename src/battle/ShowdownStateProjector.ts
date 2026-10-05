@@ -155,6 +155,19 @@ function parseStatusMessage(state: BattleState, message: ShowdownProtocolMessage
   return updateSide(state, side, {status: normalized});
 }
 
+function parseAbilityMessage(state: BattleState, message: ShowdownProtocolMessage): BattleState {
+  const target=message.args[0], ability=message.args[1];
+  const side=target ? sideFromIdent(target) : null;
+  return side && ability ? updateSide(state,side,{abilityId:ability}) : state;
+}
+
+function parseItemMessage(state: BattleState, message: ShowdownProtocolMessage, clear:boolean): BattleState {
+  const target=message.args[0], item=message.args[1];
+  const side=target ? sideFromIdent(target) : null;
+  if(!side)return state;
+  return updateSide(state,side,{heldItemId:clear?null:(item||null)});
+}
+
 function parseFaintMessage(state: BattleState, message: ShowdownProtocolMessage): BattleState {
   const target = message.args[0];
   const side = target ? sideFromIdent(target) : null;
@@ -182,6 +195,12 @@ export function projectShowdownMessage(
       const side = target ? sideFromIdent(target) : null;
       return side ? updateSide(state, side, {status: null}) : state;
     }
+    case "-ability":
+      return parseAbilityMessage(state,message);
+    case "-item":
+      return parseItemMessage(state,message,false);
+    case "-enditem":
+      return parseItemMessage(state,message,true);
     case "faint":
       return parseFaintMessage(state, message);
     case "win":
