@@ -62,6 +62,10 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
       case "damage":
       case "-damage":
         return { kind: "damage", payload: message.args, source: message };
+      case "-heal":
+        return { kind: "heal", payload: message.args, source: message };
+      case "-sethp":
+        return { kind: "sethp", payload: message.args, source: message };
       case "move":
         return { kind: "move", payload: message.args, source: message };
       case "-miss":
@@ -78,6 +82,15 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
       case "status":
       case "-status":
         return { kind: "status", payload: message.args, source: message };
+      case "-curestatus":
+        return { kind: "curestatus", payload: message.args, source: message };
+      case "-boost":
+        return { kind: "boost", payload: message.args, source: message };
+      case "-unboost":
+        return { kind: "unboost", payload: message.args, source: message };
+      case "-formechange":
+      case "detailschange":
+        return { kind: "formechange", payload: message.args, source: message };
       case "faint":
         return { kind: "faint", payload: message.args, source: message };
       case "win":
