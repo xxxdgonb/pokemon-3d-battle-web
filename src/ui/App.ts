@@ -15,6 +15,8 @@ export class App {
   private selectedMoves:DexMove[]=[];
   private legalMoveIds:readonly string[]=[];
   private pokemon:PokemonBattleState|null=null;
+  private opponentPokemon:PokemonBattleState|null=null;
+  private opponentSpecies:DexSpecies|null=null;
   private coordinator:BattlePresentationCoordinator|null=null;
   private adapter:RemoteShowdownAdapter|null=null;
   private readonly root:HTMLElement;
@@ -140,6 +142,8 @@ export class App {
       heldItemId:null,
       moves:toMoveSlots(enemyMoves),
     };
+    this.opponentPokemon=opponent;
+    this.opponentSpecies=charizard;
     this.adapter=new RemoteShowdownAdapter(new WebSocketShowdownTransport());
     await this.adapter.createBattle({generation:this.generation,player:this.pokemon,opponent});
     this.coordinator=new BattlePresentationCoordinator(await this.adapter.getState());
