@@ -1,5 +1,5 @@
 import type { Generation, Gender, PokemonBattleState } from "../core/types";
-import { loadDex, loadLearnset, initialPokemon, calculateHp, toMoveSlots, type DexMove, type DexPayload, type DexSpecies } from "../data/dex";
+import { loadDex, loadLearnset, initialPokemon, calculateHp, normalizeId, toMoveSlots, type DexMove, type DexPayload, type DexSpecies } from "../data/dex";
 import { RemoteShowdownAdapter } from "../battle/RemoteShowdownAdapter";
 import { WebSocketShowdownTransport } from "../battle/WebSocketShowdownTransport";
 import { BattlePresentationCoordinator } from "../battle/BattlePresentationCoordinator";
@@ -88,7 +88,8 @@ export class App {
   }
   private shiny():string{return '<button data-action="shiny" data-value="false">Normal</button><button data-action="shiny" data-value="true">Shiny</button>';}
   private ability():string{
-    const a=this.dex?.abilities.filter(x=>Object.values(this.species!.abilities).includes(x.id))??[];
+    const abilityIds=new Set(Object.values(this.species!.abilities).map(normalizeId));
+    const a=this.dex?.abilities.filter(x=>abilityIds.has(x.id))??[];
     return a.map(x=>`<button data-action="ability" data-value="${x.id}">${x.name}</button>`).join("")||'<button data-action="next">Default Ability</button>';
   }
   private item():string{
@@ -111,7 +112,7 @@ export class App {
         this.species=s;
         this.legalMoveIds=await loadLearnset(this.generation,s.id);
         const gender:Gender=s.gender==="N"?"genderless":s.gender==="F"?"female":"male";
-        if(this.pokemon)this.pokemon={...this.pokemon,speciesId:this.speciesIdForForm(s),formId:this.formIdForForm(s),abilityId:Object.values(s.abilities)[0]??"",gender};
+        if(this.pokemon)this.pokemon={...this.pokemon,speciesId:this.speciesIdForForm(s),formId:this.formIdForForm(s),abilityId:normalizeId(Object.values(s.abilities)[0]??""),gender};
         this.stage="gender";
         this.render();
       }
@@ -142,7 +143,7 @@ export class App {
       id:"opponent",
       speciesId:this.speciesIdForForm(charizard),
       formId:this.formIdForForm(charizard),
-      abilityId:Object.values(charizard.abilities)[0]??"",
+      abilityId:normalizeId(Object.values(charizard.abilities)[0]??""),
       heldItemId:null,
       moves:toMoveSlots(enemyMoves),
     };
