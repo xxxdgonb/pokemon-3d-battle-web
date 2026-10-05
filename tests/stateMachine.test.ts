@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { InvalidBattleTransitionError, transition } from "../src/core/battleStateMachine";
+import { BattleStateMachine } from "../src/battle/BattleEngine";
 
 describe("battle state machine", () => {
   it("follows the authoritative move pipeline", () => {
