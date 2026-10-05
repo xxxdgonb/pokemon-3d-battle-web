@@ -107,6 +107,7 @@ export class App {
     this.adapter=new RemoteShowdownAdapter(new WebSocketShowdownTransport());
     await this.adapter.createBattle({generation:this.generation,player:this.pokemon,opponent});
     this.coordinator=new BattlePresentationCoordinator((await this.adapter.getState()));
+    this.coordinator.initializeBattle();
     this.stage="battle";this.render();
   }
 
