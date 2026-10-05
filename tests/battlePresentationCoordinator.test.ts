@@ -44,6 +44,12 @@ describe("BattlePresentationCoordinator", () => {
     coordinator.applyAuthoritativeResolution("tx-1", [damage]);
 
     expect(coordinator.state.phase).toBe("DAMAGE_APPLICATION");
+    expect(coordinator.activeTransaction?.resolution).toEqual({
+      kind: "damage",
+      target: "opponent",
+      critical: false,
+      effectiveness: null,
+    });
   });
 
   it("accepts a Showdown miss as authoritative resolution", () => {
@@ -57,6 +63,7 @@ describe("BattlePresentationCoordinator", () => {
       source: {type: "-miss", args: ["p1a: Pikachu", "p2a: Charizard"], raw: "|-miss|p1a: Pikachu|p2a: Charizard"},
     }]);
     expect(coordinator.state.phase).toBe("DAMAGE_APPLICATION");
+    expect(coordinator.activeTransaction?.resolution?.kind).toBe("miss");
   });
 
   it("returns to move selection when neither side faints", () => {
