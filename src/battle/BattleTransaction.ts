@@ -39,7 +39,7 @@ export class BattleTransactionGuard {
   public markDamageApplied(id: string): BattleTransaction {
     const tx = this.require(id);
     if (!tx.impactReached) throw new Error(`Transaction ${id} cannot apply damage before impact.`);
-    if (tx.damageApplied) throw new Error(`Transaction ${id} damage was already applied.`);
+    if (tx.damageApplied) throw new Error(`Transaction ${id} resolution was already applied.`);
     this.active = { ...tx, damageApplied: true };
     return this.active;
   }
