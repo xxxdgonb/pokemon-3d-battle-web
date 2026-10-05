@@ -19,6 +19,7 @@ export class App {
   private adapter:RemoteShowdownAdapter|null=null;
   private readonly root:HTMLElement;
   private battleRenderer:ThreeBattleRenderer|null=null;
+  private moveBusy=false;
 
   public constructor(root:HTMLElement){this.root=root;this.render();}
 
@@ -123,7 +124,9 @@ export class App {
   }
 
   private async useMove(m:DexMove):Promise<void>{
-    if(!this.adapter||!this.coordinator)return;
+    if(this.moveBusy||!this.adapter||!this.coordinator)return;
+    this.moveBusy=true;
+    this.renderBattle();
     const id=`tx-${Date.now()}-${m.id}`;
     this.coordinator.selectMove(m.id);
     this.coordinator.startMove(id,m.id);
@@ -141,7 +144,9 @@ export class App {
     this.coordinator.resolveSecondaryEffects(id,events);
     this.coordinator.processStatus(id);
     const state=this.coordinator.finishTransaction(id,this.coordinator.state.player.hp<=0,this.coordinator.state.opponent.hp<=0);
-    if(state.phase==="VICTORY"||state.phase==="DEFEAT"){alert(state.phase==="VICTORY"?"Victory!":"Defeat!");return;}
+    if(state.phase==="VICTORY"||state.phase==="DEFEAT"){alert(state.phase==="VICTORY"?"Victory!":"Defeat!");this.moveBusy=false;return;}
+    this.moveBusy=false;
+    this.renderBattle();
   }
 
   private updateBattleHud():void{
