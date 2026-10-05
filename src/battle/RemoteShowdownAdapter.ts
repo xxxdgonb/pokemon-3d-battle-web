@@ -20,11 +20,15 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
 
     await this.transport.connect(config);
     await this.transport.send(`>start {"formatid":"gen${config.generation}customgame"}`);
+    await this.transport.waitForBlock();
+    this.pending.splice(0);
   }
 
   public async submitPlayerMove(move: MoveSlot["moveId"]): Promise<readonly ShowdownBattleEvent[]> {
+    const pendingBefore = this.pending.length;
     await this.transport.send(`>p1 ${encodeChoice(move)}`);
-    return this.pending.splice(0);
+    await this.transport.waitForBlock();
+    return this.pending.splice(pendingBefore);
   }
 
   public async getState(): Promise<BattleState> {
