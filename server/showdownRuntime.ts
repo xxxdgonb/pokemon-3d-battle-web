@@ -2,7 +2,7 @@ import { createServer } from "node:http";
 import { WebSocketServer, type WebSocket } from "ws";
 import { BattleStream } from "pokemon-showdown";
 import type { Generation, PokemonBattleState } from "../src/core/types";
-import { getDexPayload, getGeneration } from "./dexApi";
+import { getDexPayload, getGeneration, getLearnset } from "./dexApi";
 
 const PORT = Number(process.env.PORT ?? 8787);
 const MAX_MESSAGE_BYTES = 256 * 1024;
@@ -107,6 +107,18 @@ function sendJson(socket: WebSocket, value: unknown): void {
 async function run(): Promise<void> {
   const httpServer = createServer((request, response) => {
     const url = new URL(request.url ?? "/", "http://localhost:" + PORT);
+    if (url.pathname === "/api/learnset") {
+      const generation = getGeneration(url.searchParams.get("generation"));
+      const species = url.searchParams.get("species");
+      if (!generation || !species) {
+        response.writeHead(400, {"content-type": "application/json; charset=utf-8", "access-control-allow-origin": "*"});
+        response.end(JSON.stringify({error: "generation and species are required"}));
+        return;
+      }
+      response.writeHead(200, {"content-type": "application/json; charset=utf-8", "cache-control": "public, max-age=3600", "access-control-allow-origin": "*"});
+      response.end(JSON.stringify({species, moves:getLearnset(generation, species)}));
+      return;
+    }
     if (url.pathname !== "/api/dex") {
       response.writeHead(200, {"content-type": "text/plain; charset=utf-8"});
       response.end("pokemon-3d-battle-web showdown runtime\n");
