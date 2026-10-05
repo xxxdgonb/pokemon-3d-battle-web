@@ -44,6 +44,14 @@ const output = outputs.join("");
 if (!output.includes("|move|p1a: Pikachu|Tackle|")) {
   throw new Error("Showdown did not execute the player's move.");
 }
+const moveMatches = output.match(/\|move\|p1a: Pikachu\|Tackle\|/g) ?? [];
+if (moveMatches.length !== 1) {
+  throw new Error(`Expected exactly one player move execution, got ${moveMatches.length}.`);
+}
+const damageMatches = output.match(/\|-damage\|p2a: Charizard\|/g) ?? [];
+if (damageMatches.length !== 1) {
+  throw new Error(`Expected exactly one authoritative damage event, got ${damageMatches.length}.`);
+}
 if (!output.includes("|-damage|p2a: Charizard|")) {
   throw new Error("Showdown did not emit authoritative damage for the passive-opponent smoke battle.");
 }
