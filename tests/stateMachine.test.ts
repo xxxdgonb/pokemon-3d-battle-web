@@ -22,3 +22,19 @@ describe("battle state machine", () => {
     expect(() => transition("PLAYER_SELECTING_MOVE", { type: "DAMAGE_APPLIED", transactionId: "tx-1" })).toThrow(InvalidBattleTransitionError);
   });
 });
+
+
+describe("BattleEngine transaction identity", () => {
+  it("rejects stale transaction events", () => {
+    const initial = {
+      generation: 9 as const,
+      phase: "MOVE_START" as const,
+      turn: 1,
+      activeTransactionId: "tx-current",
+      player: {id:"p1",speciesId:"pikachu",formId:"base",gender:"male" as const,shiny:false,level:50,abilityId:"static",heldItemId:null,hp:100,maxHp:100,status:null,moves:[]},
+      opponent: {id:"p2",speciesId:"charizard",formId:"base",gender:"male" as const,shiny:false,level:50,abilityId:"blaze",heldItemId:null,hp:100,maxHp:100,status:null,moves:[]},
+    };
+    const engine = new BattleStateMachine(initial);
+    expect(() => engine.dispatch({type:"MOVE_STARTED",transactionId:"tx-stale"})).toThrow(/Transaction mismatch/);
+  });
+});
