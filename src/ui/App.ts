@@ -80,7 +80,7 @@ export class App {
     return a.map(x=>`<button data-action="ability" data-value="${x.id}">${x.name}</button>`).join("")||'<button data-action="next">Default Ability</button>';
   }
   private item():string{
-    return `<button data-action="item" data-value="">No Item</button><div class="grid-list">${(this.dex?.items.slice(0,100)??[]).map(x=>`<button data-action="item" data-value="${x.id}">${x.name}</button>`).join("")}</div>`;
+    return `<button data-action="item" data-value="">No Item</button><div class="grid-list">${(this.dex?.items??[]).map(x=>`<button data-action="item" data-value="${x.id}">${x.name}</button>`).join("")}</div>`;
   }
   private level():string{return '<input id="level" type="number" min="1" max="100" value="50"><button data-action="level">Continue</button>';}
   private moves():string{
