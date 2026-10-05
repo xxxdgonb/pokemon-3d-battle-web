@@ -11,8 +11,6 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
   public constructor(private readonly transport: ShowdownTransport) {}
 
   public async createBattle(config: ShowdownBattleConfig): Promise<void> {
-    await this.transport.connect(config);
-
     this.unsubscribe = this.transport.onMessage((block) => {
       for (const message of parseShowdownBlock(block)) {
         const event = this.normalize(message);
@@ -20,8 +18,7 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
       }
     });
 
-    // The remote runtime is responsible for translating this into the
-    // simulator's supported stream commands and team setup.
+    await this.transport.connect(config);
     await this.transport.send(`>start {"formatid":"gen${config.generation}customgame"}`);
   }
 
