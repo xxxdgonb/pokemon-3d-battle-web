@@ -4,7 +4,7 @@
 
 PHASE 0 — Research: COMPLETE
 
-PHASE 1 — Architecture: IN PROGRESS
+PHASE 1 — Architecture: SUBSTANTIALLY IMPLEMENTED; CI/runtime verification remains open
 
 No gameplay implementation is claimed.
 
@@ -151,7 +151,7 @@ Protocol events are parsed, but the adapter does not yet construct authoritative
 
 Impact: the UI cannot safely drive HP/status/phase from Showdown yet.
 
-Next: implement a pure protocol-to-domain projector and tests for damage/status/faint/request ordering.
+Next: expand projection tests/events for multi-hit, recoil, drain, boosts, field effects, volatile conditions, item/ability activations, and form changes.
 
 ### BLOCKER-005 — passive opponent semantics
 Resolved at the architecture level: the Node runtime now injects a Showdown pass action for p2 after a legal p1 move request. This is not a move-selection heuristic or AI decision; Showdown executes the action as an explicit no-op.
@@ -162,7 +162,12 @@ Impact: until runtime tests pass, the single-player turn loop is not verified.
 
 ## Next
 
-PHASE 1 — protocol-to-domain projection and passive-target architecture.
+1. Obtain a green CI run on the current head.
+2. Execute the real passive-opponent smoke test in CI and use failures to harden the Node runtime.
+3. Expand authoritative event projection and tests for advanced effects.
+4. Run browser/WebGL smoke and repeated-battle checks.
+5. Perform performance and license/asset final audit before closing PHASE 14.
+
 
 
 ## End-to-end implementation checkpoint
