@@ -25,19 +25,16 @@ async function waitHttp(url,timeout=10000){
   }
   throw new Error(`Timed out waiting for ${url}`);
 }
-async function waitDevToolsPort(process){
-  return new Promise((resolve,reject)=>{
-    let buffer="";
-    const timeout=setTimeout(()=>reject(new Error("Chromium did not announce a DevTools endpoint.")),10000);
-    const onData=chunk=>{
-      buffer+=chunk.toString();
-      const match=buffer.match(/DevTools listening on ws:\/\/127\.0\.0\.1:(\d+)\//);
-      if(match){clearTimeout(timeout);process.stderr.off("data",onData);resolve(Number(match[1]));}
-    };
-    process.stderr.on("data",onData);
-    process.once("error",reject);
-    process.once("exit",code=>{if(code!==0)reject(new Error(`Chromium exited before DevTools startup: ${code}`));});
-  });
+async function waitDevToolsPort(){
+  const deadline=Date.now()+10000;
+  while(Date.now()<deadline){
+    try{
+      const response=await fetch("http://127.0.0.1:9222/json/version");
+      if(response.ok)return 9222;
+    }catch{}
+    await new Promise(resolve=>setTimeout(resolve,100));
+  }
+  throw new Error("Chromium did not expose DevTools on port 9222.");
 }
 async function cdp(ws,url){
   const socket=new WebSocket(ws);
@@ -87,7 +84,7 @@ try{
   chromium=start("chromium",[
     "--headless=new","--no-sandbox","--disable-dev-shm-usage",
     "--use-gl=swiftshader","--enable-unsafe-swiftshader",
-    "--remote-debugging-port=0","--remote-debugging-address=127.0.0.1",
+    "--remote-debugging-port=9222","--remote-debugging-address=127.0.0.1",
     "--window-size=1440,900","about:blank"
   ]);
   const devToolsPort=await waitDevToolsPort(chromium);
