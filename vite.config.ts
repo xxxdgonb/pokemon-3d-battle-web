@@ -5,8 +5,8 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     proxy: {
-      "/api": "http://localhost:8787",
-      "/showdown": {target: "ws://localhost:8787", ws: true},
+      "/api": "http://localhost:" + (process.env.SHOWDOWN_PORT ?? "8787"),
+      "/showdown": {target: "ws://localhost:" + (process.env.SHOWDOWN_PORT ?? "8787"), ws: true},
     },
   },
   build: {
