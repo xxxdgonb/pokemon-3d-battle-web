@@ -24,23 +24,6 @@ async function click(selector){
   node.click();
   await sleep(20);
 }
-async function verifyBrowserWebSocket(){
-  const params=new URLSearchParams(location.search);
-  const host=params.get("runtimeHost")??location.hostname;
-  const socket=new WebSocket(`ws://${host}:8787`);
-  await new Promise((resolve,reject)=>{
-    const timeout=setTimeout(()=>reject(new Error("Browser direct WebSocket timeout")),5000);
-    socket.addEventListener("open",()=>socket.send(JSON.stringify({type:"ping"})),{once:true});
-    socket.addEventListener("message",event=>{
-      const message=JSON.parse(event.data);
-      if(message.type!=="error" && message.type!=="ready")return;
-      clearTimeout(timeout);
-      socket.close();
-      resolve();
-    });
-    socket.addEventListener("error",()=>{clearTimeout(timeout);reject(new Error("Browser direct WebSocket error"));},{once:true});
-  });
-}
 async function main(){
   await waitFor("#app");
   await click('[data-action="start"]');
