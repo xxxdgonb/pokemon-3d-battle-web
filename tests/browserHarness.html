@@ -57,12 +57,17 @@ async function main(){
   await waitFor('[data-action="move"]');
   Array.from(document.querySelectorAll('[data-action="move"]')).slice(0,4).forEach(button=>button.click());
   await click('[data-action="battle"]');
-  await sleep(500);
-  await waitFor(".battle-screen",15000);
-  await waitFor(".battle-canvas canvas",10000);
-  await waitFor(".move-grid button",10000);
+  await sleep(1500);
+  const battleScreen=document.querySelector(".battle-screen");
+  const canvas=document.querySelector(".battle-canvas canvas");
+  const moveButtons=Array.from(document.querySelectorAll(".move-grid button"));
+  if(!battleScreen || !canvas || moveButtons.length===0){
+    throw new Error("Battle UI did not finish rendering.");
+  }
+  const damagingMove=moveButtons.find(button=>/Physical|Special/.test(button.textContent ?? ""));
+  if(!damagingMove) throw new Error("No damaging move was available in the selected four moves.");
   const before=document.querySelector("#opponent-hp")?.textContent ?? "";
-  document.querySelector(".move-grid button").click();
+  damagingMove.click();
   const deadline=Date.now()+15000;
   while(Date.now()<deadline){
     const after=document.querySelector("#opponent-hp")?.textContent ?? "";
