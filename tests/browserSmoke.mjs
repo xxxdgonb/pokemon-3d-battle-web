@@ -37,7 +37,7 @@ try{
     "--disable-dev-shm-usage",
     "--use-gl=swiftshader",
     "--enable-unsafe-swiftshader",
-    "--virtual-time-budget=30000",
+    "--virtual-time-budget=12000",
     "--run-all-compositor-stages-before-draw",
     "--dump-dom",
     "http://127.0.0.1:5173/tests/browserHarness.html?browserSmoke=1&runtimeHost=127.0.0.1&runtimeHost=127.0.0.1",
@@ -51,7 +51,7 @@ try{
   const html=chunks.join("");
   if(code!==0)throw new Error(`Chromium exited with code ${code}: ${errors.join("").slice(-2000)}`);
   const result=html.match(/<title>(BROWSER_SMOKE_[^<]*)<\/title>/)?.[1] ?? "";
-  if(result!=="BROWSER_SMOKE_PASSED")throw new Error(`Browser smoke did not pass: ${result||"missing"}`);
+  if(result!=="BROWSER_SMOKE_PASSED")throw new Error(`Browser UI smoke did not pass: ${result||"missing"}`);
   console.log("Chromium browser/WebGL smoke test passed.");
 }finally{
   vite.kill("SIGTERM");
