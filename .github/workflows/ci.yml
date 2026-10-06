@@ -20,3 +20,5 @@ jobs:
       - run: npm run build
       - run: npx tsx tests/showdownPassiveOpponent.smoke.ts
       - run: npx tsx tests/showdownRuntime.smoke.ts
+      - run: chromium --version
+      - run: node tests/browserSmoke.mjs
