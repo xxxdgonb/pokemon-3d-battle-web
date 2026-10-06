@@ -204,7 +204,7 @@ async function run(): Promise<void> {
             }
           })();
 
-          sendJson(socket, {type: "ready"});
+          if (socket.readyState === 1) socket.send(JSON.stringify({type: "ready"}));
           return;
         }
 
