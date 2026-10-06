@@ -149,12 +149,20 @@ export class App {
     };
     this.opponentPokemon=opponent;
     this.opponentSpecies=charizard;
-    this.adapter=new RemoteShowdownAdapter(new WebSocketShowdownTransport());
-    await this.adapter.createBattle({generation:this.generation,player:this.pokemon,opponent});
-    this.coordinator=new BattlePresentationCoordinator(await this.adapter.getState());
-    this.coordinator.initializeBattle();
-    this.stage="battle";
-    this.render();
+    const adapter=new RemoteShowdownAdapter(new WebSocketShowdownTransport());
+    this.adapter=adapter;
+    try {
+      await adapter.createBattle({generation:this.generation,player:this.pokemon,opponent});
+      this.coordinator=new BattlePresentationCoordinator(await adapter.getState());
+      this.coordinator.initializeBattle();
+      this.stage="battle";
+      this.render();
+    } catch (error) {
+      this.adapter=null;
+      await adapter.dispose();
+      console.error("Unable to start battle",error);
+      throw error;
+    }
   }
 
   private renderBattle():void{
