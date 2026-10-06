@@ -66,6 +66,7 @@ async function main(){
     }
   }
   if(!document.querySelector(".battle-result"))throw new Error("Battle did not reach a terminal victory/defeat state.");
+  document.body.dataset.browserSmokeCanvas=String(Boolean(document.querySelector(".battle-canvas canvas")));
   const restart=document.querySelector('.battle-result button[data-action="restart-battle"]');
   if(!restart)throw new Error("Battle Again control was not rendered.");
   restart.click();
