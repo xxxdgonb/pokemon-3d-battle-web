@@ -50,18 +50,32 @@ async function main(){
   if(!damagingMove) throw new Error("No damaging move was available in the selected four moves.");
   const before=document.querySelector("#opponent-hp")?.textContent ?? "";
   damagingMove.click();
-  const deadline=Date.now()+15000;
-  while(Date.now()<deadline){
-    const after=document.querySelector("#opponent-hp")?.textContent ?? "";
-    if(after && after!==before){
-      document.body.dataset.browserSmoke="passed";
-      document.title="BROWSER_SMOKE_PASSED";
-      document.body.insertAdjacentHTML("beforeend",'<div id="browser-smoke-result">BROWSER_SMOKE_PASSED</div>');
-      return;
+  let lastHp=before;
+  for(let turn=0;turn<20;turn++){
+    const result=document.querySelector(".battle-result");
+    if(result)break;
+    const button=Array.from(document.querySelectorAll(".move-grid button")).find(node=>/Physical|Special/.test(node.textContent ?? ""));
+    if(!button)throw new Error("Damaging move button disappeared before battle ended.");
+    button.click();
+    const turnDeadline=Date.now()+15000;
+    while(Date.now()<turnDeadline){
+      const after=document.querySelector("#opponent-hp")?.textContent ?? "";
+      if(after && after!==lastHp){lastHp=after;break;}
+      if(document.querySelector(".battle-result"))break;
+      await sleep(50);
     }
-    await sleep(50);
+    if(!document.querySelector(".battle-result") && document.querySelector("#opponent-hp")?.textContent===lastHp){
+      throw new Error("Opponent HP did not change on turn "+(turn+1)+": "+lastHp);
+    }
   }
-  throw new Error("Opponent HP did not change: "+before);
+  if(!document.querySelector(".battle-result"))throw new Error("Battle did not reach a terminal victory/defeat state.");
+  const restart=document.querySelector('.battle-result button[data-action="restart-battle"]');
+  if(!restart)throw new Error("Battle Again control was not rendered.");
+  restart.click();
+  await waitFor('[data-action="start"]',10000);
+  document.body.dataset.browserSmoke="passed";
+  document.title="BROWSER_SMOKE_PASSED";
+  document.body.insertAdjacentHTML("beforeend",'<div id="browser-smoke-result">BROWSER_SMOKE_PASSED</div>');
 }
 main().catch(error=>{
   document.body.dataset.browserSmoke="failed";
