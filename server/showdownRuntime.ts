@@ -26,12 +26,26 @@ function isGeneration(value: unknown): value is Generation {
 function isPokemonState(value: unknown): value is PokemonBattleState {
   if (!value || typeof value !== "object") return false;
   const c = value as Partial<PokemonBattleState>;
-  return typeof c.id === "string" && typeof c.speciesId === "string" &&
-    typeof c.formId === "string" && typeof c.gender === "string" &&
-    typeof c.shiny === "boolean" && Number.isInteger(c.level) &&
-    typeof c.abilityId === "string" &&
-    (c.heldItemId === null || typeof c.heldItemId === "string") &&
-    Number.isFinite(c.hp) && Number.isFinite(c.maxHp) && Array.isArray(c.moves);
+  if (
+    typeof c.id !== "string" || c.id.length < 1 || c.id.length > 64 ||
+    typeof c.speciesId !== "string" || c.speciesId.length < 1 || c.speciesId.length > 128 ||
+    typeof c.formId !== "string" || c.formId.length < 1 || c.formId.length > 128 ||
+    !["male", "female", "genderless"].includes(c.gender as string) ||
+    typeof c.shiny !== "boolean" ||
+    !Number.isInteger(c.level) || c.level < 1 || c.level > 100 ||
+    typeof c.abilityId !== "string" || c.abilityId.length > 128 ||
+    !(c.heldItemId === null || (typeof c.heldItemId === "string" && c.heldItemId.length <= 128)) ||
+    !Number.isFinite(c.hp) || !Number.isFinite(c.maxHp) || c.hp < 0 || c.maxHp < 1 ||
+    !Array.isArray(c.moves) || c.moves.length < 1 || c.moves.length > 4
+  ) return false;
+  return c.moves.every(move =>
+    Boolean(move) &&
+    typeof move === "object" &&
+    typeof (move as {moveId?: unknown}).moveId === "string" &&
+    ((move as {moveId:string}).moveId.length > 0 && (move as {moveId:string}).moveId.length <= 128) &&
+    Number.isFinite((move as {pp?: unknown}).pp) &&
+    Number.isFinite((move as {maxPp?: unknown}).maxPp),
+  );
 }
 
 function parseClientMessage(raw: string): ClientMessage {
@@ -153,6 +167,7 @@ async function run(): Promise<void> {
     let battle: BattleStreamType | null = null;
     let config: BattleConfig | null = null;
     let outputTask: Promise<void> | null = null;
+    let commandQueue: Promise<void> = Promise.resolve();
 
     const stopBattle = async (): Promise<void> => {
       if (!battle) return;
@@ -163,9 +178,10 @@ async function run(): Promise<void> {
       outputTask = null;
     };
 
-    socket.on("message", async (data) => {
-      try {
-        const message = parseClientMessage(data.toString());
+    socket.on("message", (data) => {
+      commandQueue = commandQueue.then(async () => {
+        try {
+          const message = parseClientMessage(data.toString());
 
         if (message.type === "createBattle") {
           await stopBattle();
@@ -226,15 +242,23 @@ async function run(): Promise<void> {
             simulator.sendUpdates();
           }
         }
-      } catch (error) {
+        } catch (error) {
+          sendJson(socket, {
+            type: "error",
+            message: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }).catch(error => {
         sendJson(socket, {
           type: "error",
           message: error instanceof Error ? error.message : String(error),
         });
-      }
+      });
     });
 
-    socket.on("close", () => { void stopBattle(); });
+    socket.on("close", () => {
+      void commandQueue.finally(() => stopBattle());
+    });
   });
 
   httpServer.listen(PORT, () => {
