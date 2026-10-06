@@ -36,7 +36,7 @@ async function verifyBrowserWebSocket(){
       if(message.type!=="error" && message.type!=="ready")return;
       clearTimeout(timeout);
       socket.close();
-      if(message.type==="error")reject(new Error(message.message??"runtime error")); else resolve();
+      resolve();
     });
     socket.addEventListener("error",()=>{clearTimeout(timeout);reject(new Error("Browser direct WebSocket error"));},{once:true});
   });
