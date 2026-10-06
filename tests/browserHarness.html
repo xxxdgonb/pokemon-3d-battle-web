@@ -68,6 +68,7 @@ async function main(){
     const after=document.querySelector("#opponent-hp")?.textContent ?? "";
     if(after && after!==before){
       document.body.dataset.browserSmoke="passed";
+      document.title="BROWSER_SMOKE_PASSED";
       document.body.insertAdjacentHTML("beforeend",'<div id="browser-smoke-result">BROWSER_SMOKE_PASSED</div>');
       return;
     }
