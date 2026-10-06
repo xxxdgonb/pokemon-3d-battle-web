@@ -1,5 +1,4 @@
 import {spawn} from "node:child_process";
-import {createConnection} from "node:net";
 import WebSocket from "ws";
 
 function start(command,args,env={}){
@@ -40,7 +39,7 @@ async function waitDevToolsPort(process){
     process.once("exit",code=>{if(code!==0)reject(new Error(`Chromium exited before DevTools startup: ${code}`));});
   });
 }
-async function cdp(ws,url,method,params={}){
+async function cdp(ws,url){
   const socket=new WebSocket(ws);
   await new Promise((resolve,reject)=>{socket.once("open",resolve);socket.once("error",reject);});
   let id=0;
