@@ -120,7 +120,7 @@ function toPokemonSet(state: PokemonBattleState): ShowdownPokemonSet {
 }
 
 function sendJson(socket: WebSocket, value: unknown): void {
-  if (socket.readyState === socket.OPEN) socket.send(JSON.stringify(value));
+  if (socket.readyState === 1) socket.send(JSON.stringify(value));
 }
 
 async function run(): Promise<void> {
