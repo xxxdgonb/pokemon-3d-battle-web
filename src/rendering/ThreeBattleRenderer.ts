@@ -4,6 +4,7 @@ import { MoveAnimationController } from "../animation/MoveAnimationController";
 import { EffectsRenderer } from "../effects/EffectsRenderer";
 import { CameraController } from "./CameraController";
 import { PokemonModelLoader } from "./PokemonModelLoader";
+import type { ShowdownBattleEvent } from "../battle/ShowdownAdapter";
 
 export class ThreeBattleRenderer {
   public readonly scene=new THREE.Scene();
@@ -70,10 +71,21 @@ export class ThreeBattleRenderer {
     model.traverse(o=>{const m=o as THREE.Mesh;m.castShadow=true;m.receiveShadow=true;}); this.scene.add(model);
   }
 
+  public async playResolution(type:string,events:readonly ShowdownBattleEvent[]):Promise<void>{
+    const target=this.opponentModel;
+    if(!target)return;
+    if(events.some(event=>event.kind==="damage")){
+      this.effects.playTypeImpact(type,target);
+      await this.animations.play(target,"hit",220);
+    }
+    if(events.some(event=>event.kind==="faint")){
+      await this.animations.play(target,"faint",520);
+    }
+  }
+
   public async playMove(type:string,onImpact:()=>void):Promise<void>{
     const model=this.playerModel;
     this.cameraController.set("move");
-    this.effects.playTypeImpact(type,this.opponentModel);
     if(!model){onImpact();return;}
     await this.moveAnimations.play({
       actor:model,
