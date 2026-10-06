@@ -43,7 +43,6 @@ async function verifyBrowserWebSocket(){
 }
 async function main(){
   await waitFor("#app");
-  await verifyBrowserWebSocket();
   await click('[data-action="start"]');
   await click('[data-action="generation"][data-value="9"]');
   await click('[data-action="species"][data-value="pikachu"]');
