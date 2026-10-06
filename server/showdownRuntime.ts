@@ -3,7 +3,7 @@ import { createRequire } from "node:module";
 import { WebSocketServer, type WebSocket } from "ws";
 import type { BattleStream as BattleStreamType } from "pokemon-showdown";
 const require = createRequire(import.meta.url);
-const {BattleStream} = require("pokemon-showdown") as {BattleStream: typeof BattleStreamType};
+const {BattleStream, Dex} = require("pokemon-showdown") as {BattleStream: typeof BattleStreamType; Dex: typeof import("pokemon-showdown").Dex};
 import type { Generation, PokemonBattleState } from "../src/core/types";
 import { getDexPayload, getGeneration, getLearnset } from "./dexApi";
 
@@ -83,9 +83,9 @@ interface ShowdownPokemonSet {
 }
 
 function toPokemonSet(state: PokemonBattleState): ShowdownPokemonSet {
-  const species = state.formId && state.formId !== "base"
-    ? `${state.speciesId}-${state.formId}`
-    : state.speciesId;
+  const requestedSpecies = state.formId && state.formId !== "base" ? `${state.speciesId}-${state.formId}` : state.speciesId;
+  const resolvedSpecies = Dex.species.get(requestedSpecies);
+  const species = resolvedSpecies.exists ? resolvedSpecies.name : Dex.species.get(state.speciesId).name;
 
   return {
     name: state.id,
