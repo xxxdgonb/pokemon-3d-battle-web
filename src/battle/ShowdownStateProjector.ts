@@ -54,6 +54,8 @@ function parseStatus(condition: string | undefined): StatusCondition {
     : null;
 }
 
+function normalizeId(value: string): string { return value.toLowerCase().replace(/[^a-z0-9]+/g, ""); }
+
 function updatePokemon(
   pokemon: PokemonBattleState,
   patch: Partial<Pick<PokemonBattleState, "hp" | "maxHp" | "status" | "moves" | "abilityId" | "speciesId" | "formId" | "gender" | "shiny">>,
@@ -121,8 +123,8 @@ function parseRequestMessage(state: BattleState, message: ShowdownProtocolMessag
     patch.hp = condition.hp;
     patch.maxHp = condition.maxHp;
   }
-  if (active?.ability) patch.abilityId = active.ability;
-  else if (active?.baseAbility) patch.abilityId = active.baseAbility;
+  if (active?.ability) patch.abilityId = normalizeId(active.ability);
+  else if (active?.baseAbility) patch.abilityId = normalizeId(active.baseAbility);
   if (moves.length > 0) patch.moves = moves;
   patch.status = status;
 
@@ -167,14 +169,14 @@ function parseStatusMessage(state: BattleState, message: ShowdownProtocolMessage
 function parseAbilityMessage(state: BattleState, message: ShowdownProtocolMessage): BattleState {
   const target=message.args[0], ability=message.args[1];
   const side=target ? sideFromIdent(target) : null;
-  return side && ability ? updateSide(state,side,{abilityId:ability}) : state;
+  return side && ability ? updateSide(state,side,{abilityId:normalizeId(ability)}) : state;
 }
 
 function parseItemMessage(state: BattleState, message: ShowdownProtocolMessage, clear:boolean): BattleState {
   const target=message.args[0], item=message.args[1];
   const side=target ? sideFromIdent(target) : null;
   if(!side)return state;
-  return updateSide(state,side,{heldItemId:clear?null:(item||null)});
+  return updateSide(state,side,{heldItemId:clear?null:(item?normalizeId(item):null)});
 }
 
 function parseFaintMessage(state: BattleState, message: ShowdownProtocolMessage): BattleState {
