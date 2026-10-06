@@ -1,5 +1,6 @@
 import {spawn} from "node:child_process";
 import {WebSocket} from "ws";
+import {readFileSync,unlinkSync} from "node:fs";
 
 function start(command,args,env={}){
   return spawn(command,args,{env:{...process.env,...env},stdio:["ignore","pipe","pipe"]});
