@@ -28,7 +28,7 @@ export function getDexPayload(generation: Generation): unknown {
     .map(s => ({
       id: id(s), name: s.name, num: s.num, baseSpecies: s.baseSpecies,
       forme: s.forme, types: [...s.types], abilities: Object.fromEntries(Object.entries(s.abilities).map(([slot, name]) => [slot, normalizeId(name)])),
-      gender: s.gender, genderRatio: s.genderRatio, isMega: s.isMega, isGigantamax: s.isGigantamax,
+      gender: s.gender, genderRatio: s.genderRatio, isMega: s.isMega,
       gen: s.gen,
       baseStats: {...s.baseStats},
     }));
