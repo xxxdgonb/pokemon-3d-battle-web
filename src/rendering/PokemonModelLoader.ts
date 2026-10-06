@@ -11,6 +11,7 @@ export interface PokemonModelRequest {
 export class PokemonModelLoader {
   private readonly loader=new GLTFLoader();
   private readonly cache=new Map<string,THREE.Group>();
+  private readonly pending=new Map<string,Promise<THREE.Group|null>>();
 
   public async load(request:PokemonModelRequest):Promise<THREE.Group|null>{
     const categories=[request.shiny?"shiny":"regular"];
@@ -23,19 +24,36 @@ export class PokemonModelLoader {
       const key=`${category}/${request.nationalDex}`;
       const cached=this.cache.get(key);
       if(cached)return cached.clone(true);
-      const url=`https://raw.githubusercontent.com/Pokemon-3D-api/assets/main/models/opt/${category}/${request.nationalDex}.glb`;
-      try{
-        const gltf=await this.loader.loadAsync(url);
-        this.cache.set(key,gltf.scene);
-        return gltf.scene.clone(true);
-      }catch(error){
-        void error;
+      const inFlight=this.pending.get(key);
+      if(inFlight){
+        const model=await inFlight;
+        if(model)return model.clone(true);
+        continue;
       }
+      const promise=this.fetchModel(category,request.nationalDex,key);
+      this.pending.set(key,promise);
+      const model=await promise;
+      if(model)return model.clone(true);
     }
     return null;
   }
 
+  private async fetchModel(category:string,nationalDex:number,key:string):Promise<THREE.Group|null>{
+    try{
+      const url=`https://raw.githubusercontent.com/Pokemon-3D-api/assets/main/models/opt/${category}/${nationalDex}.glb`;
+      const gltf=await this.loader.loadAsync(url);
+      this.cache.set(key,gltf.scene);
+      return gltf.scene;
+    }catch(error){
+      void error;
+      return null;
+    }finally{
+      this.pending.delete(key);
+    }
+  }
+
   public dispose():void{
+    this.pending.clear();
     for(const model of this.cache.values()){
       model.traverse(object=>{
         const mesh=object as THREE.Mesh;
