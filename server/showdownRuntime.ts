@@ -33,9 +33,10 @@ function isPokemonState(value: unknown): value is PokemonBattleState {
     typeof c.formId !== "string" || c.formId.length < 1 || c.formId.length > 128 ||
     !["male", "female", "genderless"].includes(c.gender as string) ||
     typeof c.shiny !== "boolean" ||
-    !Number.isInteger(level) || level < 1 || level > 100 ||
+    typeof level !== "number" || !Number.isInteger(level) || level < 1 || level > 100 ||
     typeof c.abilityId !== "string" || c.abilityId.length > 128 ||
     !(c.heldItemId === null || (typeof c.heldItemId === "string" && c.heldItemId.length <= 128)) ||
+    typeof hp !== "number" || typeof maxHp !== "number" ||
     !Number.isFinite(hp) || !Number.isFinite(maxHp) || hp < 0 || maxHp < 1 ||
     !Array.isArray(c.moves) || c.moves.length < 1 || c.moves.length > 4
   ) return false;
