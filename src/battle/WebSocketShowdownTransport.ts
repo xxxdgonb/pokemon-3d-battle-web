@@ -19,7 +19,13 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
   private readyResolve: (() => void) | null = null;
   private readyReject: ((error: Error) => void) | null = null;
 
-  public constructor(private readonly url = (() => { const params=new URLSearchParams(window.location.search); const host=params.get("runtimeHost"); if(host)return `${window.location.protocol === "https:" ? "wss" : "ws"}://${host}:8787`; return `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/showdown`; })()) {}
+  public constructor(private readonly url = (() => {
+    const params = new URLSearchParams(window.location.search);
+    const host = params.get("runtimeHost");
+    const port = params.get("runtimePort") ?? "8787";
+    if (host) return (window.location.protocol === "https:" ? "wss" : "ws") + "://" + host + ":" + port;
+    return (window.location.protocol === "https:" ? "wss" : "ws") + "://" + window.location.host + "/showdown";
+  })()) {}
 
   public async connect(config: ShowdownBattleConfig): Promise<void> {
     if (this.socket !== null) throw new Error("Showdown transport is already connected.");
