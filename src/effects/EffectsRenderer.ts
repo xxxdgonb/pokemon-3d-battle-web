@@ -14,6 +14,7 @@ const ELEMENTAL_TYPES=new Set(["water","grass","ground","rock","fairy","poison",
 
 export class EffectsRenderer {
   private readonly active=new Set<ActiveEffect>();
+  public constructor(private readonly scene:THREE.Scene) {}
   private disposed=false;
 
   public playTypeImpact(type:string,target:THREE.Object3D|null):void{
