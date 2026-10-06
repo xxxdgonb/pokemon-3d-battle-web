@@ -6,7 +6,9 @@ class FakeTransport {
   private listener: ((block: string) => void) | null = null;
   private moveSent = false;
 
-  async connect(_config: ShowdownBattleConfig): Promise<void> {}
+  async connect(_config: ShowdownBattleConfig): Promise<void> {
+    void _config;
+  }
   async close(): Promise<void> {}
   onMessage(listener: (block: string) => void): () => void {
     this.listener = listener;
