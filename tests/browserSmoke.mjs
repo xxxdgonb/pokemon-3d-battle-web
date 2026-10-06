@@ -38,6 +38,7 @@ try{
   vite=start(process.execPath,["node_modules/vite/bin/vite.js","--host","127.0.0.1"],{PORT:"5173",SHOWDOWN_PORT:String(runtimePort)});
   await waitHttp("http://127.0.0.1:"+runtimePort+"/");
   await waitHttp("http://127.0.0.1:5173/");
+  await waitHttp("http://127.0.0.1:5173/api/dex?generation=9");
  
   const chromium=start("chromium",[
     "--headless=new",
@@ -49,7 +50,7 @@ try{
     "--timeout=60000",
     "--run-all-compositor-stages-before-draw",
     "--dump-dom",
-    "http://127.0.0.1:5173/tests/browserHarness.html?browserSmoke=1&runtimeHost=127.0.0.1&runtimePort=" + runtimePort,
+    "http://127.0.0.1:5173/tests/browserHarness.html?browserSmoke=1,
   ]);
 
   const chunks=[];
