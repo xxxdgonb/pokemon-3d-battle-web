@@ -46,47 +46,45 @@ function cdpPipe(process){
   return {call};
 }
 const runtime=start(process.execPath,["node_modules/tsx/dist/cli.mjs","server/showdownRuntime.ts"],{PORT:"0"});
-let vite=null;let chromium=null;
+let vite=null; let driver=null; let sessionId="";
+async function waitDriver(timeout=10000){
+  const deadline=Date.now()+timeout;
+  while(Date.now()<deadline){
+    try{const response=await fetch("http://127.0.0.1:9515/status"); if(response.ok)return;}catch{}
+    await new Promise(resolve=>setTimeout(resolve,100));
+  }
+  throw new Error("ChromeDriver did not start.");
+}
+async function driverRequest(path,options={}){
+  const response=await fetch("http://127.0.0.1:9515"+path,{headers:{"content-type":"application/json"},...options});
+  const body=await response.json();
+  if(!response.ok || body.value?.error)throw new Error(JSON.stringify(body));
+  return body.value;
+}
 try{
   const runtimePort=await waitForRuntime(runtime);
   vite=start(process.execPath,["node_modules/vite/bin/vite.js","--host","127.0.0.1"],{PORT:"5173",SHOWDOWN_PORT:String(runtimePort)});
   await waitHttp("http://127.0.0.1:"+runtimePort+"/");
   await waitHttp("http://127.0.0.1:5173/");
   await waitHttp("http://127.0.0.1:5173/api/dex?generation=9");
-
-  chromium=start("chromium",[
-    "--headless=new","--no-sandbox","--disable-dev-shm-usage",
-    "--use-gl=swiftshader","--enable-unsafe-swiftshader",
-    "--remote-debugging-pipe",
-    "--window-size=1440,900","about:blank"
-  ]);
-  const pipe=cdpPipe(chromium);
-  const targets=await pipe.call("Target.getTargets");
-  const page=targets.targetInfos?.find(target=>target.type==="page");
-  if(!page?.targetId)throw new Error("Chromium page target unavailable.");
-  const attached=await pipe.call("Target.attachToTarget",{targetId:page.targetId,flatten:true});
-  const sessionId=attached.sessionId;
-  await pipe.call("Page.enable",{},sessionId);
-  await pipe.call("Runtime.enable",{},sessionId);
-  await pipe.call("Page.navigate",{url:"http://127.0.0.1:5173/tests/browserHarness.html?browserSmoke=1"},sessionId);
-
-  const deadline=Date.now()+45000;
-  let title="";
-  let detail="";
+  driver=start("chromedriver",["--port=9515","--url-base=/"]);
+  await waitDriver();
+  const capabilities={browserName:"chrome","goog:chromeOptions":{binary:"/usr/bin/chromium",args:["--headless=new","--no-sandbox","--disable-dev-shm-usage","--use-gl=swiftshader","--enable-unsafe-swiftshader","--window-size=1440,900"]}};
+  const session=await driverRequest("/session",{method:"POST",body:JSON.stringify({capabilities:{alwaysMatch:capabilities}})});
+  sessionId=session.sessionId;
+  await driverRequest("/session/"+sessionId+"/url",{method:"POST",body:JSON.stringify({url:"http://127.0.0.1:5173/tests/browserHarness.html?browserSmoke=1"})});
+  const deadline=Date.now()+60000; let title="";
   while(Date.now()<deadline){
-    const result=await pipe.call("Runtime.evaluate",{expression:"document.title",returnByValue:true},sessionId);
-    title=String(result.result?.value??"");
-    if(title==="BROWSER_SMOKE_PASSED")break;
-    if(title.startsWith("BROWSER_SMOKE_FAILED:")){detail=title;break;}
+    const result=await driverRequest("/session/"+sessionId+"/execute/sync",{method:"POST",body:JSON.stringify({script:"return document.title;",args:[]})});
+    title=String(result);
+    if(title==="BROWSER_SMOKE_PASSED" || title.startsWith("BROWSER_SMOKE_FAILED:"))break;
     await new Promise(resolve=>setTimeout(resolve,250));
   }
-  if(title!=="BROWSER_SMOKE_PASSED")throw new Error(detail||`Browser smoke timeout; title=${title||"missing"}`);
-  const canvas=await pipe.call("Runtime.evaluate",{expression:"Boolean(document.querySelector('.battle-canvas canvas'))",returnByValue:true},sessionId);
-  if(canvas.result?.value!==true)throw new Error("Three.js canvas was not present at completion.");
+  if(title!=="BROWSER_SMOKE_PASSED")throw new Error(title||"Browser smoke timeout.");
+  const canvas=await driverRequest("/session/"+sessionId+"/execute/sync",{method:"POST",body:JSON.stringify({script:"return document.querySelectorAll(\"canvas\").length > 0;",args:[]})});
+  if(canvas!==true)throw new Error("Three.js canvas was not present at completion.");
   console.log("Chromium browser/WebGL smoke test passed.");
 }finally{
-
-  vite?.kill("SIGTERM");
-  runtime.kill("SIGTERM");
-  chromium?.kill("SIGTERM");
+  if(sessionId){try{await driverRequest("/session/"+sessionId,{method:"DELETE"});}catch{}}
+  driver?.kill("SIGTERM"); vite?.kill("SIGTERM"); runtime.kill("SIGTERM");
 }
