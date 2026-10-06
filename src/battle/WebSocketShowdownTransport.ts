@@ -56,7 +56,6 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
     }),new Promise<void>((_,reject)=>window.setTimeout(()=>reject(new Error("Timed out connecting to the Showdown runtime.")),5000))]);
 
     await Promise.race([ready,new Promise<void>((_,reject)=>window.setTimeout(()=>reject(new Error("Timed out waiting for the Showdown runtime readiness handshake.")),5000))]);
-    debug("ready-resolved");
   }
 
   public async send(command: string): Promise<void> {
