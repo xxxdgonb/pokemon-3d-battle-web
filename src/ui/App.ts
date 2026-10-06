@@ -56,7 +56,7 @@ export class App {
   }
 
   private speciesIdForForm(s:DexSpecies):string{
-    return s.baseSpecies.toLowerCase().replace(/[^a-z0-9]+/g,"");
+    return s.id;
   }
 
   private formIdForForm(s:DexSpecies):string{
