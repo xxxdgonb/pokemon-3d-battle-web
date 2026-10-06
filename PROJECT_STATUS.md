@@ -2,7 +2,7 @@
 
 ## Current phase
 
-**PHASE 13 — Performance / Final Audit Hardening**
+**PHASE 14 — Final Audit Hardening**
 
 Phases 0–11 have implementation or verification evidence as described below. PHASE 14 is intentionally not closed until browser/WebGL verification, advanced battle-event coverage, asset/license audit, and repeated-battle soak evidence exist.
 
@@ -31,7 +31,7 @@ Verified by CI:
   - authoritative damage event
   - duplicate split-event normalization
 
-The browser/WebGL client itself has **not** been launched by an available browser automation runtime in this session. Therefore visual/browser claims remain explicitly unverified.
+Real Chromium/WebDriver browser smoke now exercises the battle client, WebGL canvas, full move loop, terminal result, Battle Again, and three repeated cycles in CI. Visual fidelity beyond automated DOM/canvas assertions still requires human visual review.
 
 ## Phase matrix
 
@@ -180,12 +180,12 @@ Before declaring the project complete:
 - [x] protocol duplicate split messages are normalized
 - [x] terminal battle controls are locked
 - [x] battle restart disposes renderer/transport
-- [ ] browser/WebGL runtime walkthrough
-- [ ] repeated-battle soak in browser
+- [x] automated browser/WebGL runtime walkthrough
+- [x] repeated-battle soak in browser (3 CI cycles)
 - [x] advanced authoritative state/effect projection core
 - [ ] advanced move-specific presentation coverage
 - [ ] GPU/browser performance profiling
-- [ ] dependency security remediation/review
+- [x] production dependency audit separated from dev dependency audit; compatible overrides applied
 - [ ] individual model/animation/audio license audit
 - [ ] production release decision
 
