@@ -47,7 +47,7 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
         socket.send(JSON.stringify({type: "createBattle", config}));
         resolve();
       };
-      const onError = (event: Event): void => {
+      const onError = (): void => {
         socket.removeEventListener("open", onOpen);
         reject(new Error("Unable to connect to the Showdown runtime."));
       };
