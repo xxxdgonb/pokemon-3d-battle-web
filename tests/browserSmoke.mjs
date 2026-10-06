@@ -25,7 +25,7 @@ async function waitHttp(url,timeout=10000){
   throw new Error(`Timed out waiting for ${url}`);
 }
 function cdpPipe(process){
-  const input=process.stdio[3]; const output=process.stdio[4];
+  const output=process.stdio[3]; const input=process.stdio[4];
   let nextId=0; let buffer=Buffer.alloc(0); const pending=new Map();
   input.on("data",chunk=>{
     buffer=Buffer.concat([buffer,chunk]);
@@ -45,7 +45,7 @@ function cdpPipe(process){
   return {call};
 }
 const runtime=start(process.execPath,["node_modules/tsx/dist/cli.mjs","server/showdownRuntime.ts"],{PORT:"0"});
-let vite=null;let chromium=null;let cdpSession=null;
+let vite=null;let chromium=null;
 try{
   const runtimePort=await waitForRuntime(runtime);
   vite=start(process.execPath,["node_modules/vite/bin/vite.js","--host","127.0.0.1"],{PORT:"5173",SHOWDOWN_PORT:String(runtimePort)});
