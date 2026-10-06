@@ -23,11 +23,11 @@ async function waitHttp(url,timeout=10000){
   throw new Error(`Timed out waiting for ${url}`);
 }
 
-const runtime=start(process.execPath,["node_modules/tsx/dist/cli.mjs","server/showdownRuntime.ts"],{PORT:"8787"});
+const runtime=start(process.execPath,["node_modules/tsx/dist/cli.mjs","server/showdownRuntime.ts"],{PORT:"8791"});
 const vite=start(process.execPath,["node_modules/vite/bin/vite.js","--host","127.0.0.1"],{PORT:"5173"});
 
 try{
-  await waitHttp("http://127.0.0.1:8787/");
+  await waitHttp("http://127.0.0.1:8791/");
   await waitHttp("http://127.0.0.1:5173/");
   await verifyWebSocketProxy();
 
@@ -41,7 +41,7 @@ try{
     "--timeout=60000",
     "--run-all-compositor-stages-before-draw",
     "--dump-dom",
-    "http://127.0.0.1:5173/tests/browserHarness.html?browserSmoke=1&runtimeHost=127.0.0.1",
+    "http://127.0.0.1:5173/tests/browserHarness.html?browserSmoke=1&runtimeHost=127.0.0.1&runtimePort=8791",
   ]);
 
   const chunks=[];
