@@ -41,7 +41,7 @@ try{
     "--timeout=60000",
     "--run-all-compositor-stages-before-draw",
     "--dump-dom",
-    "http://127.0.0.1:5173/tests/browserHarness.html?browserSmoke=1&runtimeHost=127.0.0.1&runtimeHost=127.0.0.1",
+    "http://127.0.0.1:5173/tests/browserHarness.html?browserSmoke=1",
   ]);
 
   const chunks=[];
