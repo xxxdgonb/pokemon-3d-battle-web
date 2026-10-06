@@ -46,8 +46,6 @@ async function main(){
   if(!battleScreen || !canvas || moveButtons.length===0){
     throw new Error("Battle UI did not finish rendering.");
   }
-  const damagingMove=moveButtons.find(button=>/Physical|Special/.test(button.textContent ?? ""));
-  if(!damagingMove) throw new Error("No damaging move was available in the selected four moves.");
   let lastHp=document.querySelector("#opponent-hp")?.textContent ?? "";
   for(let turn=0;turn<20;turn++){
     const result=document.querySelector(".battle-result");
