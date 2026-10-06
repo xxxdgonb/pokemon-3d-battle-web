@@ -13,20 +13,17 @@ export class MoveAnimationController {
   public async play(request: MoveAnimationRequest): Promise<void> {
     const impactAt=330;
     let impacted=false;
-    let targetPromise:Promise<void>=Promise.resolve();
     const impactTimer=window.setTimeout(()=>{
       impacted=true;
       request.onImpact();
-      if(request.target)targetPromise=this.animations.play(request.target,"hit",220);
     },impactAt);
     try {
       await this.animations.play(request.actor,"attack",650);
       if(!impacted){
         window.clearTimeout(impactTimer);
         request.onImpact();
-        if(request.target)targetPromise=this.animations.play(request.target,"hit",220);
       }
-      await targetPromise;
+
     }finally{
       window.clearTimeout(impactTimer);
     }
