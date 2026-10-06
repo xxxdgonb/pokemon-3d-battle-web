@@ -265,7 +265,9 @@ async function run(): Promise<void> {
   });
 
   httpServer.listen(PORT, () => {
-    console.log(`Showdown runtime listening on ws://localhost:${PORT}`);
+    const address = httpServer.address();
+    const port = typeof address === "object" && address ? address.port : PORT;
+    console.log(`Showdown runtime listening on ws://localhost:${port}`);
   });
 }
 
