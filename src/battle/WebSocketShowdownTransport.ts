@@ -56,6 +56,9 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
     if (this.socket === null || this.socket.readyState !== WebSocket.OPEN) {
       throw new Error("Showdown transport is not connected.");
     }
+    if (new URLSearchParams(window.location.search).get("browserSmoke") === "1") {
+      document.body.dataset.runtimeLastCommand = command;
+    }
     this.socket.send(JSON.stringify({type: "command", command}));
   }
 
