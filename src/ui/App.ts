@@ -214,6 +214,7 @@ export class App {
       const events=await this.adapter.submitPlayerMove(m.id);
       this.coordinator.syncAuthoritativeState(await this.adapter.getState());
       this.coordinator.applyAuthoritativeResolution(id,events);
+      await this.battleRenderer?.playResolution(m.type,events);
       this.updateBattleHud();
       this.coordinator.resolveSecondaryEffects(id,events);
       this.coordinator.processStatus(id);
