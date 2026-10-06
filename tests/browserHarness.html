@@ -82,7 +82,7 @@ async function main(){
 }
 main().catch(error=>{
   document.body.dataset.browserSmoke="failed";
-  const detail=(document.body.innerText+"\\nERROR:"+String(error.message)+"\\nBROWSER:"+String(browserError??"none")+"\\nBATTLEDEBUG:"+String(document.body.dataset.battleDebug??"none")+"\\nRUNTIMECMD:"+String(document.body.dataset.runtimeLastCommand??"none")+"\\nRUNTIMEMSG:"+String(document.body.dataset.runtimeLastMessage??"none")+"\\nRUNTIMEERR:"+String(document.body.dataset.runtimeError??"none")).slice(-3000).replace(/[<>&]/g,"");
+  const detail=(document.body.innerText+"\\nERROR:"+String(error.message)+"\\nBROWSER:"+String(browserError??"none")+"\\nBATTLEDEBUG:"+String(document.body.dataset.battleDebug??"none")+"\\nRUNTIMECMD:"+String(document.body.dataset.runtimeLastCommand??"none")+"\\nRUNTIMEMSG:"+String(document.body.dataset.runtimeLastMessage??"none")+"\\nRUNTIMEERR:"+String(document.body.dataset.runtimeError??"none")+"\\nRUNTIMECONNECT:"+String(document.body.dataset.runtimeConnect??"none")).slice(-3000).replace(/[<>&]/g,"");
   document.title="BROWSER_SMOKE_FAILED:"+detail;
 });
 </script>
