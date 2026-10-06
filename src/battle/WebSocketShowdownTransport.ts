@@ -100,6 +100,10 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
       return;
     }
 
+    if (new URLSearchParams(window.location.search).get("browserSmoke") === "1") {
+      document.body.dataset.runtimeLastMessage = message.type + (message.block ? ":" + message.block.slice(0, 160) : message.message ? ":" + message.message : "");
+    }
+
     if (message.type === "ready") {
       this.readyResolve?.();
       this.readyResolve = null;
@@ -129,6 +133,9 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
   };
 
   private fail(error: Error): void {
+    if (new URLSearchParams(window.location.search).get("browserSmoke") === "1") {
+      document.body.dataset.runtimeError = error.message;
+    }
     this.readyReject?.(error);
     this.readyResolve = null;
     this.readyReject = null;
