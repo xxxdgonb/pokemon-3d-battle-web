@@ -32,7 +32,7 @@ No runtime success is claimed until the GitHub Actions run reports success and t
 
 ## Latest verification checkpoint
 
-- CI run `37451363771` completed successfully on commit `92c290c8bd621121...` (exact head recorded by GitHub).
+- CI run `37451363771` completed successfully on commit `92c290c8bd62147466208f10761a8f932575963a` (exact head recorded by GitHub).
 - Browser smoke used Chromium `154.0.8037.0` and completed three consecutive full cycles: `Chromium browser/WebGL smoke test passed.` x3.
 - Production dependency install reported `found 0 vulnerabilities` after compatible dependency overrides; Showdown was not downgraded.
 - Remaining release judgment: technically verified for automated browser/runtime acceptance; legal asset redistribution and human visual QA remain external release gates.
