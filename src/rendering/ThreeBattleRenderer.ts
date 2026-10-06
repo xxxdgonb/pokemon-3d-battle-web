@@ -28,6 +28,7 @@ export class ThreeBattleRenderer {
     host.appendChild(this.renderer.domElement);
     this.cameraController=new CameraController(this.camera);
     this.effects=new EffectsRenderer(this.scene);
+    window.addEventListener("resize",this.handleResize);
     this.scene.background=new THREE.Color(0x0b1220);
     const hemi=new THREE.HemisphereLight(0xddeeff,0x223344,2); this.scene.add(hemi);
     const key=new THREE.DirectionalLight(0xffffff,2.5); key.position.set(5,10,7); key.castShadow=true; this.scene.add(key);
@@ -82,6 +83,8 @@ export class ThreeBattleRenderer {
     this.cameraController.set("default");
   }
 
+  private readonly handleResize=():void=>{this.resize();};
+
   public resize():void{
     const width=Math.max(this.host.clientWidth,1),height=Math.max(this.host.clientHeight,1);
     this.camera.aspect=width/height;this.camera.updateProjectionMatrix();this.renderer.setSize(width,height,false);
@@ -91,6 +94,11 @@ export class ThreeBattleRenderer {
   public dispose():void{
     if(this.disposed)return; this.disposed=true;
     if(this.animationFrame!==null)cancelAnimationFrame(this.animationFrame);
+    window.removeEventListener("resize",this.handleResize);
+    if(this.playerModel)this.scene.remove(this.playerModel);
+    if(this.opponentModel)this.scene.remove(this.opponentModel);
+    this.playerModel=null;
+    this.opponentModel=null;
     this.effects.dispose(); this.loader.dispose(); this.renderer.dispose(); this.renderer.domElement.remove();
   }
 }
