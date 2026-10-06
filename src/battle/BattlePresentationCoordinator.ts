@@ -63,7 +63,8 @@ export class BattlePresentationCoordinator {
       return event.kind === "miss" || event.kind === "immune" || event.kind === "failed" || event.kind === "move" || event.kind === "heal" || event.kind === "status";
     });
     if (!hasAuthoritativeResolution) {
-      throw new Error(`No authoritative opponent move resolution for transaction ${transactionId}.`);
+      const received = events.map(event => `${event.kind}:${JSON.stringify(event.payload)}`).join(" | ");
+      throw new Error(`No authoritative opponent move resolution for transaction ${transactionId}. Events=${received || "none"}`);
     }
 
     const resolution = this.resolveOutcome(events);
