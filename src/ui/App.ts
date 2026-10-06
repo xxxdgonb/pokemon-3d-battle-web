@@ -191,12 +191,11 @@ export class App {
     try{
       this.coordinator.selectMove(m.id);
       this.coordinator.startMove(id,m.id);
-      this.battleRenderer?.playMove(m.type);
       let resolved=false;
       const resolveOnce=():void=>{if(resolved)return;resolved=true;void this.resolveMove(id,m);};
-      if(this.battleRenderer)this.battleRenderer.markImpactWhenReady(id,resolveOnce);
+      if(this.battleRenderer)void this.battleRenderer.playMove(m.type,resolveOnce);
       else window.setTimeout(resolveOnce,0);
-      window.setTimeout(resolveOnce,1500);
+      window.setTimeout(resolveOnce,1800);
     }catch(error){
       this.moveBusy=false;
       if(!this.battleEnded)this.root.querySelectorAll<HTMLButtonElement>(".move-grid button").forEach(button=>button.disabled=false);
