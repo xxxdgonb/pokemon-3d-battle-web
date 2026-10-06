@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 
 export interface PokemonModelRequest {
   readonly nationalDex:number;
@@ -10,16 +11,23 @@ export interface PokemonModelRequest {
 
 export class PokemonModelLoader {
   private readonly loader=new GLTFLoader();
+  private readonly draco=new DRACOLoader();
+  public constructor(){
+    this.draco.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
+    this.loader.setDRACOLoader(this.draco);
+  }
   private readonly cache=new Map<string,THREE.Group>();
   private readonly pending=new Map<string,Promise<THREE.Group|null>>();
 
   public async load(request:PokemonModelRequest):Promise<THREE.Group|null>{
-    const categories=[request.shiny?"shiny":"regular"];
-    if(request.formId && request.formId!=="base"){
-      const form=request.formId.toLowerCase();
-      const aliases=form.includes("mega")?["mega"]:form.includes("gigantamax")?["gigantamax"]:form.includes("alola")?["alolan"]:form.includes("galar")?["galarian"]:form.includes("hisui")?["hisuian"]:[form];
-      categories.unshift(...aliases);
+    const categories:string[]=[];
+    const form=request.formId?.toLowerCase();
+    const aliases=form && form!=="base" ? (form.includes("mega")?["mega"]:form.includes("gigantamax")||form.includes("gmax")?["gmax"]:form.includes("alola")?["alolan"]:form.includes("galar")?["galarian"]:form.includes("hisui")?["hisuian"]:form.includes("primal")?["primal"]:form.includes("origin")?["origin"]:[]) : [];
+    if(aliases.length){
+      if(request.shiny)categories.push(...aliases.map(alias=>`shiny-${alias}`),...aliases);
     }
+    if(request.shiny)categories.push("shiny");
+    categories.push("regular");
     for(const category of categories){
       const key=`${category}/${request.nationalDex}`;
       const cached=this.cache.get(key);
@@ -64,5 +72,6 @@ export class PokemonModelLoader {
       });
     }
     this.cache.clear();
+    this.draco.dispose();
   }
 }
