@@ -1,8 +1,7 @@
 import {spawn} from "node:child_process";
-import WebSocket from "ws";
 
 function start(command,args,env={}){
-  return spawn(command,args,{env:{...process.env,...env},stdio:["ignore","pipe","pipe"]});
+  return spawn(command,args,{env:{...process.env,...env},stdio:["ignore","pipe","pipe","pipe","pipe"]});
 }
 async function waitForRuntime(process){
   return new Promise((resolve,reject)=>{
@@ -25,44 +24,25 @@ async function waitHttp(url,timeout=10000){
   }
   throw new Error(`Timed out waiting for ${url}`);
 }
-async function waitDevToolsPort(){
-  return 0;
-}
-async function cdp(ws,url){
-  const socket=new WebSocket(ws);
-  await new Promise((resolve,reject)=>{socket.once("open",resolve);socket.once("error",reject);});
-  let nextId=0;
-  const pending=new Map();
-  const onMessage=raw=>{
-    const message=JSON.parse(raw.toString());
-    if(message.id===undefined)return;
-    const entry=pending.get(message.id);
-    if(!entry)return;
-    pending.delete(message.id);
-    clearTimeout(entry.timer);
-    if(message.error)entry.reject(new Error(message.error.message));
-    else entry.resolve(message.result);
-  };
-  socket.on("message",onMessage);
-  const call=(method,params={})=>new Promise((resolve,reject)=>{
-    const id=++nextId;
-    const timer=setTimeout(()=>{pending.delete(id);reject(new Error(`CDP timeout: ${method}`));},15000);
-    pending.set(id,{resolve,reject,timer});
-    socket.send(JSON.stringify({id,method,params}));
+function cdpPipe(process){
+  const input=process.stdio[3]; const output=process.stdio[4];
+  let nextId=0; let buffer=Buffer.alloc(0); const pending=new Map();
+  input.on("data",chunk=>{
+    buffer=Buffer.concat([buffer,chunk]);
+    while(buffer.length>=4){
+      const length=buffer.readUInt32LE(0); if(buffer.length<length+4)return;
+      const message=JSON.parse(buffer.subarray(4,length+4).toString()); buffer=buffer.subarray(length+4);
+      const entry=pending.get(message.id); if(!entry)continue;
+      pending.delete(message.id); clearTimeout(entry.timer);
+      if(message.error)entry.reject(new Error(message.error.message)); else entry.resolve(message.result);
+    }
   });
-  await call("Page.enable");
-  await call("Page.navigate",{url});
-  await new Promise((resolve,reject)=>{
-    const timer=setTimeout(()=>{socket.off("message",onLoad);reject(new Error("Timed out waiting for page load."));},15000);
-    const onLoad=raw=>{
-      const message=JSON.parse(raw.toString());
-      if(message.method!=="Page.loadEventFired")return;
-      clearTimeout(timer);socket.off("message",onLoad);resolve();
-    };
-    socket.on("message",onLoad);
+  const call=(method,params={},sessionId)=>new Promise((resolve,reject)=>{
+    const id=++nextId; const timer=setTimeout(()=>{pending.delete(id);reject(new Error(`CDP timeout: ${method}`));},15000);
+    pending.set(id,{resolve,reject,timer}); const body=Buffer.from(JSON.stringify({id,method,params,...(sessionId?{sessionId}:{})}));
+    const packet=Buffer.alloc(body.length+4); packet.writeUInt32LE(body.length,0); body.copy(packet,4); output.write(packet);
   });
-  await call("Runtime.enable");
-  return {socket,call};
+  return {call};
 }
 const runtime=start(process.execPath,["node_modules/tsx/dist/cli.mjs","server/showdownRuntime.ts"],{PORT:"0"});
 let vite=null;let chromium=null;let cdpSession=null;
@@ -79,28 +59,32 @@ try{
     "--remote-debugging-pipe",
     "--window-size=1440,900","about:blank"
   ]);
-  const devToolsPort=await waitDevToolsPort(chromium);
-  const targets=await (await fetch(`http://127.0.0.1:${devToolsPort}/json/list`)).json();
-  const page=targets.find(target=>target.type==="page");
-  if(!page?.webSocketDebuggerUrl)throw new Error("Chromium page target unavailable.");
-  cdpSession=await cdp(page.webSocketDebuggerUrl,"http://127.0.0.1:5173/tests/browserHarness.html?browserSmoke=1");
+  const pipe=cdpPipe(chromium);
+  const targets=await pipe.call("Target.getTargets");
+  const page=targets.targetInfos?.find(target=>target.type==="page");
+  if(!page?.targetId)throw new Error("Chromium page target unavailable.");
+  const attached=await pipe.call("Target.attachToTarget",{targetId:page.targetId,flatten:true});
+  const sessionId=attached.sessionId;
+  await pipe.call("Page.enable",{},sessionId);
+  await pipe.call("Runtime.enable",{},sessionId);
+  await pipe.call("Page.navigate",{url:"http://127.0.0.1:5173/tests/browserHarness.html?browserSmoke=1"},sessionId);
 
   const deadline=Date.now()+45000;
   let title="";
   let detail="";
   while(Date.now()<deadline){
-    const result=await cdpSession.call("Runtime.evaluate",{expression:"document.title",returnByValue:true});
+    const result=await pipe.call("Runtime.evaluate",{expression:"document.title",returnByValue:true},sessionId);
     title=String(result.result?.value??"");
     if(title==="BROWSER_SMOKE_PASSED")break;
     if(title.startsWith("BROWSER_SMOKE_FAILED:")){detail=title;break;}
     await new Promise(resolve=>setTimeout(resolve,250));
   }
   if(title!=="BROWSER_SMOKE_PASSED")throw new Error(detail||`Browser smoke timeout; title=${title||"missing"}`);
-  const canvas=await cdpSession.call("Runtime.evaluate",{expression:"Boolean(document.querySelector('.battle-canvas canvas'))",returnByValue:true});
+  const canvas=await pipe.call("Runtime.evaluate",{expression:"Boolean(document.querySelector('.battle-canvas canvas'))",returnByValue:true},sessionId);
   if(canvas.result?.value!==true)throw new Error("Three.js canvas was not present at completion.");
   console.log("Chromium browser/WebGL smoke test passed.");
 }finally{
-  cdpSession?.socket.close();
+
   vite?.kill("SIGTERM");
   runtime.kill("SIGTERM");
   chromium?.kill("SIGTERM");
