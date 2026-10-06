@@ -48,7 +48,7 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
     try {
         await this.transport.send(`>p1 ${encodeChoice(move)}`);
       for(let attempt=0;attempt<16;attempt++){
-        if(this.pending.some(event=>event.kind==="request"||event.kind==="battle-end"))break;
+        if(this.pending.some(event=>event.kind==="move"||event.kind==="battle-end"))break;
         await this.transport.waitForBlock();
       }
       return this.pending.splice(0);
