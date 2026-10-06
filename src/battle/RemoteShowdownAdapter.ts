@@ -52,7 +52,7 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
         if(this.pending.some(event=>event.kind==="request"||event.kind==="battle-end"))break;
         await this.transport.waitForBlock();
       }
-      return this.pending.splice(pendingBefore);
+      return this.pending.splice(0);
     } finally {
       this.moveInFlight = false;
     }
