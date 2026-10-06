@@ -50,7 +50,7 @@ try{
   const code=await new Promise(resolve=>chromium.once("exit",resolve));
   const html=chunks.join("");
   if(code!==0)throw new Error(`Chromium exited with code ${code}: ${errors.join("").slice(-2000)}`);
-  const result=html.match(/<title>(BROWSER_SMOKE_[^<]*)<\\/title>/)?.[1] ?? "";
+  const result=html.match(/<title>(BROWSER_SMOKE_[^<]*)<\/title>/)?.[1] ?? "";
   if(result!=="BROWSER_SMOKE_PASSED")throw new Error(`Browser smoke did not pass: ${result||"missing"}`);
   console.log("Chromium browser/WebGL smoke test passed.");
 }finally{
