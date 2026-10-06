@@ -30,12 +30,6 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
   public async connect(config: ShowdownBattleConfig): Promise<void> {
     if (this.socket !== null) throw new Error("Showdown transport is already connected.");
 
-    const debug = (value: string): void => {
-      if (new URLSearchParams(window.location.search).get("browserSmoke") === "1") {
-        document.body.dataset.runtimeConnect = value;
-      }
-    };
-    debug("socket-created");
     const socket = new WebSocket(this.url);
     this.socket = socket;
 
@@ -46,18 +40,14 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
 
     await Promise.race([new Promise<void>((resolve, reject) => {
       const onOpen = (): void => {
-        debug("socket-open");
         socket.removeEventListener("error", onError);
         socket.addEventListener("message", this.handleMessage);
         socket.addEventListener("error", this.handleSocketError);
         socket.addEventListener("close", this.handleSocketClose);
         socket.send(JSON.stringify({type: "createBattle", config}));
-        debug("createBattle-sent");
         resolve();
       };
       const onError = (event: Event): void => {
-        debug("socket-error");
-        document.body.dataset.runtimeError = event.type;
         socket.removeEventListener("open", onOpen);
         reject(new Error("Unable to connect to the Showdown runtime."));
       };
@@ -72,9 +62,6 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
   public async send(command: string): Promise<void> {
     if (this.socket === null || this.socket.readyState !== WebSocket.OPEN) {
       throw new Error("Showdown transport is not connected.");
-    }
-    if (new URLSearchParams(window.location.search).get("browserSmoke") === "1") {
-      document.body.dataset.runtimeLastCommand = command;
     }
     this.socket.send(JSON.stringify({type: "command", command}));
   }
@@ -120,10 +107,6 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
       return;
     }
 
-    if (new URLSearchParams(window.location.search).get("browserSmoke") === "1") {
-      document.body.dataset.runtimeLastMessage = message.type + (message.block ? ":" + message.block.slice(0, 160) : message.message ? ":" + message.message : "");
-    }
-
     if (message.type === "ready") {
       this.readyResolve?.();
       this.readyResolve = null;
@@ -153,9 +136,6 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
   };
 
   private fail(error: Error): void {
-    if (new URLSearchParams(window.location.search).get("browserSmoke") === "1") {
-      document.body.dataset.runtimeError = error.message;
-    }
     this.readyReject?.(error);
     this.readyResolve = null;
     this.readyReject = null;
