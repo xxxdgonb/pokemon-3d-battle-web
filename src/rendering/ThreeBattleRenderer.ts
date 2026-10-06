@@ -1,7 +1,9 @@
 import * as THREE from "three";
-import { PokemonModelLoader } from "./PokemonModelLoader";
-import { CameraController } from "./CameraController";
+import { AnimationController } from "../animation/AnimationController";
+import { MoveAnimationController } from "../animation/MoveAnimationController";
 import { EffectsRenderer } from "../effects/EffectsRenderer";
+import { CameraController } from "./CameraController";
+import { PokemonModelLoader } from "./PokemonModelLoader";
 
 export class ThreeBattleRenderer {
   public readonly scene=new THREE.Scene();
@@ -10,10 +12,10 @@ export class ThreeBattleRenderer {
   private readonly loader=new PokemonModelLoader();
   private readonly cameraController:CameraController;
   private readonly effects:EffectsRenderer;
+  private readonly animations=new AnimationController();
+  private readonly moveAnimations=new MoveAnimationController(this.animations);
   private playerModel:THREE.Group|null=null;
   private opponentModel:THREE.Group|null=null;
-  private impactTimer:number|null=null;
-  private impactCallback:(()=>void)|null=null;
   private animationFrame:number|null=null;
   private disposed=false;
 
@@ -27,20 +29,18 @@ export class ThreeBattleRenderer {
     this.cameraController=new CameraController(this.camera);
     this.effects=new EffectsRenderer(this.scene);
     this.scene.background=new THREE.Color(0x0b1220);
-    const hemi=new THREE.HemisphereLight(0xddeeff,0x223344,2);
-    this.scene.add(hemi);
-    const key=new THREE.DirectionalLight(0xffffff,2.5);
-    key.position.set(5,10,7);key.castShadow=true;this.scene.add(key);
+    const hemi=new THREE.HemisphereLight(0xddeeff,0x223344,2); this.scene.add(hemi);
+    const key=new THREE.DirectionalLight(0xffffff,2.5); key.position.set(5,10,7); key.castShadow=true; this.scene.add(key);
     this.createArena();
     if(new URLSearchParams(window.location.search).get("browserSmoke")!=="1")this.animate();
   }
 
   private createArena():void{
     const ground=new THREE.Mesh(new THREE.CircleGeometry(12,64),new THREE.MeshStandardMaterial({color:0x274b32,roughness:1}));
-    ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;this.scene.add(ground);
+    ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; this.scene.add(ground);
     for(const z of [-3.5,3.5]){
       const ring=new THREE.Mesh(new THREE.RingGeometry(2.1,2.3,64),new THREE.MeshStandardMaterial({color:0xb8c7d9,roughness:.8}));
-      ring.rotation.x=-Math.PI/2;ring.position.z=z;ring.position.y=.015;this.scene.add(ring);
+      ring.rotation.x=-Math.PI/2; ring.position.z=z; ring.position.y=.015; this.scene.add(ring);
     }
   }
 
@@ -59,42 +59,27 @@ export class ThreeBattleRenderer {
   }
 
   private showModelUnavailable(message:string):void{
-    const existing=this.host.querySelector(".model-unavailable");
-    if(existing)return;
-    const label=document.createElement("div");
-    label.className="model-unavailable";
-    label.textContent=message;
+    const existing=this.host.querySelector(".model-unavailable"); if(existing)return;
+    const label=document.createElement("div"); label.className="model-unavailable"; label.textContent=message;
     label.style.cssText="position:absolute;top:12px;left:12px;padding:6px 10px;background:#111c;color:#fff;border:1px solid #789;border-radius:8px;font:12px system-ui;z-index:2";
     this.host.appendChild(label);
   }
 
   private addModel(model:THREE.Group):void{
-    model.traverse(o=>{const m=o as THREE.Mesh;m.castShadow=true;m.receiveShadow=true;});
-    this.scene.add(model);
+    model.traverse(o=>{const m=o as THREE.Mesh;m.castShadow=true;m.receiveShadow=true;}); this.scene.add(model);
   }
 
-  public playMove(type:string):void{
+  public async playMove(type:string,onImpact:()=>void):Promise<void>{
     const model=this.playerModel;
-    if(!model)return;
     this.cameraController.set("move");
-    const origin=model.position.clone();
-    const start=performance.now();
-    const duration=650;
-    const tick=()=>{
-      const t=Math.min(1,(performance.now()-start)/duration);
-      const pulse=Math.sin(t*Math.PI);
-      model.position.x=origin.x+pulse*.7;
-      model.position.y=origin.y+pulse*.25;
-      if(t<1)requestAnimationFrame(tick);else model.position.copy(origin);
-    };
-    requestAnimationFrame(tick);
     this.effects.playTypeImpact(type,this.opponentModel);
-  }
-
-  public markImpactWhenReady(_transactionId:string,callback:()=>void):void{
-    if(this.impactTimer!==null)window.clearTimeout(this.impactTimer);
-    this.impactCallback=callback;
-    this.impactTimer=window.setTimeout(()=>{this.impactTimer=null;const cb=this.impactCallback;this.impactCallback=null;cb?.();},330);
+    if(!model){onImpact();return;}
+    await this.moveAnimations.play({
+      actor:model,
+      target:this.opponentModel,
+      onImpact:()=>{this.cameraController.set("impact");onImpact();},
+    });
+    this.cameraController.set("default");
   }
 
   public resize():void{
@@ -103,5 +88,9 @@ export class ThreeBattleRenderer {
   }
   public render():void{this.renderer.render(this.scene,this.camera);}
   private animate=():void=>{if(this.disposed)return;this.render();this.animationFrame=requestAnimationFrame(this.animate);};
-  public dispose():void{if(this.disposed)return;this.disposed=true;if(this.impactTimer!==null)window.clearTimeout(this.impactTimer);if(this.animationFrame!==null)cancelAnimationFrame(this.animationFrame);this.impactCallback=null;this.effects.dispose();this.loader.dispose();this.renderer.dispose();this.renderer.domElement.remove();}
+  public dispose():void{
+    if(this.disposed)return; this.disposed=true;
+    if(this.animationFrame!==null)cancelAnimationFrame(this.animationFrame);
+    this.effects.dispose(); this.loader.dispose(); this.renderer.dispose(); this.renderer.domElement.remove();
+  }
 }
