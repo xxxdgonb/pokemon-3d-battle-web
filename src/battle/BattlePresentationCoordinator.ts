@@ -111,7 +111,7 @@ export class BattlePresentationCoordinator {
       if (event.kind === "crit") critical = true;
       if (event.kind === "effectiveness") {
         const raw = event.source.type;
-        effectiveness = raw === "-supereffective" ? "super-effective" : "resisted";
+        effectiveness = raw === "-supereffective" ? "super-effective" : raw === "-resisted" ? "resisted" : null;
       }
     }
 
