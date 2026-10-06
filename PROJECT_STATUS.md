@@ -189,3 +189,9 @@ Before declaring the project complete:
 ## Status rule
 
 A feature is not marked COMPLETE merely because source code exists. It is marked complete only when the relevant implementation and verification evidence exist. Browser/WebGL work remains explicitly unverified until an actual browser runtime is exercised.
+
+
+## Current Verification
+
+- CI: GREEN on latest main pipeline; TypeScript/server type-check, ESLint, Vitest, production build, passive-opponent and runtime smoke all passed.
+- Browser/WebGL: Chromium harness exists but GitHub runner Chromium WebSocket handshake is environment-blocked; do not claim browser runtime verified until a real browser session completes the harness.
