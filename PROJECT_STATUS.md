@@ -48,7 +48,7 @@ The browser/WebGL client itself has **not** been launched by an available browse
 | PHASE 8 Arena | IMPLEMENTED / BROWSER UNVERIFIED | Ground, battle positions, lighting, shadows and camera presets implemented. |
 | PHASE 9 UI | IMPLEMENTED / BROWSER UNVERIFIED | Generation/species/form/gender/shiny/ability/item/level/4-move flow, battle HUD, move lock, terminal result and restart flow implemented. |
 | PHASE 10 Integration | VERIFIED SERVER/WS | Browser adapter → WebSocket → Node → pinned Showdown → normalized protocol is covered by the real WebSocket smoke. Browser launch remains unverified. |
-| PHASE 11 Testing | CI GREEN | 20 unit tests + direct Showdown smoke + real WebSocket runtime smoke + production build pass in CI. |
+| PHASE 11 Testing | CI GREEN | 21 unit tests + direct Showdown smoke + real WebSocket runtime smoke + production build pass in CI. |
 | PHASE 12 Bug Fixing | ACTIVE | Recent fixes cover CommonJS runtime loading, transaction identity, Showdown split duplication, runtime readiness, effect disposal, renderer loop disposal, level HP recalculation and terminal/restart lifecycle. |
 | PHASE 13 Performance | PARTIAL | Lazy model loading/cache and disposal are implemented; browser profiling, GPU frame analysis and long-session soak are still required. |
 | PHASE 14 Final Audit | NOT CLOSED | Requires browser/WebGL run, repeated battle soak, advanced protocol/state coverage, dependency/security audit and individual asset-license review. |
@@ -194,4 +194,4 @@ A feature is not marked COMPLETE merely because source code exists. It is marked
 ## Current Verification
 
 - CI: GREEN on latest main pipeline; TypeScript/server type-check, ESLint, Vitest, production build, passive-opponent and runtime smoke all passed.
-- Browser/WebGL: Chromium harness exists but GitHub runner Chromium WebSocket handshake is environment-blocked; do not claim browser runtime verified until a real browser session completes the harness.
+- Browser/WebGL: Chromium harness exists; GitHub runner `dump-dom` cannot maintain the live WebSocket session long enough to complete the browser battle flow. A Node WebSocket probe against the same Vite `/showdown` proxy passes. Do not claim browser/WebGL runtime verified until a real browser session completes the harness.
