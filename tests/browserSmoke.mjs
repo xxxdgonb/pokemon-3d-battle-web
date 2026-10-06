@@ -4,16 +4,6 @@ import {WebSocket} from "ws";
 function start(command,args,env={}){
   return spawn(command,args,{env:{...process.env,...env},stdio:["ignore","pipe","pipe"]});
 }
-async function verifyWebSocketProxy(){
-  const socket=new WebSocket("ws://127.0.0.1:5173/showdown");
-  await new Promise((resolve,reject)=>{
-    const timeout=setTimeout(()=>reject(new Error("Timed out connecting to Vite Showdown WebSocket proxy.")),5000);
-    socket.once("open",()=>socket.send(JSON.stringify({type:"createBattle",config:{generation:9,player:{id:"p1",speciesId:"pikachu",formId:"base",gender:"male",shiny:false,level:50,abilityId:"static",heldItemId:null,hp:100,maxHp:100,status:null,moves:[{moveId:"tackle",pp:35,maxPp:35}]},opponent:{id:"p2",speciesId:"charizard",formId:"base",gender:"male",shiny:false,level:50,abilityId:"blaze",heldItemId:null,hp:100,maxHp:100,status:null,moves:[{moveId:"tackle",pp:35,maxPp:35}]}}})));
-    socket.on("message",data=>{const message=JSON.parse(data.toString());if(message.type!=="ready")return;clearTimeout(timeout);socket.close();resolve();});
-    socket.once("error",reject);
-  });
-}
-
 async function waitHttp(url,timeout=10000){
   const deadline=Date.now()+timeout;
   while(Date.now()<deadline){
