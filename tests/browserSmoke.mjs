@@ -3,6 +3,24 @@ import {spawn} from "node:child_process";
 function start(command,args,env={}){
   return spawn(command,args,{env:{...process.env,...env},stdio:["ignore","pipe","pipe"]});
 }
+async function waitForRuntime(process){
+  return new Promise((resolve,reject)=>{
+    const timeout=setTimeout(()=>reject(new Error("Showdown runtime did not announce its listening port.")),5000);
+    const onData=chunk=>{
+      const match=chunk.toString().match(/Showdown runtime listening on ws:\/\/localhost:(\d+)/);
+      if(!match)return;
+      clearTimeout(timeout);
+      process.stdout.off("data",onData);
+      resolve(Number(match[1]));
+    };
+    process.stdout.on("data",onData);
+    process.once("error",reject);
+    process.once("exit",code=>{
+      if(code!==0)reject(new Error(`Showdown runtime exited before announcing its port: ${code}`));
+    });
+  });
+}
+
 async function waitHttp(url,timeout=10000){
   const deadline=Date.now()+timeout;
   while(Date.now()<deadline){
@@ -12,11 +30,12 @@ async function waitHttp(url,timeout=10000){
   throw new Error(`Timed out waiting for ${url}`);
 }
 
-const runtime=start(process.execPath,["node_modules/tsx/dist/cli.mjs","server/showdownRuntime.ts"],{PORT:"8791"});
-const vite=start(process.execPath,["node_modules/vite/bin/vite.js","--host","127.0.0.1"],{PORT:"5173",SHOWDOWN_PORT:"8791"});
+const runtime=start(process.execPath,["node_modules/tsx/dist/cli.mjs","server/showdownRuntime.ts"],{PORT:"0"});
 
 try{
-  await waitHttp("http://127.0.0.1:8791/");
+  const runtimePort=await waitForRuntime(runtime);
+  const vite=start(process.execPath,["node_modules/vite/bin/vite.js","--host","127.0.0.1"],{PORT:"5173",SHOWDOWN_PORT:String(runtimePort)});
+  await waitHttp("http://127.0.0.1:"+runtimePort+"/");
   await waitHttp("http://127.0.0.1:5173/");
  
   const chromium=start("chromium",[
@@ -29,7 +48,7 @@ try{
     "--timeout=60000",
     "--run-all-compositor-stages-before-draw",
     "--dump-dom",
-    "http://127.0.0.1:5173/tests/browserHarness.html?browserSmoke=1&runtimeHost=127.0.0.1&runtimePort=8791",
+    "http://127.0.0.1:5173/tests/browserHarness.html?browserSmoke=1&runtimeHost=127.0.0.1&runtimePort=${runtimePort}",
   ]);
 
   const chunks=[];
@@ -48,6 +67,6 @@ try{
   }
   console.log("Chromium browser/WebGL smoke test passed.");
 }finally{
-  vite.kill("SIGTERM");
+  vite?.kill("SIGTERM");
   runtime.kill("SIGTERM");
 }
