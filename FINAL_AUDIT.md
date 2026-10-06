@@ -20,8 +20,8 @@ Date: 2026-10-06
 - CI workflow and real Showdown smoke test.
 
 ## Not honestly closed yet
-- Latest implementation CI run `37430639947` completed successfully: TypeScript/server type-check, ESLint, 25 Vitest tests, production build, passive-opponent smoke and real WebSocket runtime smoke all passed.
-- Browser/WebGL manual smoke test is still required; current evidence remains STATIC CHECK ONLY for browser rendering.
+- Latest implementation CI run `37443221970` completed successfully: TypeScript/server type-check, ESLint, 25 Vitest tests, production build, passive-opponent smoke and real WebSocket runtime smoke all passed.
+- Browser/WebGL manual smoke test is still required; headless Chromium dump-dom WebSocket timing is non-authoritative, so browser rendering remains UNVERIFIED in this environment.
 - Advanced field/side/volatile effects are normalized but not all persisted into a dedicated BattleState field model.
 - Full repeated-battle soak/performance profiling is still required.
 - Individual third-party asset/animation/audio redistribution rights remain an audit requirement.
