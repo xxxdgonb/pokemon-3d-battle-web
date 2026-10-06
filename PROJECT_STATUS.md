@@ -6,7 +6,7 @@
 
 Phases 0–11 have implementation or verification evidence as described below. PHASE 14 is intentionally not closed until browser/WebGL verification, advanced battle-event coverage, asset/license audit, and repeated-battle soak evidence exist.
 
-Current head: `5901a06bae76da1cfa9eaffc8630aee480ebee91`
+Current head: `91d1ba0931627cdb7539c9cf11cdebb2957e0bba`
 
 ## Evidence
 
@@ -17,7 +17,7 @@ Verified by CI:
 - `npm run check`
   - TypeScript application/server compilation
   - ESLint
-  - 24 Vitest tests
+  - 25 Vitest tests
 - `npm run build`
 - direct pinned-Showdown passive-opponent smoke
 - real WebSocket runtime smoke
@@ -49,7 +49,7 @@ The browser/WebGL client itself has **not** been launched by an available browse
 | PHASE 9 UI | IMPLEMENTED / BROWSER UNVERIFIED | Generation/species/form/gender/shiny/ability/item/level/4-move flow, battle HUD, move lock, terminal result and restart flow implemented. |
 | PHASE 10 Integration | VERIFIED SERVER/WS | Browser adapter → WebSocket → Node → pinned Showdown → normalized protocol is covered by the real WebSocket smoke. Browser launch remains unverified. |
 | PHASE 11 Testing | CI GREEN | 21 unit tests + direct Showdown smoke + real WebSocket runtime smoke + production build pass in CI. |
-| PHASE 12 Bug Fixing | HARDENED | Recent fixes cover CommonJS runtime loading, transaction identity, Showdown split duplication, runtime readiness, effect disposal, renderer loop disposal, level HP recalculation, terminal/restart lifecycle, animation timing and model-load single-flight. |
+| PHASE 12 Bug Fixing | HARDENED | Recent fixes cover CommonJS runtime loading, transaction identity, Showdown split duplication, runtime readiness, effect disposal, renderer loop disposal, level HP recalculation, terminal/restart lifecycle, animation timing, model-load single-flight, remote move concurrency and runtime input validation. |
 | PHASE 13 Performance | PARTIAL | Lazy model loading/cache, single-flight requests, disposal and transient-effect cleanup are implemented; browser profiling, GPU frame analysis and long-session soak are still required. |
 | PHASE 14 Final Audit | NOT CLOSED | Requires browser/WebGL run, repeated battle soak, advanced protocol/state coverage, dependency/security audit and individual asset-license review. |
 
@@ -75,6 +75,9 @@ Rules:
 - strict client message validation and command allowlist
 - single-flight move lock
 - stale transaction rejection
+- remote adapter move-in-flight guard
+- per-WebSocket command serialization
+- bounded Pokémon/config field validation before entering Showdown
 - impact-before-resolution ordering
 - authoritative HP/max HP projection from Showdown conditions
 - status and faint projection
@@ -192,5 +195,5 @@ A feature is not marked COMPLETE merely because source code exists. It is marked
 
 ## Current Verification
 
-- CI: GREEN on latest main pipeline (`run 215`); TypeScript/server type-check, ESLint, 24 Vitest tests, production build, passive-opponent and real WebSocket runtime smoke all passed.
+- CI: GREEN on latest main pipeline (`run 37430639947`); TypeScript/server type-check, ESLint, 25 Vitest tests, production build, passive-opponent and real WebSocket runtime smoke all passed.
 - Browser/WebGL: Chromium harness exists; GitHub runner `dump-dom` cannot maintain the live WebSocket session long enough to complete the browser battle flow. A Node WebSocket probe against the same Vite `/showdown` proxy passes. Do not claim browser/WebGL runtime verified until a real browser session completes the harness.
