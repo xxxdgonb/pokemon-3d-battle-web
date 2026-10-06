@@ -39,6 +39,7 @@ async function main(){
   await waitFor('[data-action="move"]');
   Array.from(document.querySelectorAll('[data-action="move"]')).slice(0,4).forEach(button=>button.click());
   await click('[data-action="battle"]');
+  await sleep(500);
   await waitFor(".battle-screen",15000);
   await waitFor(".battle-canvas canvas",10000);
   await waitFor(".move-grid button",10000);
