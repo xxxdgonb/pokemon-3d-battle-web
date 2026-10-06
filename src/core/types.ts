@@ -13,22 +13,14 @@ export type StatusCondition =
   | "frz"
   | null;
 
+export type BattleStat = "atk" | "def" | "spa" | "spd" | "spe" | "accuracy" | "evasion";
+
+export type StatStages = Readonly<Record<BattleStat, number>>;
+
 export type BattlePhase =
-  | "INIT"
-  | "INTRO"
-  | "PLAYER_SELECTING_MOVE"
-  | "MOVE_VALIDATING"
-  | "MOVE_START"
-  | "MOVE_ANIMATION"
-  | "MOVE_HIT"
-  | "DAMAGE_CALCULATION"
-  | "DAMAGE_APPLICATION"
-  | "SECONDARY_EFFECTS"
-  | "STATUS_PROCESSING"
-  | "FAINT_CHECK"
-  | "VICTORY"
-  | "DEFEAT"
-  | "BATTLE_END";
+  | "INIT" | "INTRO" | "PLAYER_SELECTING_MOVE" | "MOVE_VALIDATING" | "MOVE_START"
+  | "MOVE_ANIMATION" | "MOVE_HIT" | "DAMAGE_CALCULATION" | "DAMAGE_APPLICATION"
+  | "SECONDARY_EFFECTS" | "STATUS_PROCESSING" | "FAINT_CHECK" | "VICTORY" | "DEFEAT" | "BATTLE_END";
 
 export interface MoveSlot {
   readonly moveId: string;
@@ -49,6 +41,8 @@ export interface PokemonBattleState {
   readonly maxHp: number;
   readonly status: StatusCondition;
   readonly moves: readonly MoveSlot[];
+  readonly statStages?: StatStages;
+  readonly volatileConditions?: readonly string[];
 }
 
 export interface BattleState {
@@ -58,4 +52,7 @@ export interface BattleState {
   readonly activeTransactionId: string | null;
   readonly player: PokemonBattleState;
   readonly opponent: PokemonBattleState;
+  readonly fieldConditions?: readonly string[];
+  readonly playerSideConditions?: readonly string[];
+  readonly opponentSideConditions?: readonly string[];
 }
