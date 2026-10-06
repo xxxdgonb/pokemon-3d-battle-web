@@ -226,6 +226,7 @@ async function run(): Promise<void> {
           // one deterministic legal selection and requires no opponent strategy.
           await battle.write(">p1 team 1");
           await battle.write(">p2 team 1");
+          sendJson(socket, {type: "battle-started"});
           return;
         }
 
