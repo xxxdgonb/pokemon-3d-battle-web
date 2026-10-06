@@ -48,9 +48,7 @@ async function main(){
   }
   const damagingMove=moveButtons.find(button=>/Physical|Special/.test(button.textContent ?? ""));
   if(!damagingMove) throw new Error("No damaging move was available in the selected four moves.");
-  const before=document.querySelector("#opponent-hp")?.textContent ?? "";
-  damagingMove.click();
-  let lastHp=before;
+  let lastHp=document.querySelector("#opponent-hp")?.textContent ?? "";
   for(let turn=0;turn<20;turn++){
     const result=document.querySelector(".battle-result");
     if(result)break;
@@ -60,12 +58,13 @@ async function main(){
     const turnDeadline=Date.now()+15000;
     while(Date.now()<turnDeadline){
       const after=document.querySelector("#opponent-hp")?.textContent ?? "";
-      if(after && after!==lastHp){lastHp=after;break;}
-      if(document.querySelector(".battle-result"))break;
+      const enabled=!button.disabled;
+      if(document.querySelector(".battle-result")){lastHp=after;break;}
+      if(enabled && after){lastHp=after;break;}
       await sleep(50);
     }
-    if(!document.querySelector(".battle-result") && document.querySelector("#opponent-hp")?.textContent===lastHp){
-      throw new Error("Opponent HP did not change on turn "+(turn+1)+": "+lastHp);
+    if(!document.querySelector(".battle-result") && button.disabled){
+      throw new Error("Move transaction did not complete on turn "+(turn+1)+".");
     }
   }
   if(!document.querySelector(".battle-result"))throw new Error("Battle did not reach a terminal victory/defeat state.");
