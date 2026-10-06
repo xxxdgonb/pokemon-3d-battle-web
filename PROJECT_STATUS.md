@@ -6,11 +6,11 @@
 
 Phases 0–11 have implementation or verification evidence as described below. PHASE 14 is intentionally not closed until browser/WebGL verification, advanced battle-event coverage, asset/license audit, and repeated-battle soak evidence exist.
 
-Current head: `4789fd309c38103c777c48dfbba4695d77981bc5`
+Current head: `edc0c181bfe5538ca4e84acbea9cd6261ed9fa1e`
 
 ## Evidence
 
-Latest GitHub Actions CI run after the current implementation changes completed successfully.
+Latest GitHub Actions CI run after the current implementation changes completed successfully (`37444094101`, commit `edc0c181bfe5538ca4e84acbea9cd6261ed9fa1e`).
 
 Verified by CI:
 - `npm install`
