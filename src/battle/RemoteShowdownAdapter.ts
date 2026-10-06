@@ -8,6 +8,7 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
   private state: BattleState | null = null;
   private unsubscribe: (() => void) | null = null;
   private readonly pending: ShowdownBattleEvent[] = [];
+  private moveInFlight = false;
 
   public constructor(private readonly transport: ShowdownTransport) {}
 
@@ -42,13 +43,19 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
   }
 
   public async submitPlayerMove(move: MoveSlot["moveId"]): Promise<readonly ShowdownBattleEvent[]> {
-    const pendingBefore = this.pending.length;
-    await this.transport.send(`>p1 ${encodeChoice(move)}`);
-    for(let attempt=0;attempt<16;attempt++){
-      if(this.pending.some(event=>event.kind==="request"||event.kind==="battle-end"))break;
-      await this.transport.waitForBlock();
+    if (this.moveInFlight) throw new Error("A player move is already in flight.");
+    this.moveInFlight = true;
+    try {
+      const pendingBefore = this.pending.length;
+      await this.transport.send(`>p1 ${encodeChoice(move)}`);
+      for(let attempt=0;attempt<16;attempt++){
+        if(this.pending.some(event=>event.kind==="request"||event.kind==="battle-end"))break;
+        await this.transport.waitForBlock();
+      }
+      return this.pending.splice(pendingBefore);
+    } finally {
+      this.moveInFlight = false;
     }
-    return this.pending.splice(pendingBefore);
   }
 
   public async getState(): Promise<BattleState> {
@@ -59,6 +66,7 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
   }
 
   public async dispose(): Promise<void> {
+    this.moveInFlight = false;
     this.unsubscribe?.();
     this.unsubscribe = null;
     await this.transport.close();
