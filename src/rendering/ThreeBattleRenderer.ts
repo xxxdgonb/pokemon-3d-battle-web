@@ -74,16 +74,20 @@ export class ThreeBattleRenderer {
   public async playResolution(type:string,events:readonly ShowdownBattleEvent[]):Promise<void>{
     const target=this.opponentModel;
     if(!target)return;
-    if(events.some(event=>event.kind==="damage")){
+    const targetsOpponent=(event:ShowdownBattleEvent):boolean=>{
+      const first=event.payload;
+      return Array.isArray(first) && typeof first[0]==="string" && first[0].startsWith("p2");
+    };
+    if(events.some(event=>event.kind==="damage" && targetsOpponent(event))){
       this.effects.playTypeImpact(type,target);
       await this.animations.play(target,"hit",220);
     }
-    if(events.some(event=>event.kind==="faint")){
+    if(events.some(event=>event.kind==="faint" && targetsOpponent(event))){
       await this.animations.play(target,"faint",520);
     }
   }
 
-  public async playMove(type:string,onImpact:()=>void):Promise<void>{
+  public async playMove(_type:string,onImpact:()=>void):Promise<void>{
     const model=this.playerModel;
     this.cameraController.set("move");
     if(!model){onImpact();return;}
