@@ -6,7 +6,7 @@
 
 Phases 0–11 have implementation or verification evidence as described below. PHASE 14 is intentionally not closed until browser/WebGL verification, advanced battle-event coverage, asset/license audit, and repeated-battle soak evidence exist.
 
-Current head: `91d1ba0931627cdb7539c9cf11cdebb2957e0bba`
+Current head: `a9985ad56d0ba8e4cf8a8b67a13294f1f691216f`
 
 ## Evidence
 
@@ -163,6 +163,7 @@ Current test coverage includes:
 - form/shiny identity normalization
 - ability/item event projection
 - coordinator move-resolution behavior
+- remote adapter concurrent-move rejection
 - direct pinned-Showdown passive-opponent smoke
 - real WebSocket runtime smoke
 
