@@ -77,7 +77,7 @@ export class App {
   }
 
   private form():string{
-    const forms=this.dex?.species.filter(s=>s.baseSpecies===this.species!.baseSpecies)??[];
+    const forms=this.dex?.species.filter(s=>s.baseSpecies===this.species!.baseSpecies && (s.id===this.species!.id || s.forme || s.isMega || s.isGigantamax))??[];
     return `<div class="grid-list">${forms.map(s=>`<button data-action="form" data-value="${s.id}">${s.name}</button>`).join("")}</div>`;
   }
 
