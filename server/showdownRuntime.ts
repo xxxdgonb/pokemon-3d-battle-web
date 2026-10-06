@@ -26,16 +26,17 @@ function isGeneration(value: unknown): value is Generation {
 function isPokemonState(value: unknown): value is PokemonBattleState {
   if (!value || typeof value !== "object") return false;
   const c = value as Partial<PokemonBattleState>;
+  const {level, hp, maxHp} = c;
   if (
     typeof c.id !== "string" || c.id.length < 1 || c.id.length > 64 ||
     typeof c.speciesId !== "string" || c.speciesId.length < 1 || c.speciesId.length > 128 ||
     typeof c.formId !== "string" || c.formId.length < 1 || c.formId.length > 128 ||
     !["male", "female", "genderless"].includes(c.gender as string) ||
     typeof c.shiny !== "boolean" ||
-    !Number.isInteger(c.level) || c.level < 1 || c.level > 100 ||
+    !Number.isInteger(level) || level < 1 || level > 100 ||
     typeof c.abilityId !== "string" || c.abilityId.length > 128 ||
     !(c.heldItemId === null || (typeof c.heldItemId === "string" && c.heldItemId.length <= 128)) ||
-    !Number.isFinite(c.hp) || !Number.isFinite(c.maxHp) || c.hp < 0 || c.maxHp < 1 ||
+    !Number.isFinite(hp) || !Number.isFinite(maxHp) || hp < 0 || maxHp < 1 ||
     !Array.isArray(c.moves) || c.moves.length < 1 || c.moves.length > 4
   ) return false;
   return c.moves.every(move =>
