@@ -52,7 +52,9 @@ try{
   if(code!==0)throw new Error(`Chromium exited with code ${code}: ${errors.join("").slice(-2000)}`);
   const result=html.match(/<title>(BROWSER_SMOKE_[^<]*)<\/title>/)?.[1] ?? "";
   if(result!=="BROWSER_SMOKE_PASSED"){
-    const bodyText=html.match(/<body[^>]*>([\\s\\S]*?)<\\/body>/)?.[1] ?? "";
+    const bodyStart=html.indexOf("<body");
+    const bodyEnd=html.lastIndexOf("</body>");
+    const bodyText=bodyStart>=0 ? html.slice(bodyStart,bodyEnd>=0 ? bodyEnd : undefined) : html;
     throw new Error(`Browser UI smoke did not pass: title=${result||"missing"} html-tail=${bodyText.slice(-3000)}`);
   }
   console.log("Chromium browser/WebGL smoke test passed.");
