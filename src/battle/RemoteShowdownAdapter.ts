@@ -46,8 +46,7 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
     if (this.moveInFlight) throw new Error("A player move is already in flight.");
     this.moveInFlight = true;
     try {
-      const pendingBefore = this.pending.length;
-      await this.transport.send(`>p1 ${encodeChoice(move)}`);
+        await this.transport.send(`>p1 ${encodeChoice(move)}`);
       for(let attempt=0;attempt<16;attempt++){
         if(this.pending.some(event=>event.kind==="request"||event.kind==="battle-end"))break;
         await this.transport.waitForBlock();
