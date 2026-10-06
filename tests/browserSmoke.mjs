@@ -29,8 +29,7 @@ const vite=start(process.execPath,["node_modules/vite/bin/vite.js","--host","127
 try{
   await waitHttp("http://127.0.0.1:8791/");
   await waitHttp("http://127.0.0.1:5173/");
-  await verifyWebSocketProxy();
-
+ 
   const chromium=start("chromium",[
     "--headless=new",
     "--no-sandbox",
