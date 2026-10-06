@@ -25,26 +25,6 @@ async function waitHttp(url,timeout=10000){
   }
   throw new Error(`Timed out waiting for ${url}`);
 }
-function cdpPipe(process){
-  const output=process.stdio[3]; const input=process.stdio[4];
-  let nextId=0; let buffer=Buffer.alloc(0); const pending=new Map();
-  input.on("data",chunk=>{
-    buffer=Buffer.concat([buffer,chunk]);
-    while(buffer.length>=4){
-      const length=buffer.readUInt32LE(0); if(buffer.length<length+4)return;
-      const message=JSON.parse(buffer.subarray(4,length+4).toString()); buffer=buffer.subarray(length+4);
-      const entry=pending.get(message.id); if(!entry)continue;
-      pending.delete(message.id); clearTimeout(entry.timer);
-      if(message.error)entry.reject(new Error(message.error.message)); else entry.resolve(message.result);
-    }
-  });
-  const call=(method,params={},sessionId)=>new Promise((resolve,reject)=>{
-    const id=++nextId; const timer=setTimeout(()=>{pending.delete(id);reject(new Error(`CDP timeout: ${method}`));},15000);
-    pending.set(id,{resolve,reject,timer}); const body=Buffer.from(JSON.stringify({id,method,params,...(sessionId?{sessionId}:{})}));
-    const packet=Buffer.alloc(body.length+4); packet.writeUInt32LE(body.length,0); body.copy(packet,4); output.write(packet);
-  });
-  return {call};
-}
 const runtime=start(process.execPath,["node_modules/tsx/dist/cli.mjs","server/showdownRuntime.ts"],{PORT:"0"});
 let vite=null; let driver=null; let sessionId="";
 async function waitDriver(timeout=10000){
