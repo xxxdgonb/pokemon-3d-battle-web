@@ -70,6 +70,40 @@ describe("ShowdownStateProjector",()=>{
     expect(state.opponent.heldItemId).toBeNull();
   });
 
+  it("projects stat stages with Showdown clamping",()=>{
+    const state=projectShowdownBlock(createState(),parseShowdownBlock([
+      "|-boost|p2a: Charizard|atk|2",
+      "|-unboost|p2a: Charizard|atk|1",
+      "|-unboost|p2a: Charizard|def|9",
+    ].join("\n")));
+    expect(state.opponent.statStages?.atk).toBe(1);
+    expect(state.opponent.statStages?.def).toBe(-6);
+  });
+
+  it("projects volatile and side conditions without touching HP",()=>{
+    const state=projectShowdownBlock(createState(),parseShowdownBlock([
+      "|-start|p2a: Charizard|Substitute",
+      "|-end|p2a: Charizard|Substitute",
+      "|-fieldstart|move: Grassy Terrain",
+      "|-sidestart|p2: Opponent|Stealth Rock",
+    ].join("\n")));
+    expect(state.opponent.hp).toBe(100);
+    expect(state.opponent.volatileConditions).toEqual([]);
+    expect(state.fieldConditions).toContain("move: Grassy Terrain");
+    expect(state.opponentSideConditions).toContain("Stealth Rock");
+  });
+
+  it("removes field and side conditions authoritatively",()=>{
+    const state=projectShowdownBlock(createState(),parseShowdownBlock([
+      "|-fieldstart|move: Grassy Terrain",
+      "|-sidestart|p2: Opponent|Stealth Rock",
+      "|-fieldend|move: Grassy Terrain",
+      "|-sideend|p2: Opponent|Stealth Rock",
+    ].join("\n")));
+    expect(state.fieldConditions).toEqual([]);
+    expect(state.opponentSideConditions).toEqual([]);
+  });
+
   it("does not let raw win events bypass the application state machine",()=>{
     const state=projectShowdownBlock(createState(),parseShowdownBlock("|win|Player"));
     expect(state.phase).toBe("PLAYER_SELECTING_MOVE");
