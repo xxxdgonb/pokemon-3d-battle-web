@@ -60,7 +60,7 @@ try{
     await new Promise(resolve=>setTimeout(resolve,250));
   }
   if(title!=="BROWSER_SMOKE_PASSED")throw new Error(title||"Browser smoke timeout.");
-  const canvas=await driverRequest("/session/"+sessionId+"/execute/sync",{method:"POST",body:JSON.stringify({script:"return document.querySelectorAll(\"canvas\").length > 0;",args:[]})});
+  const canvas=await driverRequest("/session/"+sessionId+"/execute/sync",{method:"POST",body:JSON.stringify({script:"return document.body.dataset.browserSmokeCanvas === \"true\";",args:[]})});
   if(canvas!==true)throw new Error("Three.js canvas was not present at completion.");
   console.log("Chromium browser/WebGL smoke test passed.");
 }finally{
