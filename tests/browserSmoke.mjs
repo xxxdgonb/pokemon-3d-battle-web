@@ -13,7 +13,7 @@ async function waitHttp(url,timeout=10000){
 }
 
 const runtime=start(process.execPath,["node_modules/tsx/dist/cli.mjs","server/showdownRuntime.ts"],{PORT:"8791"});
-const vite=start(process.execPath,["node_modules/vite/bin/vite.js","--host","127.0.0.1"],{PORT:"5173"});
+const vite=start(process.execPath,["node_modules/vite/bin/vite.js","--host","127.0.0.1"],{PORT:"5173",SHOWDOWN_PORT:"8791"});
 
 try{
   await waitHttp("http://127.0.0.1:8791/");
