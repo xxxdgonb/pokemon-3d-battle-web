@@ -42,21 +42,37 @@ async function waitDevToolsPort(process){
 async function cdp(ws,url){
   const socket=new WebSocket(ws);
   await new Promise((resolve,reject)=>{socket.once("open",resolve);socket.once("error",reject);});
-  let id=0;
-  const call=(name,args={})=>new Promise((resolve,reject)=>{
-    const requestId=++id;
-    const timeout=setTimeout(()=>reject(new Error(`CDP timeout: ${name}`)),10000);
-    const handler=raw=>{
-      const message=JSON.parse(raw.toString());
-      if(message.id!==requestId)return;
-      clearTimeout(timeout);socket.off("message",handler);
-      if(message.error)reject(new Error(message.error.message)); else resolve(message.result);
-    };
-    socket.on("message",handler);socket.send(JSON.stringify({id:requestId,method:name,params:args}));
+  let nextId=0;
+  const pending=new Map();
+  const onMessage=raw=>{
+    const message=JSON.parse(raw.toString());
+    if(message.id===undefined)return;
+    const entry=pending.get(message.id);
+    if(!entry)return;
+    pending.delete(message.id);
+    clearTimeout(entry.timer);
+    if(message.error)entry.reject(new Error(message.error.message));
+    else entry.resolve(message.result);
+  };
+  socket.on("message",onMessage);
+  const call=(method,params={})=>new Promise((resolve,reject)=>{
+    const id=++nextId;
+    const timer=setTimeout(()=>{pending.delete(id);reject(new Error(`CDP timeout: ${method}`));},15000);
+    pending.set(id,{resolve,reject,timer});
+    socket.send(JSON.stringify({id,method,params}));
   });
   await call("Page.enable");
-  await call("Runtime.enable");
   await call("Page.navigate",{url});
+  await new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>{socket.off("message",onLoad);reject(new Error("Timed out waiting for page load."));},15000);
+    const onLoad=raw=>{
+      const message=JSON.parse(raw.toString());
+      if(message.method!=="Page.loadEventFired")return;
+      clearTimeout(timer);socket.off("message",onLoad);resolve();
+    };
+    socket.on("message",onLoad);
+  });
+  await call("Runtime.enable");
   return {socket,call};
 }
 const runtime=start(process.execPath,["node_modules/tsx/dist/cli.mjs","server/showdownRuntime.ts"],{PORT:"0"});
