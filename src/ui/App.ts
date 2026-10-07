@@ -323,7 +323,6 @@ export class App {
     if(this.battleRenderer)this.battleRenderer.dispose();
     this.battleRenderer=null;
     this.root.innerHTML='<section id="battle-root" class="battle-screen"><div id="battle-canvas" class="battle-canvas"></div><div class="battle-topbar"><div><strong>3D BATTLE</strong><span id="turn-label">Turn 1</span></div><button class="ghost-button" type="button" data-action="restart-battle">Exit Battle</button></div><div class="battle-hud"><div class="battle-state-strip" id="battle-state-strip"></div><div class="combatant-card"><div class="combatant-head"><strong id="player-name">Player</strong><span id="player-level"></span></div><div class="hpbar"><i id="player-hpbar"></i></div><div class="hp-readout"><span id="player-hp"></span><small id="player-status"></small></div></div><div class="combatant-card"><div class="combatant-head"><strong id="opponent-name">Opponent</strong><span id="opponent-level"></span></div><div class="hpbar"><i id="opponent-hpbar"></i></div><div class="hp-readout"><span id="opponent-hp"></span><small id="opponent-status"></small></div></div><div class="battle-log" id="battle-log"></div><div id="moves" class="move-grid"></div><div class="battle-result-slot" id="battle-result-slot"></div></div><div id="battle-loading" class="battle-overlay"></div></section>';
-    const host=this.root.querySelector("#battle-canvas") as HTMLElement;
     for(const move of this.selectedMoves){
       const button=document.createElement("button");
       button.type="button";
