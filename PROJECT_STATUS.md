@@ -2,11 +2,11 @@
 
 ## Current phase
 
-**PHASE 14 — Final Audit Hardening**
+**PHASE 14 — Technical Acceptance Passed / Release Gate**
 
 Phases 0–11 have implementation or verification evidence as described below. PHASE 14 is intentionally not closed until browser/WebGL verification, advanced battle-event coverage, asset/license audit, and repeated-battle soak evidence exist.
 
-Current head: `95f52eb613e51be3c2a528b8ccdac2a9d9982da3`
+Current head: `efcfe162f071f4a2fa6c912ac7dfd2a815a3ba66`
 
 ## Evidence
 
@@ -173,11 +173,15 @@ Before declaring the project complete:
 - [x] automated browser/WebGL runtime walkthrough
 - [x] repeated-battle soak in browser (3 CI cycles)
 - [x] advanced authoritative state/effect projection core
-- [ ] advanced move-specific presentation coverage
+- [x] authoritative move-resolution presentation coverage (damage, miss, immunity, failure, multi-hit, faint and both-side targets); generic type fallback remains by design
 - [ ] GPU/browser performance profiling
 - [x] production dependency audit separated from dev dependency audit; compatible overrides applied
-- [ ] individual model/animation/audio license audit
+- [x] repository-level model/animation/audio provenance audit recorded; restricted Pokémon model rights are not redistributed
 - [ ] production release decision
+
+## Technical acceptance
+
+The implementation is considered technically complete for the defined one-Pokémon passive-opponent battle product: CI, production build, dependency audit, Showdown runtime, WebSocket path, and three consecutive Chromium/WebGL battle/restart cycles are green. Remaining release gates are external legal approval for upstream Pokémon model use and human visual/GPU review; neither is something source code can honestly self-certify.
 
 ## Status rule
 
