@@ -22,7 +22,7 @@ async function waitForBattleReady(timeout=15000){
   const deadline=Date.now()+timeout;
   while(Date.now()<deadline){
     const buttons=Array.from(document.querySelectorAll(".move-grid button"));
-    if(buttons.some(button=>!button.disabled && /PP \\d+\\//.test(button.textContent ?? "")))return;
+    if(buttons.some(button=>!button.disabled && /PP \d+\//.test(button.textContent ?? "")))return;
     await sleep(100);
   }
   throw new Error("Battle controls did not become ready within the timeout.");
