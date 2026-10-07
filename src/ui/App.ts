@@ -401,8 +401,21 @@ export class App {
     try{
       this.coordinator.selectMove(m.id);this.coordinator.startMove(id,m.id);
       let resolved=false;
-      const resolveOnce=():void=>{if(resolved)return;resolved=true;void this.resolveMove(id,m);};
-      if(this.battleRenderer)void this.battleRenderer.playMove(m.type,resolveOnce);else window.setTimeout(resolveOnce,0);
+      const resolveOnce=():void=>{
+        if(resolved)return;
+        resolved=true;
+        void this.resolveMove(id,m).catch(error=>{
+          this.appendBattleLog(`Battle error: ${error instanceof Error?error.message:"Unknown error"}`);
+          this.moveBusy=false;
+          this.updateBattleHud();
+        });
+      };
+      if(this.battleRenderer){
+        void this.battleRenderer.playMove(m.type,resolveOnce).catch(error=>{
+          this.appendBattleLog(`3D animation error: ${error instanceof Error?error.message:"Unknown error"}`);
+          resolveOnce();
+        });
+      }else window.setTimeout(resolveOnce,0);
       window.setTimeout(resolveOnce,1800);
     }catch(error){
       this.moveBusy=false;this.refreshBattleControls();this.appendBattleLog(`Battle error: ${error instanceof Error?error.message:"Unknown error"}`);throw error;
@@ -430,7 +443,6 @@ export class App {
     }catch(error){
       this.appendBattleLog(`Battle error: ${error instanceof Error?error.message:"Unknown error"}`);
       this.updateBattleHud();
-      throw error;
     }finally{
       this.moveBusy=false;this.refreshBattleControls();
     }
