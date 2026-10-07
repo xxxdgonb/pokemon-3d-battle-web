@@ -152,6 +152,13 @@ function parseVolatileMessage(state: BattleState, message: ShowdownProtocolMessa
   return updateSide(state, side, {volatileConditions: [...current]});
 }
 
+function parseWeatherMessage(state: BattleState, message: ShowdownProtocolMessage, clear: boolean): BattleState {
+  const condition = message.args[0]; if (!condition || condition === "none") return clear ? {...state, fieldConditions: []} : state;
+  const current = new Set(state.fieldConditions ?? []);
+  if (clear) current.delete(condition); else current.add(condition);
+  return {...state, fieldConditions: [...current]};
+}
+
 function parseFieldMessage(state: BattleState, message: ShowdownProtocolMessage, clear: boolean): BattleState {
   const condition = message.args[0]; if (!condition) return state;
   const current = new Set(state.fieldConditions ?? []);
@@ -189,6 +196,7 @@ export function projectShowdownMessage(state: BattleState, message: ShowdownProt
     case "-unboost": return parseStageMessage(state,message,-1);
     case "-start": return parseVolatileMessage(state,message,false);
     case "-end": return parseVolatileMessage(state,message,true);
+    case "-weather": return parseWeatherMessage(state,message,message.args[0] === "none");
     case "-fieldstart": return parseFieldMessage(state,message,false);
     case "-fieldend": return parseFieldMessage(state,message,true);
     case "-sidestart": return parseSideConditionMessage(state,message,false);
