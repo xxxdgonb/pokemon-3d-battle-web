@@ -87,15 +87,23 @@ export class ThreeBattleRenderer {
       if(target)await this.animations.play(target,"faint",520);
     }
   }
-  public async playMove(_type:string,onImpact:()=>void):Promise<void>{
+  public async playMove(type:string,onImpact:()=>void):Promise<void>{
     const model=this.playerModel;
+    const target=this.opponentModel;
     this.cameraController.set("move");
     if(!model){onImpact();return;}
-    await this.moveAnimations.play({
-      actor:model,
-      target:this.opponentModel,
-      onImpact:()=>{this.cameraController.set("impact");onImpact();},
-    });
+    let impacted=false;
+    const triggerImpact=():void=>{
+      if(impacted)return;
+      impacted=true;
+      this.cameraController.set("impact");
+      onImpact();
+    };
+    const projectile=target?this.effects.playProjectile(type,model,target,triggerImpact):Promise.resolve().then(triggerImpact);
+    await Promise.all([
+      this.moveAnimations.play({actor:model,target,onImpact:triggerImpact}),
+      projectile,
+    ]);
     this.cameraController.set("default");
   }
 
