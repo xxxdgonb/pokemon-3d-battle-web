@@ -42,7 +42,7 @@ export class PokemonModelLoader {
       const promise=this.fetchModel(candidate,key);
       this.pending.set(key,promise);
       const model=await promise;
-      if(model)return model.clone(true);
+      if(model)return SkeletonUtils.clone(model) as THREE.Group;
     }
     return null;
   }
