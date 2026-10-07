@@ -1,4 +1,4 @@
-/* eslint-env browser */
+/* global window, document, HTMLButtonElement, location */
 
 let browserError=null;
 window.addEventListener("error",event=>{browserError=String(event.error?.message ?? event.message);});
@@ -96,7 +96,7 @@ async function main(){
     while(Date.now()<turnDeadline){
       const after=document.querySelector("#opponent-hp")?.textContent ?? "";
       const enabled=!button.disabled;
-      if(document.querySelector(".battle-result")){break;}
+      if(document.querySelector(".battle-result")){lastHp=after;break;}
       if(enabled && after){lastHp=after;break;}
       await sleep(50);
     }
