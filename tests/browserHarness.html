@@ -7,8 +7,6 @@
 let browserError=null;
 window.addEventListener("error",event=>{browserError=String(event.error?.message ?? event.message);});
 window.addEventListener("unhandledrejection",event=>{browserError=String(event.reason?.message ?? event.reason);});
-import "/src/main.ts";
-
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function waitFor(selector,timeout=10000){
   const deadline=Date.now()+timeout;
@@ -35,6 +33,7 @@ async function waitForBattleReady(timeout=15000){
   throw new Error("Battle controls did not become ready within the timeout.");
 }
 async function main(){
+  await import("/src/main.ts");
   await waitFor("#app");
   const mark=step=>{document.body.dataset.browserSmokeStep=step;};
   mark("start");
