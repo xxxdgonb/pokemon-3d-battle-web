@@ -30,7 +30,7 @@ async function main(){
   mark("start");
   for(const generation of [1,2,3,4,5,6,7,8,9]){
     mark("generation-"+generation+"-start");
-    await click('[data-action="start"]');
+    if(generation===1)await click('[data-action="start"]');
     mark("generation-"+generation+"-select");
     await click(`[data-action="generation"][data-value="${generation}"]`);
     mark("generation-"+generation+"-loading");
