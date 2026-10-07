@@ -1,4 +1,7 @@
 import {spawn} from "node:child_process";
+import net from "node:net";
+
+async function freePort(){return new Promise((resolve,reject)=>{const server=net.createServer();server.once("error",reject);server.listen(0,"127.0.0.1",()=>{const address=server.address();const port=typeof address==="object"&&address?address.port:0;server.close(error=>error?reject(error):resolve(port));});});}
 
 function start(command,args,env={}){
   return spawn(command,args,{env:{...process.env,...env},stdio:["ignore","pipe","pipe","pipe","pipe"]});
@@ -26,34 +29,36 @@ async function waitHttp(url,timeout=10000){
 }
 const runtime=start(process.execPath,["node_modules/tsx/dist/cli.mjs","server/showdownRuntime.ts"],{PORT:"0"});
 let vite=null; let driver=null; let sessionId="";
+const vitePort=await freePort();
+const driverPort=await freePort();
 async function waitDriver(timeout=10000){
   const deadline=Date.now()+timeout;
   while(Date.now()<deadline){
-    try{const response=await fetch("http://127.0.0.1:9515/status"); if(response.ok)return;}catch{}
+    try{const response=await fetch("http://127.0.0.1:DRIVERPORT/status"); if(response.ok)return;}catch{}
     await new Promise(resolve=>setTimeout(resolve,100));
   }
   throw new Error("ChromeDriver did not start.");
 }
 async function driverRequest(path,options={}){
-  const response=await fetch("http://127.0.0.1:9515"+path,{headers:{"content-type":"application/json"},...options});
+  const response=await fetch("http://127.0.0.1:"+driverPort+path,{headers:{"content-type":"application/json"},...options});
   const body=await response.json();
   if(!response.ok || body.value?.error)throw new Error(JSON.stringify(body));
   return body.value;
 }
 try{
   const runtimePort=await waitForRuntime(runtime);
-  vite=start(process.execPath,["node_modules/vite/bin/vite.js","--host","127.0.0.1"],{PORT:"5173",SHOWDOWN_PORT:String(runtimePort)});
+  vite=start(process.execPath,["node_modules/vite/bin/vite.js","--host","127.0.0.1","--port",String(vitePort),"--strictPort"],{PORT:String(vitePort),SHOWDOWN_PORT:String(runtimePort)});
   await waitHttp("http://127.0.0.1:"+runtimePort+"/");
-  await waitHttp("http://127.0.0.1:5173/");
-  await waitHttp("http://127.0.0.1:5173/api/dex?generation=9");
-  await waitHttp("http://127.0.0.1:5173/src/main.ts");
-  await waitHttp("http://127.0.0.1:5173/src/ui/App.ts");
-  driver=start("chromedriver",["--port=9515","--url-base=/"]);
+  await waitHttp("http://127.0.0.1:"+vitePort+"/");
+  await waitHttp("http://127.0.0.1:"+vitePort+"/api/dex?generation=9");
+  await waitHttp("http://127.0.0.1:"+vitePort+"/src/main.ts");
+  await waitHttp("http://127.0.0.1:"+vitePort+"/src/ui/App.ts");
+  driver=start("chromedriver",["--port="+driverPort,"--url-base=/"]);
   await waitDriver();
   const capabilities={browserName:"chrome",pageLoadStrategy:"eager","goog:chromeOptions":{binary:"/usr/bin/chromium",args:["--headless=new","--no-sandbox","--disable-dev-shm-usage","--use-gl=swiftshader","--enable-unsafe-swiftshader","--window-size=1440,900"]}};
   const session=await driverRequest("/session",{method:"POST",body:JSON.stringify({capabilities:{alwaysMatch:capabilities}})});
   sessionId=session.sessionId;
-  await driverRequest("/session/"+sessionId+"/url",{method:"POST",body:JSON.stringify({url:"http://127.0.0.1:5173/tests/browserHarness.html?browserSmoke=1"})});
+  await driverRequest("/session/"+sessionId+"/url",{method:"POST",body:JSON.stringify({url:"http://127.0.0.1:"+vitePort+"/tests/browserHarness.html?browserSmoke=1"})});
   const deadline=Date.now()+60000; let title="";
   while(Date.now()<deadline){
     const result=await driverRequest("/session/"+sessionId+"/execute/sync",{method:"POST",body:JSON.stringify({script:"return document.title;",args:[]})});
