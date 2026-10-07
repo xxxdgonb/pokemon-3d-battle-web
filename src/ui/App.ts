@@ -273,7 +273,6 @@ export class App {
     this.battleRenderer=null;
     await adapter?.dispose();
     renderer?.dispose();
-    this.audio.dispose();
     this.pokemon=null;
     this.opponentPokemon=null;
     this.opponentSpecies=null;
