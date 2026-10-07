@@ -168,7 +168,7 @@ export class App {
   private gender():string{
     const rule=this.species?.gender;
     const genders=rule==="M"?["male"]:rule==="F"?["female"]:rule==="N"?["genderless"]:["male","female"];
-    return `<div class="section-intro"><div><strong>Choose gender</strong><span>Available choices follow the selected species data.</span></div></div><div class="option-grid">${genders.map(g=>`<button class="option-card" type="button" data-action="gender" data-value="${g}"><strong>${g[0].toUpperCase()+g.slice(1)}</strong><span>${g==="genderless"?"Genderless species":"Battle identity"}</span></button>`).join("")}</div>`;
+    return `<div class="section-intro"><div><strong>Choose gender</strong><span>Available choices follow the selected species data.</span></div></div><div class="option-grid">${genders.map(g=>`<button class="option-card" type="button" data-action="gender" data-value="${g}"><strong>${g.charAt(0).toUpperCase()+g.slice(1)}</strong><span>${g==="genderless"?"Genderless species":"Battle identity"}</span></button>`).join("")}</div>`;
   }
 
   private shiny():string{
@@ -469,6 +469,8 @@ export class App {
       this.battle3dLoading=false;this.updateBattleHud();
     }
   }
+
+  private genderForSpecies(s:DexSpecies):Gender{return s.gender==="N"?"genderless":s.gender==="F"?"female":"male";}
 
   private async resetBattle():Promise<void>{
     const adapter=this.adapter;const renderer=this.battleRenderer;
