@@ -26,30 +26,50 @@ async function click(selector){
 }
 async function main(){
   await waitFor("#app");
+  const mark=step=>{document.body.dataset.browserSmokeStep=step;};
+  mark("start");
   for(const generation of [1,2,3,4,5,6,7,8,9]){
+    mark("generation-"+generation+"-start");
     await click('[data-action="start"]');
+    mark("generation-"+generation+"-select");
     await click(`[data-action="generation"][data-value="${generation}"]`);
+    mark("generation-"+generation+"-loading");
     await waitFor('[data-action="species"]');
+
     if(!document.querySelector('[data-action="species"][data-value="pikachu"]')){
       throw new Error("Generation "+generation+" did not expose Pikachu species data.");
     }
+    mark("generation-"+generation+"-verified");
     if(generation!==9){
       await click('[data-action="back"]');
       await waitFor('[data-action="generation"][data-value="1"]');
     }
   }
+  mark("configure-species");
   await click('[data-action="species"][data-value="pikachu"]');
   await click('[data-action="next"]');
-  await click('[data-action="form"][data-value="pikachu"]');
+  const formButton=document.querySelector('[data-action="form"][data-value="pikachu"]');
+  if(formButton)await click('[data-action="form"][data-value="pikachu"]');
+  else await click('[data-action="next"]');
+  mark("configure-gender");
   await click('[data-action="gender"][data-value="male"]');
   await click('[data-action="shiny"][data-value="false"]');
+  mark("configure-ability");
   await click('[data-action="ability"]');
+  mark("configure-level");
   await click('[data-action="item"][data-value=""]');
   await click('[data-action="level"]');
-  await waitFor('[data-action="move"]');
-  Array.from(document.querySelectorAll('[data-action="move"]')).slice(0,4).forEach(button=>button.click());
+  await waitFor('.move-picker [data-action="move"]');
+  for(let i=0;i<4;i++){
+    const move=document.querySelector('.move-picker [data-action="move"]');
+    if(!move)throw new Error("Move picker lost its next selectable move at slot "+(i+1)+".");
+    move.click();
+    await sleep(80);
+  }
+  mark("starting-battle");
   await click('[data-action="battle"]');
   await sleep(1500);
+  mark("battle-rendered-check");
   const battleScreen=document.querySelector(".battle-screen");
   const canvas=document.querySelector(".battle-canvas canvas");
   const moveButtons=Array.from(document.querySelectorAll(".move-grid button"));
@@ -79,6 +99,7 @@ async function main(){
   document.body.dataset.browserSmokeCanvas=String(Boolean(document.querySelector(".battle-canvas canvas")));
   const restart=document.querySelector('.battle-result button[data-action="restart-battle"]');
   if(!restart)throw new Error("Battle Again control was not rendered.");
+  mark("battle-again");
   restart.click();
   await waitFor('[data-action="start"]',10000);
   document.body.dataset.browserSmoke="passed";
