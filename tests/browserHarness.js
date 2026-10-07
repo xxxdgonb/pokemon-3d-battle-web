@@ -1,4 +1,4 @@
-/* global window, document, HTMLButtonElement, location */
+/* global window, document, HTMLButtonElement, setTimeout */
 
 let browserError=null;
 window.addEventListener("error",event=>{browserError=String(event.error?.message ?? event.message);});
@@ -86,7 +86,7 @@ async function main(){
   if(!battleScreen || !canvas || moveButtons.length===0){
     throw new Error("Battle UI did not finish rendering.");
   }
-   for(let turn=0;turn<20;turn++){
+  for(let turn=0;turn<20;turn++){
     const result=document.querySelector(".battle-result");
     if(result)break;
     const button=Array.from(document.querySelectorAll(".move-grid button")).find(node=>/Physical|Special/.test(node.textContent ?? ""));
@@ -96,8 +96,8 @@ async function main(){
     while(Date.now()<turnDeadline){
       const after=document.querySelector("#opponent-hp")?.textContent ?? "";
       const enabled=!button.disabled;
-      if(document.querySelector(".battle-result")){lastHp=after;break;}
-      if(enabled && after){lastHp=after;break;}
+      if(document.querySelector(".battle-result")){break;}
+      if(enabled && after){break;}
       await sleep(50);
     }
     if(!document.querySelector(".battle-result") && button.disabled){
