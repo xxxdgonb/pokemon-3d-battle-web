@@ -269,23 +269,29 @@ export class App {
   }
 
   private async startBattle():Promise<void>{
-    if(!this.pokemon||!this.dex||!this.species)return;
-    this.pokemon={...this.pokemon,moves:toMoveSlots(this.selectedMoves)};
+    const player=this.pokemon;
+    const dex=this.dex;
+    const chosenSpecies=this.species;
+    if(!player||!dex||!chosenSpecies)return;
+    this.pokemon={...player,moves:toMoveSlots(this.selectedMoves)};
+    const configuredPlayer=this.pokemon;
     this.battleEnded=false;this.battleResult=null;this.battleLog.length=0;this.battle3dError=null;this.battle3dLoading=true;
-    const charizard=this.dex.species.find(s=>s.id==="charizard"||(s.baseSpecies==="Charizard"&&!s.forme));
+    const charizard=dex.species.find(s=>s.id==="charizard"||(s.baseSpecies==="Charizard"&&!s.forme));
     if(!charizard)throw new Error("Charizard is unavailable in the selected generation.");
     const enemyLearnset=await loadLearnset(this.generation,charizard.id);
-    const enemyMoves=enemyLearnset.map(id=>this.dex!.moves.find(m=>m.id===id)).filter((m):m is DexMove=>Boolean(m)).slice(0,4);
+    const enemyMoves=enemyLearnset.map(id=>dex.moves.find(m=>m.id===id)).filter((m):m is DexMove=>Boolean(m)).slice(0,4);
     if(enemyMoves.length<1)throw new Error("No legal passive-opponent moves are available.");
-    const enemyLevel=this.pokemon.level;
+    const enemyLevel=player.level;
     const enemyHp=calculateHp(charizard,enemyLevel);
-    const opponent={...initialPokemon(charizard,enemyLevel),id:"opponent",speciesId:charizard.id,formId:formIdForForm(charizard),gender:charizard.gender==="N"?"genderless":charizard.gender==="F"?"female":"male",shiny:false,abilityId:normalizeId(Object.values(charizard.abilities)[0]??""),heldItemId:null,hp:enemyHp,maxHp:enemyHp,moves:toMoveSlots(enemyMoves)};
+    const opponent:PokemonBattleState={...initialPokemon(charizard,enemyLevel),id:"opponent",speciesId:charizard.id,formId:formIdForForm(charizard),gender:this.genderForSpecies(charizard),shiny:false,abilityId:normalizeId(Object.values(charizard.abilities)[0]??""),heldItemId:null,hp:enemyHp,maxHp:enemyHp,moves:toMoveSlots(enemyMoves)};
     this.opponentPokemon=opponent;this.opponentSpecies=charizard;
-    this.appendBattleLog(`Battle created · ${this.species.name} vs ${charizard.name} · Lv.${enemyLevel}`);
+    const battleOpponent=opponent;
+    const battleOpponentSpecies=charizard;
+    this.appendBattleLog(`Battle created · ${chosenSpecies.name} vs ${battleOpponentSpecies.name} · Lv.${enemyLevel}`);
     const adapter=new RemoteShowdownAdapter(new WebSocketShowdownTransport());
     this.adapter=adapter;
     try{
-      await adapter.createBattle({generation:this.generation,player:this.pokemon,opponent});
+      await adapter.createBattle({generation:this.generation,player:configuredPlayer,opponent:battleOpponent});
       this.coordinator=new BattlePresentationCoordinator(await adapter.getState());
       this.coordinator.initializeBattle();
       this.stage="battle";
@@ -294,8 +300,8 @@ export class App {
       if(renderer){
         try{
           await renderer.setupBattle(
-            {nationalDex:this.species.num,shiny:this.pokemon.shiny,gender:this.pokemon.gender,formId:this.pokemon.formId,speciesName:this.species.name},
-            {nationalDex:this.opponentSpecies.num,shiny:this.opponentPokemon.shiny,gender:this.opponentPokemon.gender,formId:this.opponentPokemon.formId,speciesName:this.opponentSpecies.name},
+            {nationalDex:chosenSpecies.num,shiny:configuredPlayer.shiny,gender:configuredPlayer.gender,formId:configuredPlayer.formId,speciesName:chosenSpecies.name},
+            {nationalDex:battleOpponentSpecies.num,shiny:battleOpponent.shiny,gender:battleOpponent.gender,formId:battleOpponent.formId,speciesName:battleOpponentSpecies.name},
             this.generation
           );
         }catch(error){
