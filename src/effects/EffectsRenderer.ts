@@ -55,10 +55,12 @@ export class EffectsRenderer{
       position.y+=Math.sin(t*Math.PI)*.55;
       group.position.copy(position);
       for(let i=0;i<trails.length;i++){
+        const trail=trails[i];
+        if(!trail)continue;
         const trailT=Math.max(0,eased-(i+1)*.06);
-        trails[i].position.lerpVectors(start,end,trailT);
-        trails[i].position.y+=Math.sin(trailT*Math.PI)*.55;
-        const material=trails[i].material as THREE.MeshBasicMaterial;
+        trail.position.lerpVectors(start,end,trailT);
+        trail.position.y+=Math.sin(trailT*Math.PI)*.55;
+        const material=trail.material as THREE.MeshBasicMaterial;
         material.opacity=.75*(1-Math.min(1,i/6));
       }
       const spin=performance.now()*0.008;
