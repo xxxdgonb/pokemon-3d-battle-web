@@ -26,8 +26,18 @@ async function click(selector){
 }
 async function main(){
   await waitFor("#app");
-  await click('[data-action="start"]');
-  await click('[data-action="generation"][data-value="9"]');
+  for(const generation of [1,2,3,4,5,6,7,8,9]){
+    await click('[data-action="start"]');
+    await click(`[data-action="generation"][data-value="${generation}"]`);
+    await waitFor('[data-action="species"]');
+    if(!document.querySelector('[data-action="species"][data-value="pikachu"]')){
+      throw new Error("Generation "+generation+" did not expose Pikachu species data.");
+    }
+    if(generation!==9){
+      location.reload();
+      await waitFor('[data-action="start"]');
+    }
+  }
   await click('[data-action="species"][data-value="pikachu"]');
   await click('[data-action="next"]');
   await click('[data-action="form"][data-value="pikachu"]');
