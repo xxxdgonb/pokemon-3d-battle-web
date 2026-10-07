@@ -98,7 +98,8 @@ export class PokemonModelLoader {
     try{
       const url=`https://raw.githubusercontent.com/Pokemon-3D-api/assets/main/models/opt/${candidate.category}/${candidate.filename}.glb`;
       const gltf=await this.loader.loadAsync(url);
-      gltf.scene.userData.animationClips=gltf.animations;\n      this.cache.set(key,gltf.scene);
+      gltf.scene.userData.animationClips=gltf.animations;
+      this.cache.set(key,gltf.scene);
       return gltf.scene;
     }catch(error){
       void error;
