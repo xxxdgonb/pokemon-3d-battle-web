@@ -7,6 +7,7 @@ export interface PokemonModelRequest {
   readonly shiny:boolean;
   readonly gender:"male"|"female"|"genderless";
   readonly formId?:string;
+  readonly speciesName?:string;
 }
 
 interface ModelCandidate { readonly category:string; readonly filename:string; }
@@ -51,7 +52,19 @@ export class PokemonModelLoader {
     const suffix=request.gender==="male"?"-M":request.gender==="female"?"-F":null;
     const result:ModelCandidate[]=[];
     const add=(category:string,filename:string):void=>{
+      if(!filename)return;
       if(!result.some(x=>x.category===category&&x.filename===filename))result.push({category,filename});
+    };
+    const variants=(value:string|undefined):string[]=>{
+      if(!value || value==="base")return [];
+      const normalized=value.replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"");
+      const words=normalized.split("-").filter(Boolean);
+      const pascal=words.map(word=>word.charAt(0).toUpperCase()+word.slice(1)).join("");
+      const underscored=words.map(word=>word.charAt(0).toUpperCase()+word.slice(1)).join("_");
+      return [...new Set([value,normalized,normalized.replace(/-/g,""),pascal,underscored])];
+    };
+    const addVariants=(category:string,values:readonly string[]):void=>{
+      for(const value of values)for(const filename of variants(value))add(category,filename);
     };
 
     if(form!=="base"){
@@ -77,13 +90,15 @@ export class PokemonModelLoader {
       } else if(form.includes("origin")){
         add("origin",dex);
       } else if(form.includes("fusion")){
-        if(request.shiny)add("fusionShiny",form);
-        add("fusion",form);
+        const names=[form,request.speciesName].filter((value):value is string=>Boolean(value));
+        if(request.shiny)addVariants("fusionShiny",names);
+        addVariants("fusion",names);
       } else {
-        if(request.shiny)add("multiShinyForm",form);
-        add("multiform",form);
-        if(request.shiny)add("unique",form);
-        add("unique",form);
+        const names=[form,request.speciesName].filter((value):value is string=>Boolean(value));
+        if(request.shiny)addVariants("multiShinyForm",names);
+        addVariants("multiform",names);
+        if(request.shiny)addVariants("unique",names);
+        addVariants("unique",names);
       }
     }
 
