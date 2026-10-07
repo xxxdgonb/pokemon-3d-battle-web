@@ -106,7 +106,16 @@ export class ThreeBattleRenderer {
     this.camera.aspect=width/height;this.camera.updateProjectionMatrix();this.renderer.setSize(width,height,false);
   }
   public render():void{this.renderer.render(this.scene,this.camera);}
-  private animate=():void=>{if(this.disposed)return;this.render();this.animationFrame=requestAnimationFrame(this.animate);};
+  private lastFrame=performance.now();
+  private animate=():void=>{
+    if(this.disposed)return;
+    const now=performance.now();
+    const delta=Math.min(.05,(now-this.lastFrame)/1000);
+    this.lastFrame=now;
+    this.cameraController.update(delta);
+    this.render();
+    this.animationFrame=requestAnimationFrame(this.animate);
+  };
   public dispose():void{
     if(this.disposed)return; this.disposed=true;
     if(this.animationFrame!==null)cancelAnimationFrame(this.animationFrame);
