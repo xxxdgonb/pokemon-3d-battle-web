@@ -3,7 +3,13 @@
 <head><meta charset="utf-8"><title>Pokémon 3D Battle Browser Smoke</title></head>
 <body>
 <div id="app"></div>
-<script>document.body.dataset.harnessBoot="true";</script>
+<script>
+window.addEventListener("load",()=>{
+try{
+document.body.dataset.harnessBoot="true";
+}catch(error){document.title="BROWSER_SMOKE_FAILED:"+String(error);document.body.innerText=String(error?.stack??error);}
+});
+</script>
 <script>
 let browserError=null;
 window.addEventListener("error",event=>{browserError=String(event.error?.message ?? event.message);});
