@@ -493,8 +493,9 @@ export class App {
     if(miss)this.appendBattleLog(`${move.name} missed.`);
     else if(immune)this.appendBattleLog(`${move.name} had no effect.`);
     else if(failed)this.appendBattleLog(`${move.name} failed.`);
-    else if(damage>0)this.appendBattleLog(`${this.species?.name??"Player"} used ${move.name} · ${crit?"Critical hit · ":""}Opponent HP ${this.coordinator?.state.opponent.hp??0}/${this.coordinator?.state.opponent.maxHp??0}.`);
+    else if(damage>0)this.appendBattleLog(`${this.species?.name??"Player"} used ${move.name} · ${crit?"Critical hit · ":""}${events.some(e=>e.kind==="effectiveness"&&e.source.type==="-supereffective")?"Super effective · ":""}${events.some(e=>e.kind==="effectiveness"&&e.source.type==="-resisted")?"Resisted · ":""}Opponent HP ${this.coordinator?.state.opponent.hp??0}/${this.coordinator?.state.opponent.maxHp??0}.`);
     else this.appendBattleLog(`${this.species?.name??"Player"} used ${move.name}.`);
+    if(events.some(e=>e.kind==="heal"))this.appendBattleLog("HP was restored.");
     if(events.some(e=>e.kind==="status"))this.appendBattleLog("A status condition was applied.");
     if(events.some(e=>e.kind==="boost"||e.kind==="unboost"))this.appendBattleLog("A stat stage changed.");
     if(events.some(e=>e.kind==="ability"||e.kind==="item"||e.kind==="enditem"))this.appendBattleLog("An ability or item effect activated.");
