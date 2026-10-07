@@ -55,7 +55,7 @@ try{
   await waitHttp("http://127.0.0.1:"+vitePort+"/src/ui/App.ts");
   driver=start("chromedriver",["--port="+driverPort,"--url-base=/"]);
   await waitDriver();
-  const capabilities={browserName:"chrome",pageLoadStrategy:"eager","goog:chromeOptions":{binary:"/usr/bin/chromium",args:["--headless=new","--no-sandbox","--disable-dev-shm-usage","--use-gl=swiftshader","--enable-unsafe-swiftshader","--window-size=1440,900"]}};
+  const capabilities={browserName:"chrome",pageLoadStrategy:"none","goog:chromeOptions":{binary:"/usr/bin/chromium",args:["--headless=new","--no-sandbox","--disable-dev-shm-usage","--use-gl=swiftshader","--enable-unsafe-swiftshader","--window-size=1440,900"]}};
   const session=await driverRequest("/session",{method:"POST",body:JSON.stringify({capabilities:{alwaysMatch:capabilities}})});
   sessionId=session.sessionId;
   await driverRequest("/session/"+sessionId+"/url",{method:"POST",body:JSON.stringify({url:"http://127.0.0.1:"+vitePort+"/tests/browserHarness.html?browserSmoke=1"})});
@@ -69,7 +69,7 @@ try{
   if(title!=="BROWSER_SMOKE_PASSED"){
     let diagnostic="unknown";
     try{
-      diagnostic=String(await driverRequest("/session/"+sessionId+"/execute/sync",{method:"POST",body:JSON.stringify({script:"return JSON.stringify({title:document.title,step:document.body.dataset.browserSmokeStep??null,body:document.body.innerText.slice(-2000),datasets:{...document.body.dataset}});",args:[]})}));
+      diagnostic=String(await driverRequest("/session/"+sessionId+"/execute/sync",{method:"POST",body:JSON.stringify({script:"return JSON.stringify({url:location.href,readyState:document.readyState,title:document.title,step:document.body?.dataset.browserSmokeStep??null,body:document.body?.innerText.slice(-2000)??null,datasets:document.body?{...document.body.dataset}:{}});",args:[]})}));
     }catch(error){diagnostic=String(error);}
     throw new Error((title&&title!=="Pokémon 3D Battle Browser Smoke"?title:"Browser smoke timeout.")+" | diagnostic="+diagnostic);
   }
