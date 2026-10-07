@@ -7,14 +7,15 @@
     "node": ">=22.18.0"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/dev.mjs",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
     "check": "tsc -b && tsc -p tsconfig.server.json && eslint . && vitest run",
-    "server": "tsx server/showdownRuntime.ts"
+    "server": "tsx server/showdownRuntime.ts",
+    "dev:vite": "vite --host 127.0.0.1"
   },
   "dependencies": {
     "pokemon-showdown": "0.11.11",
