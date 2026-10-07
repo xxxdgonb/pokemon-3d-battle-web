@@ -25,12 +25,28 @@ export class App {
   private moveBusy=false;
   private battleEnded=false;
   private battleResult:"VICTORY"|"DEFEAT"|null=null;
+  private loading=false;
+  private errorMessage:string|null=null;
   private readonly audio=new AudioManager();
 
   public constructor(root:HTMLElement){this.root=root;this.render();}
 
   private async chooseGeneration(g:Generation):Promise<void>{
-    this.generation=g; this.dex=await loadDex(g); this.stage="pokemon"; this.render();
+    if(this.loading)return;
+    this.loading=true;
+    this.errorMessage=null;
+    this.generation=g;
+    this.render();
+    try{
+      this.dex=await loadDex(g);
+      this.stage="pokemon";
+    }catch(error){
+      this.errorMessage=error instanceof Error ? error.message : "Unable to load generation data.";
+      this.stage="generation";
+    }finally{
+      this.loading=false;
+      this.render();
+    }
   }
 
   private async selectSpecies(s:DexSpecies):Promise<void>{
@@ -43,7 +59,13 @@ export class App {
     if(this.stage==="battle"){this.renderBattle();return;}
     this.root.innerHTML=`<main class="app-shell"><section class="panel"><div class="eyebrow">POKÉMON 3D BATTLE</div><h1>${this.title()}</h1><div id="content"></div></section></main>`;
     const c=this.root.querySelector("#content") as HTMLElement;
-    if(this.stage==="menu") c.innerHTML='<button data-action="start">Start Battle</button>';
+    if(this.loading){
+      c.innerHTML='<div class="loading-state" role="status"><strong>Loading...</strong><p>Please wait while the battle data is loaded.</p></div>';
+      return;
+    }
+    if(this.errorMessage){
+      c.innerHTML=`<div class="error-state" role="alert"><strong>Unable to continue</strong><p>${this.escapeHtml(this.errorMessage)}</p><button data-action="retry-generation" data-value="${this.generation}">Retry Generation ${this.generation}</button></div>`;
+    } else if(this.stage==="menu") c.innerHTML='<button data-action="start">Start Battle</button>';
     if(this.stage==="generation") c.innerHTML=this.generations();
     if(this.stage==="pokemon") c.innerHTML=this.speciesList();
     if(this.stage==="details") c.innerHTML=this.details();
@@ -53,8 +75,15 @@ export class App {
     if(this.stage==="ability") c.innerHTML=this.ability();
     if(this.stage==="item") c.innerHTML=this.item();
     if(this.stage==="level") c.innerHTML=this.level();
-    if(this.stage==="moves") c.innerHTML=this.moves();
+    if(!this.errorMessage){
+      if(this.stage==="moves") c.innerHTML=this.moves();
+    }
     c.querySelectorAll<HTMLElement>("[data-action]").forEach(el=>el.addEventListener("click",()=>void this.action(el.dataset.action??"",el.dataset.value)));
+  }
+
+  private escapeHtml(value:string):string{
+    return value.replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[char]??char));
+  }
   }
 
   private speciesIdForForm(s:DexSpecies):string{
@@ -104,9 +133,22 @@ export class App {
   }
 
   private async action(action:string,value?:string):Promise<void>{
-    if(action==="start"){this.stage="generation";this.render();return;}
+    if(action==="start"){this.errorMessage=null;this.stage="generation";this.render();return;}
+    if(action==="retry-generation"){await this.chooseGeneration(Number(value) as Generation);return;}
     if(action==="generation"){await this.chooseGeneration(Number(value) as Generation);return;}
-    if(action==="species"){const s=this.dex?.species.find(x=>x.id===value);if(s)await this.selectSpecies(s);return;}
+    if(action==="species"){
+      if(this.loading)return;
+      const s=this.dex?.species.find(x=>x.id===value);
+      if(s){
+        this.loading=true;
+        this.errorMessage=null;
+        this.render();
+        try{await this.selectSpecies(s);}
+        catch(error){this.errorMessage=error instanceof Error ? error.message : "Unable to load Pokémon data.";this.stage="pokemon";}
+        finally{this.loading=false;this.render();}
+      }
+      return;
+    }
     if(action==="next"){this.stage=this.nextStage();this.render();return;}
     if(action==="form"){
       const s=this.dex?.species.find(x=>x.id===value);
