@@ -4,7 +4,7 @@ type ProceduralEffectKind="elemental"|"beam"|"slash"|"orb"|"impact";
 
 const MOVE_PROFILES:Record<string,ProceduralEffectKind>={
   thunderbolt:"beam", thunder:"beam", icebeam:"beam", flamethrower:"beam", psychic:"beam", shadowball:"orb",
-  energyball:"orb", auraSphere:"orb", waterpulse:"orb", dragonpulse:"beam", hyperbeam:"beam",
+  energyball:"orb", aurasphere:"orb", waterpulse:"orb", dragonpulse:"beam", hyperbeam:"beam",
   closecombat:"slash", nightslash:"slash", airslash:"slash", psychocut:"slash"
 };
 
