@@ -29,7 +29,7 @@ async function waitForBattleReady(timeout=15000){
   const deadline=Date.now()+timeout;
   while(Date.now()<deadline){
     const buttons=Array.from(document.querySelectorAll(".move-grid button"));
-    if(buttons.some(button=>!button.disabled))return;
+    if(buttons.some(button=>!button.disabled && /PP \\d+\\//.test(button.textContent ?? "")))return;
     await sleep(100);
   }
   throw new Error("Battle controls did not become ready within the timeout.");
@@ -81,7 +81,8 @@ async function main(){
   if(battleButton instanceof HTMLButtonElement && battleButton.disabled)throw new Error("Enter 3D Battle remained disabled after four move selections.");
   await click('[data-action="battle"]');
   await waitFor(".battle-screen",30000);
-  await waitForBattleReady();
+  await waitForBattleReady(30000);
+  await waitFor(".battle-canvas canvas",30000);
   mark("battle-rendered-check");
   const battleScreen=document.querySelector(".battle-screen");
   const canvas=document.querySelector(".battle-canvas canvas");
