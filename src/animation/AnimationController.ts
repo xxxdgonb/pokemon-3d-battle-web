@@ -30,7 +30,7 @@ export class AnimationController {
     let mixer=this.mixers.get(model);
     if(!mixer){mixer=new THREE.AnimationMixer(model);this.mixers.set(model);}
     mixer.stopAllAction();
-    const action=mixer.clipAction(clip);
+    const action=mixer.clipAction(clip,model);
     action.reset();
     action.clampWhenFinished=animation==="faint";
     action.setLoop(animation==="idle"?THREE.LoopRepeat:THREE.LoopOnce,animation==="idle"?Infinity:1);
