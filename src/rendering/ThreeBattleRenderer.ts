@@ -5,6 +5,7 @@ import { EffectsRenderer } from "../effects/EffectsRenderer";
 import { CameraController } from "./CameraController";
 import { PokemonModelLoader } from "./PokemonModelLoader";
 import type { ShowdownBattleEvent } from "../battle/ShowdownAdapter";
+import { summarizeBattleEvents } from "../battle/BattleEventJournal";
 
 export class ThreeBattleRenderer {
   public readonly scene=new THREE.Scene();
@@ -72,21 +73,20 @@ export class ThreeBattleRenderer {
   }
 
   public async playResolution(type:string,events:readonly ShowdownBattleEvent[]):Promise<void>{
-    const target=this.opponentModel;
-    if(!target)return;
-    const targetsOpponent=(event:ShowdownBattleEvent):boolean=>{
-      const first=event.payload;
-      return Array.isArray(first) && typeof first[0]==="string" && first[0].startsWith("p2");
-    };
-    if(events.some(event=>event.kind==="damage" && targetsOpponent(event))){
+    const summary=summarizeBattleEvents(events);
+    const modelFor=(side:"player"|"opponent"):THREE.Group|null=>side==="player"?this.playerModel:this.opponentModel;
+    const hitSides=[...new Set(summary.damage.map(event=>event.target))];
+    for(const side of hitSides){
+      const target=modelFor(side);
+      if(!target)continue;
       this.effects.playTypeImpact(type,target);
       await this.animations.play(target,"hit",220);
     }
-    if(events.some(event=>event.kind==="faint" && targetsOpponent(event))){
-      await this.animations.play(target,"faint",520);
+    for(const side of summary.fainted){
+      const target=modelFor(side);
+      if(target)await this.animations.play(target,"faint",520);
     }
   }
-
   public async playMove(_type:string,onImpact:()=>void):Promise<void>{
     const model=this.playerModel;
     this.cameraController.set("move");
