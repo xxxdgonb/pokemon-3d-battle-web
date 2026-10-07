@@ -46,7 +46,7 @@ export class ThreeBattleRenderer {
     }
   }
 
-  public async setupBattle(player:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless";formId?:string},opponent:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless";formId?:string},generation:number):Promise<void>{
+  public async setupBattle(player:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless";formId?:string;speciesName?:string},opponent:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless";formId?:string;speciesName?:string},generation:number):Promise<void>{
     void generation;
     if(this.playerModel)this.scene.remove(this.playerModel);
     if(this.opponentModel)this.scene.remove(this.opponentModel);
