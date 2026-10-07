@@ -322,7 +322,7 @@ export class App {
   private renderBattle():void{
     if(this.battleRenderer)this.battleRenderer.dispose();
     this.battleRenderer=null;
-    this.root.innerHTML='<section id="battle-root" class="battle-screen"><div id="battle-canvas" class="battle-canvas"></div><div class="battle-topbar"><div><strong>3D BATTLE</strong><span id="turn-label">Turn 1</span></div><button class="ghost-button" type="button" data-action="restart-battle">Exit Battle</button></div><div class="battle-hud"><div class="combatant-card"><div class="combatant-head"><strong id="player-name">Player</strong><span id="player-level"></span></div><div class="hpbar"><i id="player-hpbar"></i></div><div class="hp-readout"><span id="player-hp"></span><small id="player-status"></small></div></div><div class="combatant-card"><div class="combatant-head"><strong id="opponent-name">Opponent</strong><span id="opponent-level"></span></div><div class="hpbar"><i id="opponent-hpbar"></i></div><div class="hp-readout"><span id="opponent-hp"></span><small id="opponent-status"></small></div></div><div class="battle-log" id="battle-log"></div><div id="moves" class="move-grid"></div><div class="battle-result-slot" id="battle-result-slot"></div></div><div id="battle-loading" class="battle-overlay"></div></section>';
+    this.root.innerHTML='<section id="battle-root" class="battle-screen"><div id="battle-canvas" class="battle-canvas"></div><div class="battle-topbar"><div><strong>3D BATTLE</strong><span id="turn-label">Turn 1</span></div><button class="ghost-button" type="button" data-action="restart-battle">Exit Battle</button></div><div class="battle-hud"><div class="battle-state-strip" id="battle-state-strip"></div><div class="combatant-card"><div class="combatant-head"><strong id="player-name">Player</strong><span id="player-level"></span></div><div class="hpbar"><i id="player-hpbar"></i></div><div class="hp-readout"><span id="player-hp"></span><small id="player-status"></small></div></div><div class="combatant-card"><div class="combatant-head"><strong id="opponent-name">Opponent</strong><span id="opponent-level"></span></div><div class="hpbar"><i id="opponent-hpbar"></i></div><div class="hp-readout"><span id="opponent-hp"></span><small id="opponent-status"></small></div></div><div class="battle-log" id="battle-log"></div><div id="moves" class="move-grid"></div><div class="battle-result-slot" id="battle-result-slot"></div></div><div id="battle-loading" class="battle-overlay"></div></section>';
     const host=this.root.querySelector("#battle-canvas") as HTMLElement;
     this.battleRenderer=new ThreeBattleRenderer(host);
     for(const move of this.selectedMoves){
@@ -369,6 +369,19 @@ export class App {
     const pl=this.root.querySelector("#player-level");const ol=this.root.querySelector("#opponent-level");
     if(pl)pl.textContent=`Lv.${s.player.level}`;if(ol)ol.textContent=`Lv.${s.opponent.level}`;
     const turn=this.root.querySelector("#turn-label");if(turn)turn.textContent=`Turn ${Math.max(1,s.turn)}`;
+    const stateStrip=this.root.querySelector("#battle-state-strip");
+    if(stateStrip){
+      const weather=(s.fieldConditions??[]).map(this.formatConditionLabel).join(" · ");
+      const playerSide=(s.playerSideConditions??[]).map(this.formatConditionLabel).join(" · ");
+      const opponentSide=(s.opponentSideConditions??[]).map(this.formatConditionLabel).join(" · ");
+      const stages=this.formatStageChanges(s.player.statStages);
+      const parts:string[]=[];
+      if(weather)parts.push("Field: "+weather);
+      if(playerSide)parts.push("Your side: "+playerSide);
+      if(opponentSide)parts.push("Opponent side: "+opponentSide);
+      if(stages)parts.push("Stages: "+stages);
+      stateStrip.textContent=parts.join("  •  ")||"No field effects";
+    }
     this.refreshBattleControls();this.renderBattleLog();
     const overlay=this.root.querySelector("#battle-loading") as HTMLElement|null;
     if(overlay){
@@ -380,6 +393,14 @@ export class App {
     if(slot)slot.innerHTML=this.battleEnded?`<div class="battle-result"><div><strong>${this.battleResult==="VICTORY"?"Victory!":"Defeat!"}</strong><span>Authoritative battle ended.</span></div><button type="button" data-action="restart-battle">Battle Again</button></div>`:"";
   }
 
+  private formatConditionLabel(value:string):string{
+    return value.replace(/^move:/,"").replace(/([a-z])([A-Z])/g,"$1 $2").replace(/[-_]/g," ").replace(/^./,char=>char.toUpperCase());
+  }
+
+  private formatStageChanges(stages:Record<string,number>|undefined):string{
+    if(!stages)return "";
+    return Object.entries(stages).filter(([,value])=>Number(value)!==0).map(([stat,value])=>stat.toUpperCase()+" "+(Number(value)>0?"+":"")+value).join(" · ");
+  }
   private renderBattleLog():void{
     const log=this.root.querySelector("#battle-log");
     if(!log)return;
