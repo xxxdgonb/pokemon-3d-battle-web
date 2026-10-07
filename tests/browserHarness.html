@@ -21,8 +21,8 @@ async function waitFor(selector,timeout=10000){
 }
 async function click(selector){
   const node=await waitFor(selector);
-  node.click();
-  await sleep(20);
+  node.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window}));
+  await sleep(40);
 }
 async function waitForBattleReady(timeout=15000){
   const deadline=Date.now()+timeout;
@@ -77,7 +77,7 @@ async function main(){
   }
   mark("starting-battle");
   await click('[data-action="battle"]');
-  await waitFor(".battle-screen",15000);
+  await waitFor(".battle-screen",30000);
   await waitForBattleReady();
   mark("battle-rendered-check");
   const battleScreen=document.querySelector(".battle-screen");
