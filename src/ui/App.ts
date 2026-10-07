@@ -4,6 +4,7 @@ import { RemoteShowdownAdapter } from "../battle/RemoteShowdownAdapter";
 import { WebSocketShowdownTransport } from "../battle/WebSocketShowdownTransport";
 import { BattlePresentationCoordinator } from "../battle/BattlePresentationCoordinator";
 import { ThreeBattleRenderer } from "../rendering/ThreeBattleRenderer";
+import { AudioManager } from "../audio/AudioManager";
 
 type Stage="menu"|"generation"|"pokemon"|"details"|"form"|"gender"|"shiny"|"ability"|"item"|"level"|"moves"|"battle";
 
@@ -24,6 +25,7 @@ export class App {
   private moveBusy=false;
   private battleEnded=false;
   private battleResult:"VICTORY"|"DEFEAT"|null=null;
+  private readonly audio=new AudioManager();
 
   public constructor(root:HTMLElement){this.root=root;this.render();}
 
@@ -189,6 +191,7 @@ export class App {
   private async useMove(m:DexMove):Promise<void>{
     if(this.moveBusy||this.battleEnded||!this.adapter||!this.coordinator)return;
     this.moveBusy=true;
+    this.audio.play("move");
     this.root.querySelectorAll<HTMLButtonElement>(".move-grid button").forEach(button=>button.disabled=true);
     const id=`tx-${Date.now()}-${m.id}`;
     try{
@@ -215,6 +218,9 @@ export class App {
       this.coordinator.syncAuthoritativeState(await this.adapter.getState());
       this.coordinator.applyAuthoritativeResolution(id,events);
       await this.battleRenderer?.playResolution(m.type,events);
+      if(events.some(event=>event.kind==="damage"))this.audio.play("impact");
+      if(events.some(event=>event.kind==="status" || event.kind==="curestatus"))this.audio.play("status");
+      if(events.some(event=>event.kind==="faint"))this.audio.play("faint");
       this.updateBattleHud();
       this.coordinator.resolveSecondaryEffects(id,events);
       this.coordinator.processStatus(id);
@@ -222,6 +228,7 @@ export class App {
       if(state.phase==="VICTORY"||state.phase==="DEFEAT"){
         this.battleEnded=true;
         this.battleResult=state.phase;
+        this.audio.play(state.phase==="VICTORY"?"victory":"defeat");
         this.coordinator.endBattle();
         this.updateBattleHud();
         this.root.querySelectorAll<HTMLButtonElement>(".move-grid button").forEach(button=>button.disabled=true);
@@ -266,6 +273,7 @@ export class App {
     this.battleRenderer=null;
     await adapter?.dispose();
     renderer?.dispose();
+    this.audio.dispose();
     this.pokemon=null;
     this.opponentPokemon=null;
     this.opponentSpecies=null;
