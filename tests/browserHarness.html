@@ -24,6 +24,15 @@ async function click(selector){
   node.click();
   await sleep(20);
 }
+async function waitForBattleReady(timeout=15000){
+  const deadline=Date.now()+timeout;
+  while(Date.now()<deadline){
+    const buttons=Array.from(document.querySelectorAll(".move-grid button"));
+    if(buttons.some(button=>!button.disabled))return;
+    await sleep(100);
+  }
+  throw new Error("Battle controls did not become ready within the timeout.");
+}
 async function main(){
   await waitFor("#app");
   const mark=step=>{document.body.dataset.browserSmokeStep=step;};
@@ -68,7 +77,8 @@ async function main(){
   }
   mark("starting-battle");
   await click('[data-action="battle"]');
-  await sleep(1500);
+  await waitFor(".battle-screen",15000);
+  await waitForBattleReady();
   mark("battle-rendered-check");
   const battleScreen=document.querySelector(".battle-screen");
   const canvas=document.querySelector(".battle-canvas canvas");
