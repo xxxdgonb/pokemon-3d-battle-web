@@ -34,7 +34,7 @@ const driverPort=await freePort();
 async function waitDriver(timeout=10000){
   const deadline=Date.now()+timeout;
   while(Date.now()<deadline){
-    try{const response=await fetch("http://127.0.0.1:DRIVERPORT/status"); if(response.ok)return;}catch{}
+    try{const response=await fetch("http://127.0.0.1:"+driverPort+"/status"); if(response.ok)return;}catch{}
     await new Promise(resolve=>setTimeout(resolve,100));
   }
   throw new Error("ChromeDriver did not start.");
