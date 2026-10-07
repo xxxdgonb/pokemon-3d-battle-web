@@ -4,7 +4,7 @@
 <body>
 <div id="app"></div>
 <script>document.body.dataset.harnessBoot="true";</script>
-<script type="module">
+<script>
 let browserError=null;
 window.addEventListener("error",event=>{browserError=String(event.error?.message ?? event.message);});
 window.addEventListener("unhandledrejection",event=>{browserError=String(event.reason?.message ?? event.reason);});
