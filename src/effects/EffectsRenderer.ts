@@ -54,8 +54,6 @@ export class EffectsRenderer{
       const position=start.clone().lerp(end,eased);
       position.y+=Math.sin(t*Math.PI)*.55;
       group.position.copy(position);
-      const direction=end.clone().sub(start);
-      const distance=direction.length();
       for(let i=0;i<trails.length;i++){
         const trailT=Math.max(0,eased-(i+1)*.06);
         trails[i].position.lerpVectors(start,end,trailT);
