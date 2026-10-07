@@ -1,6 +1,12 @@
 import * as THREE from "three";
 
-type ProceduralEffectKind="elemental"|"beam"|"slash"|"impact";
+type ProceduralEffectKind="elemental"|"beam"|"slash"|"orb"|"impact";
+
+const MOVE_PROFILES:Record<string,ProceduralEffectKind>={
+  thunderbolt:"beam", thunder:"beam", icebeam:"beam", flamethrower:"beam", psychic:"beam", shadowball:"orb",
+  energyball:"orb", auraSphere:"orb", waterpulse:"orb", dragonpulse:"beam", hyperbeam:"beam",
+  closecombat:"slash", nightslash:"slash", airslash:"slash", psychocut:"slash"
+};
 
 interface ActiveEffect{
   readonly group:THREE.Group;
@@ -23,13 +29,15 @@ export class EffectsRenderer{
 
   public constructor(private readonly scene:THREE.Scene){}
 
-  public playProjectile(type:string,from:THREE.Object3D,to:THREE.Object3D,onImpact:()=>void):Promise<void>{
+  public playProjectile(type:string,from:THREE.Object3D,to:THREE.Object3D,onImpact:()=>void,moveId?:string):Promise<void>{
     if(this.disposed){onImpact();return Promise.resolve();}
     const normalized=type.toLowerCase();
+    const move=moveId?.toLowerCase().replace(/[^a-z0-9]/g,"");
     const color=TYPE_COLORS[normalized]??0xffffff;
+    const profile=MOVE_PROFILES[move??""]??this.kindFor(normalized);
     const group=new THREE.Group();
     const core=new THREE.Mesh(
-      new THREE.SphereGeometry(.16,12,12),
+      profile==="beam"?new THREE.CapsuleGeometry(.09,.62,6,12):new THREE.SphereGeometry(profile==="orb"?.2:.16,12,12),
       new THREE.MeshBasicMaterial({color,transparent:true,opacity:.95})
     );
     group.add(core);
@@ -81,10 +89,11 @@ export class EffectsRenderer{
     });
   }
 
-  public playTypeImpact(type:string,target:THREE.Object3D|null):void{
+  public playTypeImpact(type:string,target:THREE.Object3D|null,moveId?:string):void{
     if(this.disposed)return;
     const normalized=type.toLowerCase();
-    const kind=this.kindFor(normalized);
+    const move=moveId?.toLowerCase().replace(/[^a-z0-9]/g,"");
+    const kind=MOVE_PROFILES[move??""]??this.kindFor(normalized);
     const geometry=kind==="slash"?new THREE.BoxGeometry(.08,.55,.08):kind==="beam"?new THREE.BoxGeometry(.13,.13,.8):new THREE.SphereGeometry(.12,12,12);
     const group=new THREE.Group();
     const color=TYPE_COLORS[normalized]??0xffffff;
