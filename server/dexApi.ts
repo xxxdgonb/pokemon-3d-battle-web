@@ -28,7 +28,7 @@ export function getDexPayload(generation: Generation): unknown {
     .map(s => ({
       id: id(s), name: s.name, num: s.num, baseSpecies: s.baseSpecies,
       forme: s.forme, types: [...s.types], abilities: Object.fromEntries(Object.entries(s.abilities).map(([slot, name]) => [slot, normalizeId(name)])),
-      gender: s.gender, genderRatio: s.genderRatio, isMega: s.isMega,
+      gender: s.gender, genderRatio: s.genderRatio, isMega: s.isMega, isGigantamax: s.isGigantamax,
       gen: s.gen,
       baseStats: {...s.baseStats},
     }));
@@ -48,7 +48,7 @@ export function getDexPayload(generation: Generation): unknown {
 
   const items = dex.items.all()
     .filter(i => i.exists && !i.isNonstandard)
-    .map(i => ({id: id(i), name: i.name, desc: i.shortDesc || i.desc, gen: i.gen}));
+    .map(i => ({id: id(i), name: i.name, shortDesc: i.shortDesc || i.desc, gen: i.gen}));
 
   const payload = {generation, species, moves, abilities, items};
   cache.set(generation, payload);
