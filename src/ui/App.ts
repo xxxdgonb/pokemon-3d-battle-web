@@ -65,17 +65,17 @@ export class App {
     }
     if(this.errorMessage){
       c.innerHTML=`<div class="error-state" role="alert"><strong>Unable to continue</strong><p>${this.escapeHtml(this.errorMessage)}</p><button data-action="retry-generation" data-value="${this.generation}">Retry Generation ${this.generation}</button></div>`;
-    } else if(this.stage==="menu") c.innerHTML='<button data-action="start">Start Battle</button>';
-    if(this.stage==="generation") c.innerHTML=this.generations();
-    if(this.stage==="pokemon") c.innerHTML=this.speciesList();
-    if(this.stage==="details") c.innerHTML=this.details();
-    if(this.stage==="form") c.innerHTML=this.form();
-    if(this.stage==="gender") c.innerHTML=this.gender();
-    if(this.stage==="shiny") c.innerHTML=this.shiny();
-    if(this.stage==="ability") c.innerHTML=this.ability();
-    if(this.stage==="item") c.innerHTML=this.item();
-    if(this.stage==="level") c.innerHTML=this.level();
-    if(!this.errorMessage){
+    } else {
+      if(this.stage==="menu") c.innerHTML='<button data-action="start">Start Battle</button>';
+      if(this.stage==="generation") c.innerHTML=this.generations();
+      if(this.stage==="pokemon") c.innerHTML=this.speciesList();
+      if(this.stage==="details") c.innerHTML=this.details();
+      if(this.stage==="form") c.innerHTML=this.form();
+      if(this.stage==="gender") c.innerHTML=this.gender();
+      if(this.stage==="shiny") c.innerHTML=this.shiny();
+      if(this.stage==="ability") c.innerHTML=this.ability();
+      if(this.stage==="item") c.innerHTML=this.item();
+      if(this.stage==="level") c.innerHTML=this.level();
       if(this.stage==="moves") c.innerHTML=this.moves();
     }
     c.querySelectorAll<HTMLElement>("[data-action]").forEach(el=>el.addEventListener("click",()=>void this.action(el.dataset.action??"",el.dataset.value)));
@@ -83,7 +83,6 @@ export class App {
 
   private escapeHtml(value:string):string{
     return value.replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[char]??char));
-  }
   }
 
   private speciesIdForForm(s:DexSpecies):string{
