@@ -188,7 +188,7 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
     this.readyReject=null;
     for(const waiter of this.blockWaiters.splice(0))waiter.reject(error);
     if(this.socket&&this.socket.readyState!==WebSocket.CLOSED){
-      try{this.socket.close();}catch{}
+      try{this.socket.close();}catch(error){void error;}
     }
   }
 }
