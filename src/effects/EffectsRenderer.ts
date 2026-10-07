@@ -4,7 +4,7 @@ type ProceduralEffectKind="elemental"|"beam"|"slash"|"impact";
 
 interface ActiveEffect{
   readonly group:THREE.Group;
-  readonly geometry:THREE.BufferGeometry;
+  readonly geometries:THREE.BufferGeometry[];
   frame:number;
 }
 
@@ -20,7 +20,66 @@ const TYPE_COLORS:Record<string,number>={
 export class EffectsRenderer{
   private readonly active=new Set<ActiveEffect>();
   private disposed=false;
+
   public constructor(private readonly scene:THREE.Scene){}
+
+  public playProjectile(type:string,from:THREE.Object3D,to:THREE.Object3D,onImpact:()=>void):Promise<void>{
+    if(this.disposed){onImpact();return Promise.resolve();}
+    const normalized=type.toLowerCase();
+    const color=TYPE_COLORS[normalized]??0xffffff;
+    const group=new THREE.Group();
+    const core=new THREE.Mesh(
+      new THREE.SphereGeometry(.16,12,12),
+      new THREE.MeshBasicMaterial({color,transparent:true,opacity:.95})
+    );
+    group.add(core);
+    const trailGeometry=new THREE.SphereGeometry(.055,8,8);
+    const trailMaterial=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.75});
+    const trails:THREE.Mesh[]=[];
+    for(let i=0;i<5;i++){
+      const trail=new THREE.Mesh(trailGeometry,trailMaterial.clone());
+      trails.push(trail);
+      group.add(trail);
+    }
+    const effect:ActiveEffect={group,geometries:[core.geometry,trailGeometry],frame:0};
+    this.active.add(effect);
+    const start=from.position.clone().add(new THREE.Vector3(0,1.1,0));
+    const end=to.position.clone().add(new THREE.Vector3(0,1,0));
+    const startTime=performance.now();
+    let impacted=false;
+    const tick=():void=>{
+      if(this.disposed){this.disposeEffect(effect);if(!impacted){impacted=true;onImpact();}return;}
+      const t=Math.min(1,(performance.now()-startTime)/360);
+      const eased=t*t*(3-2*t);
+      const position=start.clone().lerp(end,eased);
+      position.y+=Math.sin(t*Math.PI)*.55;
+      group.position.copy(position);
+      const direction=end.clone().sub(start);
+      const distance=direction.length();
+      for(let i=0;i<trails.length;i++){
+        const trailT=Math.max(0,eased-(i+1)*.06);
+        trails[i].position.lerpVectors(start,end,trailT);
+        trails[i].position.y+=Math.sin(trailT*Math.PI)*.55;
+        const material=trails[i].material as THREE.MeshBasicMaterial;
+        material.opacity=.75*(1-Math.min(1,i/6));
+      }
+      const spin=performance.now()*0.008;
+      core.rotation.x=spin;core.rotation.y=spin*1.3;
+      if(t<1){effect.frame=requestAnimationFrame(tick);}
+      else{
+        if(!impacted){impacted=true;onImpact();}
+        this.disposeEffect(effect);
+      }
+    };
+    effect.frame=requestAnimationFrame(tick);
+    return new Promise(resolve=>{
+      const check=():void=>{
+        if(!this.active.has(effect)){resolve();return;}
+        requestAnimationFrame(check);
+      };
+      requestAnimationFrame(check);
+    });
+  }
 
   public playTypeImpact(type:string,target:THREE.Object3D|null):void{
     if(this.disposed)return;
@@ -47,7 +106,7 @@ export class EffectsRenderer{
     }
     if(target)group.position.copy(target.position);
     this.scene.add(group);
-    const effect:ActiveEffect={group,geometry,frame:0};
+    const effect:ActiveEffect={group,geometries:[geometry],frame:0};
     this.active.add(effect);
     const start=performance.now();
     const tick=():void=>{
@@ -88,6 +147,6 @@ export class EffectsRenderer{
       if(Array.isArray(material))material.forEach(item=>item.dispose());
       else material?.dispose();
     });
-    effect.geometry.dispose();
+    for(const geometry of effect.geometries)geometry.dispose();
   }
 }
