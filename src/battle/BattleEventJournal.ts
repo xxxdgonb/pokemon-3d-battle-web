@@ -69,7 +69,7 @@ export function summarizeBattleEvents(events: readonly ShowdownBattleEvent[]): B
     if (event.kind === "move" && typeof args[1] === "string") {
       moveId = String(args[1]).toLowerCase().replace(/[^a-z0-9]+/g, "");
       const moveTarget = sideFromTarget(args[0]);
-      if (moveTarget) target = moveTarget;
+      if (moveTarget && event.kind !== "move") target = moveTarget;
     }
     if (event.kind === "damage" && eventTarget) {
       damage.push({target: eventTarget, amount: numericAmount(args), raw: args});
