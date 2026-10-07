@@ -6,11 +6,11 @@
 
 Phases 0–11 have implementation or verification evidence as described below. PHASE 14 is intentionally not closed until browser/WebGL verification, advanced battle-event coverage, asset/license audit, and repeated-battle soak evidence exist.
 
-Current head: `edc0c181bfe5538ca4e84acbea9cd6261ed9fa1e`
+Current head: `8f3d398525ce269a33cfe49ef2e0d3d6fdd25411`
 
 ## Evidence
 
-Latest GitHub Actions CI run after the current implementation changes completed successfully (`37444094101`, commit `edc0c181bfe5538ca4e84acbea9cd6261ed9fa1e`).
+Latest GitHub Actions CI run after the current implementation changes completed successfully (run `37640151905`, commit `8f3d398525ce269a33cfe49ef2e0d3d6fdd25411`).
 
 Verified by CI:
 - `npm install`
@@ -135,17 +135,7 @@ The battle simulator itself remains authoritative; this blocker is about complet
 
 ### BLOCKER-005 — Browser/WebGL verification
 
-No browser automation/runtime evidence is available in this session.
-
-Required before closing:
-- launch production/dev client
-- walk the complete selection flow
-- load representative models and fallback cases
-- verify camera framing at desktop resolutions
-- execute repeated moves
-- verify impact/damage synchronization visually
-- verify victory/defeat/restart
-- repeat multiple battles without renderer/effect/socket leaks
+Chromium/WebDriver browser smoke is now verified in CI. The harness completed the selection path, WebGL canvas creation, move loop, terminal result, Battle Again, and three consecutive cycles. Human visual fidelity review and deep GPU profiling remain release-quality checks.
 
 ### SECURITY-001 — Dependency audit
 
@@ -196,5 +186,5 @@ A feature is not marked COMPLETE merely because source code exists. It is marked
 
 ## Current Verification
 
-- CI: GREEN on latest main pipeline (`run 37430639947`); TypeScript/server type-check, ESLint, 25 Vitest tests, production build, passive-opponent and real WebSocket runtime smoke all passed.
-- Browser/WebGL: Chromium harness exists; GitHub runner `dump-dom` cannot maintain the live WebSocket session long enough to complete the browser battle flow. A Node WebSocket probe against the same Vite `/showdown` proxy passes. Do not claim browser/WebGL runtime verified until a real browser session completes the harness.
+- CI: GREEN on run `37640151905` at commit `8f3d398525ce269a33cfe49ef2e0d3d6fdd25411`; TypeScript/server type-check, ESLint, tests, production build, passive-opponent smoke, WebSocket runtime smoke, and Chromium/WebGL smoke all passed.
+- Browser/WebGL: three consecutive automated browser cycles passed, including Battle Again/restart. Human visual review and GPU profiling remain.
