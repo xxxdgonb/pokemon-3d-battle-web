@@ -272,7 +272,7 @@ export class App {
     const player=this.pokemon;
     const dex=this.dex;
     const chosenSpecies=this.species;
-    if(!player||!dex||!chosenSpecies)return;
+    if(!player||!dex||!chosenSpecies){ throw new Error("Battle setup is incomplete: Pokémon or generation data is missing."); }
     this.pokemon={...player,moves:toMoveSlots(this.selectedMoves)};
     const configuredPlayer=this.pokemon;
     this.battleEnded=false;this.battleResult=null;this.battleLog.length=0;this.battle3dError=null;this.battle3dLoading=true;
