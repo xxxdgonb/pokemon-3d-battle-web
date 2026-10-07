@@ -72,7 +72,7 @@ export class ThreeBattleRenderer {
     model.traverse(o=>{const m=o as THREE.Mesh;m.castShadow=true;m.receiveShadow=true;}); this.scene.add(model);
   }
 
-  public async playResolution(type:string,events:readonly ShowdownBattleEvent[]):Promise<void>{
+  public async playResolution(type:string,events:readonly ShowdownBattleEvent[],moveId?:string):Promise<void>{
     const summary=summarizeBattleEvents(events);
     const modelFor=(side:"player"|"opponent"):THREE.Group|null=>side==="player"?this.playerModel:this.opponentModel;
     const hitSides=[...new Set(summary.damage.map(event=>event.target))];
