@@ -46,9 +46,11 @@ try{
   await waitHttp("http://127.0.0.1:"+runtimePort+"/");
   await waitHttp("http://127.0.0.1:5173/");
   await waitHttp("http://127.0.0.1:5173/api/dex?generation=9");
+  await waitHttp("http://127.0.0.1:5173/src/main.ts");
+  await waitHttp("http://127.0.0.1:5173/src/ui/App.ts");
   driver=start("chromedriver",["--port=9515","--url-base=/"]);
   await waitDriver();
-  const capabilities={browserName:"chrome","goog:chromeOptions":{binary:"/usr/bin/chromium",args:["--headless=new","--no-sandbox","--disable-dev-shm-usage","--use-gl=swiftshader","--enable-unsafe-swiftshader","--window-size=1440,900"]}};
+  const capabilities={browserName:"chrome",pageLoadStrategy:"eager","goog:chromeOptions":{binary:"/usr/bin/chromium",args:["--headless=new","--no-sandbox","--disable-dev-shm-usage","--use-gl=swiftshader","--enable-unsafe-swiftshader","--window-size=1440,900"]}};
   const session=await driverRequest("/session",{method:"POST",body:JSON.stringify({capabilities:{alwaysMatch:capabilities}})});
   sessionId=session.sessionId;
   await driverRequest("/session/"+sessionId+"/url",{method:"POST",body:JSON.stringify({url:"http://127.0.0.1:5173/tests/browserHarness.html?browserSmoke=1"})});
