@@ -21,8 +21,9 @@ async function waitFor(selector,timeout=10000){
 }
 async function click(selector){
   const node=await waitFor(selector);
-  node.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window}));
-  await sleep(40);
+  if(node instanceof HTMLButtonElement && node.disabled)throw new Error("Cannot click disabled control: "+selector);
+  node.click();
+  await sleep(80);
 }
 async function waitForBattleReady(timeout=15000){
   const deadline=Date.now()+timeout;
@@ -76,6 +77,8 @@ async function main(){
     await sleep(80);
   }
   mark("starting-battle");
+  const battleButton=await waitFor('[data-action="battle"]');
+  if(battleButton instanceof HTMLButtonElement && battleButton.disabled)throw new Error("Enter 3D Battle remained disabled after four move selections.");
   await click('[data-action="battle"]');
   await waitFor(".battle-screen",30000);
   await waitForBattleReady();
@@ -118,7 +121,7 @@ async function main(){
 }
 main().catch(error=>{
   document.body.dataset.browserSmoke="failed";
-  const detail=(document.body.innerText+"\\nERROR:"+String(error.message)+"\\nBROWSER:"+String(browserError??"none")+"\\nBATTLEDEBUG:"+String(document.body.dataset.battleDebug??"none")+"\\nRUNTIMECMD:"+String(document.body.dataset.runtimeLastCommand??"none")+"\\nRUNTIMEMSG:"+String(document.body.dataset.runtimeLastMessage??"none")+"\\nRUNTIMEERR:"+String(document.body.dataset.runtimeError??"none")+"\\nRUNTIMECONNECT:"+String(document.body.dataset.runtimeConnect??"none")).slice(-3000).replace(/[<>&]/g,"");
+  const detail=(document.body.innerText+"\\nERROR:"+String(error.message)+"\\nBROWSER:"+String(browserError??"none")+"\\nBATTLEDEBUG:"+String(document.body.dataset.battleDebug??"none")+"\\nRUNTIMECMD:"+String(document.body.dataset.runtimeLastCommand??"none")+"\\nRUNTIMEMSG:"+String(document.body.dataset.runtimeLastMessage??"none")+"\\nRUNTIMEERR:"+String(document.body.dataset.runtimeError??"none")+"\\nRUNTIMECONNECT:"+String(document.body.dataset.runtimeConnect??"none")+"\\nLASTACTION:"+String(document.body.dataset.lastAction??"none")+"\\nLASTVALUE:"+String(document.body.dataset.lastActionValue??"none")).slice(-3000).replace(/[<>&]/g,"");
   document.title="BROWSER_SMOKE_FAILED:"+detail;
 });
 </script>
