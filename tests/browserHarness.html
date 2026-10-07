@@ -71,7 +71,7 @@ async function main(){
   await click('[data-action="level"]');
   await waitFor('.move-picker [data-action="move"]');
   for(let i=0;i<4;i++){
-    const move=document.querySelector('.move-picker [data-action="move"]');
+    const move=document.querySelector('.move-picker [data-action="move"]:not(.selected)');
     if(!move)throw new Error("Move picker lost its next selectable move at slot "+(i+1)+".");
     move.click();
     await sleep(80);
