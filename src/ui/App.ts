@@ -276,6 +276,8 @@ export class App {
     this.pokemon={...player,moves:toMoveSlots(this.selectedMoves)};
     const configuredPlayer=this.pokemon;
     this.battleEnded=false;this.battleResult=null;this.battleLog.length=0;this.battle3dError=null;this.battle3dLoading=true;
+    this.stage="battle";
+    this.renderBattle();
     const charizard=dex.species.find(s=>s.id==="charizard"||(s.baseSpecies==="Charizard"&&!s.forme));
     if(!charizard)throw new Error("Charizard is unavailable in the selected generation.");
     const enemyLearnset=await loadLearnset(this.generation,charizard.id);
@@ -294,8 +296,6 @@ export class App {
       await adapter.createBattle({generation:this.generation,player:configuredPlayer,opponent:battleOpponent});
       this.coordinator=new BattlePresentationCoordinator(await adapter.getState());
       this.coordinator.initializeBattle();
-      this.stage="battle";
-      this.renderBattle();
       const host=this.root.querySelector("#battle-canvas") as HTMLElement|null;
       if(!host)throw new Error("Battle canvas host was not created.");
       try{
@@ -312,10 +312,12 @@ export class App {
     }catch(error){
       this.adapter=null;this.coordinator=null;
       await adapter.dispose();
+      this.stage="moves";
       throw error;
     }finally{
       this.battle3dLoading=false;
       this.updateBattleHud();
+      if(this.stage==="battle")this.renderBattleLog();
     }
   }
 
