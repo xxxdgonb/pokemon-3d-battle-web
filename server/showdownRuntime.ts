@@ -37,7 +37,7 @@ function isPokemonState(value: unknown): value is PokemonBattleState {
     typeof c.abilityId !== "string" || c.abilityId.length > 128 ||
     !(c.heldItemId === null || (typeof c.heldItemId === "string" && c.heldItemId.length <= 128)) ||
     typeof hp !== "number" || typeof maxHp !== "number" ||
-    !Number.isFinite(hp) || !Number.isFinite(maxHp) || hp < 0 || maxHp < 1 ||
+    !Number.isFinite(hp) || !Number.isFinite(maxHp) || hp < 0 || maxHp < 1 || hp > maxHp ||
     !Array.isArray(c.moves) || c.moves.length < 1 || c.moves.length > 4
   ) return false;
   return c.moves.every(move =>
@@ -46,7 +46,9 @@ function isPokemonState(value: unknown): value is PokemonBattleState {
     typeof (move as {moveId?: unknown}).moveId === "string" &&
     ((move as {moveId:string}).moveId.length > 0 && (move as {moveId:string}).moveId.length <= 128) &&
     Number.isFinite((move as {pp?: unknown}).pp) &&
-    Number.isFinite((move as {maxPp?: unknown}).maxPp),
+    Number.isFinite((move as {maxPp?: unknown}).maxPp) &&
+    (move as {pp:number}).pp >= 0 && (move as {maxPp:number}).maxPp >= 1 &&
+    (move as {pp:number}).pp <= (move as {maxPp:number}).maxPp,
   );
 }
 
