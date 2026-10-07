@@ -19,20 +19,20 @@ Date: 2026-10-07
 - Double-click transaction lock.
 - CI workflow and real Showdown smoke test.
 
-## Not honestly closed yet
-- Latest implementation CI run `37640867912` on commit `efd516006995050c181334cf0473cce07a257c43` completed successfully: TypeScript/server type-check, ESLint, tests, production build, dependency audit, passive-opponent smoke, WebSocket runtime smoke, and Chromium/WebGL smoke all passed.
+## Technical acceptance result
+- Latest implementation CI run `37641192757` on commit `efcfe162f071f4a2fa6c912ac7dfd2a815a3ba66` completed successfully: TypeScript/server type-check, ESLint, tests, production build, dependency audit, passive-opponent smoke, WebSocket runtime smoke, and Chromium/WebGL smoke all passed.
 - Chromium/WebDriver browser smoke is verified in CI, including WebGL canvas presence, battle move loop, terminal result, Battle Again, and three repeated cycles.
 - Advanced field/side/volatile effects are normalized and projected into BattleState; broader presentation remains extensible.
 - Three repeated browser battle/restart cycles are verified; deep GPU profiling and human visual fidelity review remain non-automated.
 - Third-party Pokémon model rights remain restricted to the upstream provider's stated Nintendo/Creatures/GAME FREAK ownership; the project lazy-loads them instead of redistributing them. No rights-unclear animation/audio pack is bundled. Procedural Web Audio is used as the default sound fallback.
 
-## Verification policy
-No runtime success is claimed until the GitHub Actions run reports success and the browser path has been exercised through Start → Selection → Battle → Move → Damage/Effect → Faint → Victory/Defeat.
+## Release gates
+Technical runtime acceptance is satisfied: GitHub Actions reports success and the browser path has exercised Start → Selection → Battle → Move → Damage/Effect → terminal result → Battle Again across three consecutive cycles.
 
 
 ## Latest verification checkpoint
 
-- CI run `37451363771` completed successfully on commit `92c290c8bd62147466208f10761a8f932575963a` (exact head recorded by GitHub).
-- Browser smoke used Chromium `154.0.8037.0` and completed three consecutive full cycles: `Chromium browser/WebGL smoke test passed.` x3.
-- Production dependency install reported `found 0 vulnerabilities` after compatible dependency overrides; Showdown was not downgraded.
-- Remaining release judgment: technically verified for automated browser/runtime acceptance. Legal asset redistribution and human visual QA remain external release gates; these are release-policy constraints, not untested battle-engine blockers.
+- CI run `37641192757` passed on commit `efcfe162f071f4a2fa6c912ac7dfd2a815a3ba66`.
+- Chromium/WebDriver browser smoke completed three consecutive cycles with WebGL canvas, battle loop, terminal result and restart coverage.
+- Server input validation, form-model resolution, two-sided authoritative hit/faint presentation, and procedural audio fallback are included.
+- Remaining release gates are external: legal approval for upstream Pokémon model redistribution/use and human visual/GPU review.
