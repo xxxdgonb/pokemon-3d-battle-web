@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
+import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
 
 export interface PokemonModelRequest {
   readonly nationalDex:number;
@@ -31,11 +32,11 @@ export class PokemonModelLoader {
     for(const candidate of this.candidates(request)){
       const key=`${candidate.category}/${candidate.filename}`;
       const cached=this.cache.get(key);
-      if(cached)return cached.clone(true);
+      if(cached)return SkeletonUtils.clone(cached);
       const inFlight=this.pending.get(key);
       if(inFlight){
         const model=await inFlight;
-        if(model)return model.clone(true);
+        if(model)return SkeletonUtils.clone(model);
         continue;
       }
       const promise=this.fetchModel(candidate,key);
