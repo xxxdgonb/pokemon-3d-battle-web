@@ -39,7 +39,7 @@ export class AudioManager{
       }catch(error){void error;}
       return;
     }
-    const Context=window.AudioContext ?? window.webkitAudioContext;
+    const Context=window.AudioContext ?? (window as Window & {webkitAudioContext?: typeof AudioContext}).webkitAudioContext;
     if(!Context)return;
     try{
       const context=this.context ?? (this.context=new Context());
