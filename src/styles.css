@@ -71,6 +71,7 @@ h2{margin:.2rem 0 .7rem}
 .battle-topbar span{font-size:.78rem;color:#95aac1}
 .battle-hud{position:absolute;z-index:3;left:2vw;right:2vw;bottom:2vh;display:grid;grid-template-columns:1fr 1fr;gap:10px;pointer-events:none}
 .battle-hud>div{background:#07101be8;border:1px solid #415975;border-radius:14px;padding:12px;pointer-events:auto}
+.battle-state-strip{grid-column:1/-1;min-height:38px;display:flex;align-items:center;font-size:.78rem;color:#b8c9dc;background:#07101be0!important;border-color:#35506c!important}
 .combatant-head,.hp-readout{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .hp-readout{margin-top:4px}
 .hp-readout small{color:#ffcccf}
