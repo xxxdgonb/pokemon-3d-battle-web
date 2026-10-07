@@ -1,37 +1,49 @@
 import * as THREE from "three";
 
-type ProceduralEffectKind = "elemental" | "beam" | "slash" | "impact";
+type ProceduralEffectKind="elemental"|"beam"|"slash"|"impact";
 
-interface ActiveEffect {
-  readonly group: THREE.Group;
-  readonly geometry: THREE.BufferGeometry;
-  frame: number;
+interface ActiveEffect{
+  readonly group:THREE.Group;
+  readonly geometry:THREE.BufferGeometry;
+  frame:number;
 }
 
 const BEAM_TYPES=new Set(["electric","psychic","ice","fire"]);
 const SLASH_TYPES=new Set(["fighting","steel","dark","ghost"]);
 const ELEMENTAL_TYPES=new Set(["water","grass","ground","rock","fairy","poison","dragon","bug","flying"]);
+const TYPE_COLORS:Record<string,number>={
+  normal:0xd7dee8,fire:0xff744d,water:0x56a8ff,electric:0xffd84d,grass:0x68cf72,ice:0x9fe8ff,
+  fighting:0xf08a52,poison:0xb16ad0,ground:0xc99258,flying:0x9ab4ff,psychic:0xff78bd,bug:0x9fcb45,
+  rock:0xb9a98a,ghost:0x8273cb,dragon:0x7864f0,dark:0x6d6577,steel:0x98a7bd,fairy:0xf09ac9
+};
 
-export class EffectsRenderer {
+export class EffectsRenderer{
   private readonly active=new Set<ActiveEffect>();
-  public constructor(private readonly scene:THREE.Scene) {}
   private disposed=false;
+  public constructor(private readonly scene:THREE.Scene){}
 
   public playTypeImpact(type:string,target:THREE.Object3D|null):void{
     if(this.disposed)return;
-    const kind=this.kindFor(type);
+    const normalized=type.toLowerCase();
+    const kind=this.kindFor(normalized);
+    const geometry=kind==="slash"?new THREE.BoxGeometry(.08,.55,.08):kind==="beam"?new THREE.BoxGeometry(.13,.13,.8):new THREE.SphereGeometry(.12,12,12);
     const group=new THREE.Group();
-    const geometry=kind==="slash"?new THREE.BoxGeometry(.08,.55,.08):new THREE.SphereGeometry(.12,12,12);
+    const color=TYPE_COLORS[normalized]??0xffffff;
     const count=kind==="beam"?6:kind==="slash"?4:10;
     for(let i=0;i<count;i++){
-      const material=new THREE.MeshBasicMaterial({transparent:true,opacity:.85});
-      const p=new THREE.Mesh(geometry,material);
+      const material=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.88});
+      const mesh=new THREE.Mesh(geometry,material);
       const angle=(i/count)*Math.PI*2;
-      if(kind==="beam")p.position.set(0,(i-count/2)*.18,0);
-      else if(kind==="slash")p.position.set(Math.cos(angle)*.55,.8+Math.sin(angle)*.3,0);
-      else p.position.set(Math.cos(angle)*.45,.8+Math.sin(angle)*.25,0);
-      if(kind==="slash")p.rotation.z=angle;
-      group.add(p);
+      if(kind==="beam"){
+        mesh.position.set(0,(i-count/2)*.14,0);
+        mesh.rotation.y=Math.PI/2;
+      }else if(kind==="slash"){
+        mesh.position.set(Math.cos(angle)*.55,.78+Math.sin(angle)*.3,0);
+        mesh.rotation.z=angle;
+      }else{
+        mesh.position.set(Math.cos(angle)*.45,.8+Math.sin(angle)*.25,0);
+      }
+      group.add(mesh);
     }
     if(target)group.position.copy(target.position);
     this.scene.add(group);
@@ -45,6 +57,8 @@ export class EffectsRenderer {
       group.children.forEach((child,i)=>{
         if(kind==="beam")child.position.z-=.025;
         else child.position.y+=.008+(i%3)*.002;
+        const material=(child as THREE.Mesh).material as THREE.MeshBasicMaterial;
+        material.opacity=.88*(1-t);
       });
       if(t<1)effect.frame=requestAnimationFrame(tick);else this.disposeEffect(effect);
     };
@@ -52,10 +66,9 @@ export class EffectsRenderer {
   }
 
   private kindFor(type:string):ProceduralEffectKind{
-    const normalized=type.toLowerCase();
-    if(BEAM_TYPES.has(normalized))return "beam";
-    if(SLASH_TYPES.has(normalized))return "slash";
-    if(ELEMENTAL_TYPES.has(normalized))return "elemental";
+    if(BEAM_TYPES.has(type))return "beam";
+    if(SLASH_TYPES.has(type))return "slash";
+    if(ELEMENTAL_TYPES.has(type))return "elemental";
     return "impact";
   }
 
