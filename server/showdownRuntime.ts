@@ -103,7 +103,8 @@ interface ShowdownPokemonSet {
 function toPokemonSet(state: PokemonBattleState): ShowdownPokemonSet {
   const direct = Dex.species.get(state.speciesId);
   const requestedSpecies = state.formId && state.formId !== "base" ? `${state.speciesId}-${state.formId}` : state.speciesId;
-  const resolvedSpecies = direct.exists ? direct : Dex.species.get(requestedSpecies);
+  const requested = state.formId && state.formId !== "base" ? Dex.species.get(requestedSpecies) : direct;
+  const resolvedSpecies = requested.exists ? requested : direct;
   if (!resolvedSpecies.exists) throw new Error(`Unknown Pokémon species/form: ${state.speciesId}${state.formId !== "base" ? `-${state.formId}` : ""}`);
   const species = resolvedSpecies.name;
 
