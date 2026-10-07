@@ -354,14 +354,21 @@ export class App {
       const pp=slot?.pp??local?.pp??0;
       const maxPp=slot?.maxPp??local?.pp??1;
       button.textContent=`${local?.name??moveId} · ${local?.type??""} · PP ${pp}/${maxPp} · Power ${local?.basePower||"—"} · Acc ${local?.accuracy===true?"—":local?.accuracy}`;
-      button.disabled=this.moveBusy||this.battleEnded||this.battle3dLoading||pp<=0;
-      button.title=pp<=0?"No PP remaining":this.battle3dLoading?"Preparing 3D presentation…":"Use move";
+      const waitingForBattle=this.coordinator===null||this.adapter===null;
+      button.disabled=this.moveBusy||this.battleEnded||this.battle3dLoading||waitingForBattle||pp<=0;
+      button.title=pp<=0?"No PP remaining":this.battle3dLoading?"Preparing 3D presentation…":waitingForBattle?"Connecting to battle…":"Use move";
     }
   }
 
   private updateBattleHud():void{
-    if(!this.coordinator)return;
-    const s=this.coordinator.state;
+    const s=this.coordinator?.state;
+    if(!s){
+      this.refreshBattleControls();
+      this.renderBattleLog();
+      const overlay=this.root.querySelector("#battle-loading") as HTMLElement|null;
+      if(overlay)overlay.innerHTML=this.battle3dLoading?'<div class="battle-loader"><div class="spinner"></div><strong>Preparing 3D arena…</strong><span>Battle rules are active; presentation is loading.</span></div>':'<div class="battle-loader"><div class="spinner"></div><strong>Connecting to battle…</strong><span>Starting the authoritative Showdown battle.</span></div>';
+      return;
+    }
     const p=this.root.querySelector("#player-hp");const o=this.root.querySelector("#opponent-hp");
     if(p)p.textContent=`HP ${s.player.hp}/${s.player.maxHp}`;
     if(o)o.textContent=`HP ${s.opponent.hp}/${s.opponent.maxHp}`;
