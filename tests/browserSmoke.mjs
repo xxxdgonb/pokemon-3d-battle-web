@@ -59,7 +59,13 @@ try{
     if(title==="BROWSER_SMOKE_PASSED" || title.startsWith("BROWSER_SMOKE_FAILED:"))break;
     await new Promise(resolve=>setTimeout(resolve,250));
   }
-  if(title!=="BROWSER_SMOKE_PASSED")throw new Error(title||"Browser smoke timeout.");
+  if(title!=="BROWSER_SMOKE_PASSED"){
+    let diagnostic="unknown";
+    try{
+      diagnostic=String(await driverRequest("/session/"+sessionId+"/execute/sync",{method:"POST",body:JSON.stringify({script:"return JSON.stringify({title:document.title,step:document.body.dataset.browserSmokeStep??null,body:document.body.innerText.slice(-2000),datasets:{...document.body.dataset}});",args:[]})}));
+    }catch(error){diagnostic=String(error);}
+    throw new Error((title&&title!=="Pokémon 3D Battle Browser Smoke"?title:"Browser smoke timeout.")+" | diagnostic="+diagnostic);
+  }
   const canvas=await driverRequest("/session/"+sessionId+"/execute/sync",{method:"POST",body:JSON.stringify({script:"return document.body.dataset.browserSmokeCanvas === \"true\";",args:[]})});
   if(canvas!==true)throw new Error("Three.js canvas was not present at completion.");
   console.log("Chromium browser/WebGL smoke test passed.");
