@@ -11,7 +11,7 @@ function start(args){
 }
 
 const server=start(["run","server"]);
-const vite=start(["exec","vite","--host","127.0.0.1"]);
+const vite=start(["exec","--","vite","--host","127.0.0.1"]);
 
 let shuttingDown=false;
 function shutdown(code=0){
