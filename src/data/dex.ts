@@ -37,7 +37,7 @@ export async function loadDex(generation:Generation):Promise<DexPayload>{
       const contentType=response.headers.get("content-type")??"";
       if(!response.ok){
         let detail="";
-        try{detail=(await response.text()).slice(0,240);}catch{}
+        try{detail=(await response.text()).slice(0,240);}catch{detail="";}
         throw new Error(`Dex request failed (${response.status})${detail?`: ${detail}`:"."}`);
       }
       if(!contentType.includes("application/json"))throw new Error("Dex API returned non-JSON data. Start the Showdown runtime with npm run dev.");
@@ -86,7 +86,7 @@ export async function loadLearnset(generation:Generation,speciesId:string):Promi
       const response=await fetch(`/api/learnset?generation=${generation}&species=${encodeURIComponent(speciesId)}`,{signal:controller.signal,cache:"no-store"});
       const contentType=response.headers.get("content-type")??"";
       if(!response.ok){
-        let detail="";try{detail=(await response.text()).slice(0,240);}catch{}
+        let detail="";try{detail=(await response.text()).slice(0,240);}catch{detail="";}
         throw new Error(`Learnset request failed (${response.status})${detail?`: ${detail}`:"."}`);
       }
       if(!contentType.includes("application/json"))throw new Error("Learnset API returned non-JSON data. Start the Showdown runtime with npm run dev.");
