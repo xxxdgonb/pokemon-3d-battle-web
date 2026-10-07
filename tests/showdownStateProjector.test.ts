@@ -109,6 +109,17 @@ describe("ShowdownStateProjector",()=>{
     expect(state.phase).toBe("PLAYER_SELECTING_MOVE");
   });
 
+  it("projects weather start and clear events",()=>{
+    const state=projectShowdownBlock(createState(),parseShowdownBlock([
+      "|-weather|SunnyDay|[from] ability: Drought",
+      "|-weather|none",
+    ].join("\n")));
+    expect(state.fieldConditions).toEqual([]);
+
+    const active=projectShowdownBlock(createState(),parseShowdownBlock("|-weather|RainDance"));
+    expect(active.fieldConditions).toContain("RainDance");
+  });
+
   it("projects damage, healing, status cure, faint and turn events",()=>{
     const block=[
       "|-damage|p2a: Charizard|40/100",
