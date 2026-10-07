@@ -6,7 +6,7 @@
 
 Phases 0–11 have implementation or verification evidence as described below. PHASE 14 is intentionally not closed until browser/WebGL verification, advanced battle-event coverage, asset/license audit, and repeated-battle soak evidence exist.
 
-Current head: `8f3d398525ce269a33cfe49ef2e0d3d6fdd25411`
+Current head: `95f52eb613e51be3c2a528b8ccdac2a9d9982da3`
 
 ## Evidence
 
@@ -186,5 +186,5 @@ A feature is not marked COMPLETE merely because source code exists. It is marked
 
 ## Current Verification
 
-- CI: GREEN on run `37640151905` at commit `8f3d398525ce269a33cfe49ef2e0d3d6fdd25411`; TypeScript/server type-check, ESLint, tests, production build, passive-opponent smoke, WebSocket runtime smoke, and Chromium/WebGL smoke all passed.
-- Browser/WebGL: three consecutive automated browser cycles passed, including Battle Again/restart. Human visual review and GPU profiling remain.
+- CI: GREEN on run `37640867912` at commit `efd516006995050c181334cf0473cce07a257c43`; TypeScript/server type-check, ESLint, tests, production build, dependency audit, passive-opponent smoke, WebSocket runtime smoke, and Chromium/WebGL smoke all passed.
+- Browser/WebGL: three consecutive automated browser cycles passed, including Battle Again/restart. Human visual review and deep GPU profiling remain release-quality checks.
