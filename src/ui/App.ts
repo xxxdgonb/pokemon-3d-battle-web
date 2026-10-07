@@ -3,7 +3,7 @@ import { loadDex, loadLearnset, initialPokemon, calculateHp, normalizeId, toMove
 import { RemoteShowdownAdapter } from "../battle/RemoteShowdownAdapter";
 import { WebSocketShowdownTransport } from "../battle/WebSocketShowdownTransport";
 import { BattlePresentationCoordinator } from "../battle/BattlePresentationCoordinator";
-import { ThreeBattleRenderer } from "../rendering/ThreeBattleRenderer";
+import type { ThreeBattleRenderer } from "../rendering/ThreeBattleRenderer";
 import { AudioManager } from "../audio/AudioManager";
 import type { ShowdownBattleEvent } from "../battle/ShowdownAdapter";
 
@@ -296,18 +296,18 @@ export class App {
       this.coordinator.initializeBattle();
       this.stage="battle";
       this.renderBattle();
-      const renderer=this.battleRenderer;
-      if(renderer){
-        try{
-          await renderer.setupBattle(
-            {nationalDex:chosenSpecies.num,shiny:configuredPlayer.shiny,gender:configuredPlayer.gender,formId:configuredPlayer.formId,speciesName:chosenSpecies.name},
-            {nationalDex:battleOpponentSpecies.num,shiny:battleOpponent.shiny,gender:battleOpponent.gender,formId:battleOpponent.formId,speciesName:battleOpponentSpecies.name},
-            this.generation
-          );
-        }catch(error){
-          this.battle3dError=error instanceof Error?error.message:"3D renderer failed to initialize.";
-          this.appendBattleLog(`3D: ${this.battle3dError}`);
-        }
+      const host=this.root.querySelector("#battle-canvas") as HTMLElement|null;
+      if(!host)throw new Error("Battle canvas host was not created.");
+      try{
+        const renderer=await this.initializeBattleRenderer(host);
+        await renderer.setupBattle(
+          {nationalDex:chosenSpecies.num,shiny:configuredPlayer.shiny,gender:configuredPlayer.gender,formId:configuredPlayer.formId,speciesName:chosenSpecies.name},
+          {nationalDex:battleOpponentSpecies.num,shiny:battleOpponent.shiny,gender:battleOpponent.gender,formId:battleOpponent.formId,speciesName:battleOpponentSpecies.name},
+          this.generation
+        );
+      }catch(error){
+        this.battle3dError=error instanceof Error?error.message:"3D renderer failed to initialize.";
+        this.appendBattleLog(`3D: ${this.battle3dError}`);
       }
     }catch(error){
       this.adapter=null;this.coordinator=null;
@@ -324,7 +324,6 @@ export class App {
     this.battleRenderer=null;
     this.root.innerHTML='<section id="battle-root" class="battle-screen"><div id="battle-canvas" class="battle-canvas"></div><div class="battle-topbar"><div><strong>3D BATTLE</strong><span id="turn-label">Turn 1</span></div><button class="ghost-button" type="button" data-action="restart-battle">Exit Battle</button></div><div class="battle-hud"><div class="battle-state-strip" id="battle-state-strip"></div><div class="combatant-card"><div class="combatant-head"><strong id="player-name">Player</strong><span id="player-level"></span></div><div class="hpbar"><i id="player-hpbar"></i></div><div class="hp-readout"><span id="player-hp"></span><small id="player-status"></small></div></div><div class="combatant-card"><div class="combatant-head"><strong id="opponent-name">Opponent</strong><span id="opponent-level"></span></div><div class="hpbar"><i id="opponent-hpbar"></i></div><div class="hp-readout"><span id="opponent-hp"></span><small id="opponent-status"></small></div></div><div class="battle-log" id="battle-log"></div><div id="moves" class="move-grid"></div><div class="battle-result-slot" id="battle-result-slot"></div></div><div id="battle-loading" class="battle-overlay"></div></section>';
     const host=this.root.querySelector("#battle-canvas") as HTMLElement;
-    this.battleRenderer=new ThreeBattleRenderer(host);
     for(const move of this.selectedMoves){
       const button=document.createElement("button");
       button.type="button";
@@ -486,11 +485,22 @@ export class App {
     if(events.some(e=>e.kind==="faint"))this.appendBattleLog("A Pokémon fainted.");
   }
 
+  private async initializeBattleRenderer(host:HTMLElement):Promise<ThreeBattleRenderer>{
+    if(this.battleRenderer)return this.battleRenderer;
+    const module=await import("../rendering/ThreeBattleRenderer");
+    const renderer=new module.ThreeBattleRenderer(host);
+    this.battleRenderer=renderer;
+    return renderer;
+  }
+
   private async retry3D():Promise<void>{
-    if(!this.battleRenderer||!this.species||!this.opponentSpecies||!this.pokemon||!this.opponentPokemon)return;
+    if(!this.species||!this.opponentSpecies||!this.pokemon||!this.opponentPokemon)return;
     this.battle3dLoading=true;this.battle3dError=null;this.updateBattleHud();
     try{
-      await this.battleRenderer.setupBattle(
+      const host=this.root.querySelector("#battle-canvas") as HTMLElement|null;
+      if(!host)throw new Error("Battle canvas host was not created.");
+      const renderer=await this.initializeBattleRenderer(host);
+      await renderer.setupBattle(
         {nationalDex:this.species.num,shiny:this.pokemon.shiny,gender:this.pokemon.gender,formId:this.pokemon.formId,speciesName:this.species.name},
         {nationalDex:this.opponentSpecies.num,shiny:this.opponentPokemon.shiny,gender:this.opponentPokemon.gender,formId:this.opponentPokemon.formId,speciesName:this.opponentSpecies.name},
         this.generation
