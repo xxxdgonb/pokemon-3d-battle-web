@@ -36,3 +36,5 @@ h1{font-size:clamp(2rem,5vw,4rem);margin:.25rem 0 1.5rem}
 .error-state strong{font-size:1.1rem}
 .error-state p{margin:0;opacity:.82;word-break:break-word}
 .error-state button{justify-self:start}
+
+.generation-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}.generation-grid button{min-height:64px;font-size:1.05rem;font-weight:700}@media(max-width:600px){.generation-grid{grid-template-columns:repeat(2,1fr)}}
