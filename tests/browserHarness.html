@@ -34,8 +34,8 @@ async function main(){
       throw new Error("Generation "+generation+" did not expose Pikachu species data.");
     }
     if(generation!==9){
-      location.reload();
-      await waitFor('[data-action="start"]');
+      await click('[data-action="back"]');
+      await waitFor('[data-action="generation"][data-value="1"]');
     }
   }
   await click('[data-action="species"][data-value="pikachu"]');
