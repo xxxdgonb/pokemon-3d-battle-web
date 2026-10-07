@@ -447,7 +447,7 @@ export class App {
         });
       };
       if(this.battleRenderer){
-        void this.battleRenderer.playMove(m.type,resolveOnce).catch(error=>{
+        void this.battleRenderer.playMove(m.type,resolveOnce,m.id).catch(error=>{
           this.appendBattleLog(`3D animation error: ${error instanceof Error?error.message:"Unknown error"}`);
           resolveOnce();
         });
