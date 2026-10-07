@@ -28,3 +28,11 @@ h1{font-size:clamp(2rem,5vw,4rem);margin:.25rem 0 1.5rem}
 
 .battle-result{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#08101cf5;border:1px solid #7890ad;border-radius:14px;padding:14px 16px;font-size:1.05rem}
 .battle-result button{margin-left:auto}
+
+
+.loading-state,.error-state{display:grid;gap:10px;padding:28px;border:1px solid #49627f;border-radius:14px;background:#0d192a}
+.loading-state{place-items:center;text-align:center}
+.error-state{border-color:#8b5260}
+.error-state strong{font-size:1.1rem}
+.error-state p{margin:0;opacity:.82;word-break:break-word}
+.error-state button{justify-self:start}
