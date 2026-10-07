@@ -32,11 +32,11 @@ export class PokemonModelLoader {
     for(const candidate of this.candidates(request)){
       const key=`${candidate.category}/${candidate.filename}`;
       const cached=this.cache.get(key);
-      if(cached)return SkeletonUtils.clone(cached);
+      if(cached)return SkeletonUtils.clone(cached) as THREE.Group;
       const inFlight=this.pending.get(key);
       if(inFlight){
         const model=await inFlight;
-        if(model)return SkeletonUtils.clone(model);
+        if(model)return SkeletonUtils.clone(model) as THREE.Group;
         continue;
       }
       const promise=this.fetchModel(candidate,key);
