@@ -9,6 +9,7 @@ interface RuntimeMessage {
 interface BlockWaiter {
   readonly resolve: (block: string) => void;
   readonly reject: (error: Error) => void;
+  timeout: number;
 }
 
 export class WebSocketShowdownTransport implements ShowdownTransport {
@@ -118,7 +119,15 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
     const buffered=this.bufferedBlocks.shift();
     if(buffered!==undefined)return buffered;
     if(this.closed)throw new Error("Showdown transport is closed.");
-    return new Promise<string>((resolve,reject)=>this.blockWaiters.push({resolve,reject}));
+    return new Promise<string>((resolve,reject)=>{
+      const waiter:BlockWaiter={resolve,reject,timeout:0};
+      waiter.timeout=window.setTimeout(()=>{
+        const index=this.blockWaiters.indexOf(waiter);
+        if(index>=0)this.blockWaiters.splice(index,1);
+        reject(new Error("Timed out waiting for the Showdown runtime response."));
+      },10000);
+      this.blockWaiters.push(waiter);
+    });
   }
 
   public async close():Promise<void>{
@@ -127,7 +136,10 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
     this.socket=null;
     this.readyResolve=null;
     this.readyReject=null;
-    for(const waiter of this.blockWaiters.splice(0))waiter.reject(new Error("Showdown transport closed."));
+    for(const waiter of this.blockWaiters.splice(0)){
+      window.clearTimeout(waiter.timeout);
+      waiter.reject(new Error("Showdown transport closed."));
+    }
     this.listeners.clear();
     if(!socket)return;
 
@@ -165,7 +177,10 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
 
     if(message.type==="showdown"&&typeof message.block==="string"){
       const waiter=this.blockWaiters.shift();
-      if(waiter)waiter.resolve(message.block);
+      if(waiter){
+        window.clearTimeout(waiter.timeout);
+        waiter.resolve(message.block);
+      }
       else this.bufferedBlocks.push(message.block);
       for(const listener of this.listeners)listener(message.block);
       return;
@@ -186,7 +201,10 @@ export class WebSocketShowdownTransport implements ShowdownTransport {
     this.readyReject?.(error);
     this.readyResolve=null;
     this.readyReject=null;
-    for(const waiter of this.blockWaiters.splice(0))waiter.reject(error);
+    for(const waiter of this.blockWaiters.splice(0)){
+      window.clearTimeout(waiter.timeout);
+      waiter.reject(error);
+    }
     if(this.socket&&this.socket.readyState!==WebSocket.CLOSED){
       try{this.socket.close();}catch(error){void error;}
     }
