@@ -33,6 +33,7 @@ async function waitForBattleReady(timeout=15000){
   throw new Error("Battle controls did not become ready within the timeout.");
 }
 async function main(){
+  document.body.dataset.browserSmokeStep="importing-app";
   await import("/src/main.ts");
   await waitFor("#app");
   const mark=step=>{document.body.dataset.browserSmokeStep=step;};
