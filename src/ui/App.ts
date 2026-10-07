@@ -40,7 +40,7 @@ export class App {
     this.root.addEventListener("click",(event)=>{
       const target=(event.target as HTMLElement|null)?.closest<HTMLElement>("[data-action]");
       if(!target || target.hasAttribute("disabled"))return;
-      void this.action(target.dataset.action??"",target.dataset.value);
+      this.handleActionEvent(target);
     });
     this.root.addEventListener("input",(event)=>{
       const target=event.target as HTMLInputElement|null;
@@ -60,6 +60,14 @@ export class App {
       }
     });
     this.render();
+  }
+
+  private handleActionEvent(target:HTMLElement):void{
+    const action=target.dataset.action??"";
+    const value=target.dataset.value;
+    document.body.dataset.lastAction=action;
+    document.body.dataset.lastActionValue=value??"";
+    void this.action(action,value);
   }
 
   private async chooseGeneration(g:Generation):Promise<void>{
