@@ -29,7 +29,15 @@ export class App {
   private errorMessage:string|null=null;
   private readonly audio=new AudioManager();
 
-  public constructor(root:HTMLElement){this.root=root;this.render();}
+  public constructor(root:HTMLElement){
+    this.root=root;
+    this.root.addEventListener("click",(event)=>{
+      const target=(event.target as HTMLElement|null)?.closest<HTMLElement>("[data-action]");
+      if(!target || target.hasAttribute("disabled"))return;
+      void this.action(target.dataset.action??"",target.dataset.value);
+    });
+    this.render();
+  }
 
   private async chooseGeneration(g:Generation):Promise<void>{
     if(this.loading)return;
@@ -78,7 +86,7 @@ export class App {
       if(this.stage==="level") c.innerHTML=this.level();
       if(this.stage==="moves") c.innerHTML=this.moves();
     }
-    c.querySelectorAll<HTMLElement>("[data-action]").forEach(el=>el.addEventListener("click",()=>void this.action(el.dataset.action??"",el.dataset.value)));
+
   }
 
   private escapeHtml(value:string):string{
@@ -95,7 +103,9 @@ export class App {
 
   private title():string{return ({menu:"Battle",generation:"Generation",pokemon:"Pokémon",details:"Details",form:"Form",gender:"Gender",shiny:"Shiny",ability:"Ability",item:"Held Item",level:"Level",moves:"Moves"} as Record<string,string>)[this.stage]??"Battle";}
 
-  private generations():string{return Array.from({length:9},(_,i)=>i+1).map(g=>`<button data-action="generation" data-value="${g}">Generation ${g}</button>`).join("");}
+  private generations():string{
+    return `<div class="generation-grid" role="list">${Array.from({length:9},(_,i)=>i+1).map(g=>`<button type="button" role="listitem" data-action="generation" data-value="${g}" aria-label="Select Generation ${g}">Generation ${g}</button>`).join("")}</div>`;
+  }
 
   private speciesList():string{
     const list=this.dex?.species.filter(s=>s.baseSpecies===s.name || !s.forme).slice(0,1025)??[];
