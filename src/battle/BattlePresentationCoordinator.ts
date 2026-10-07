@@ -2,6 +2,7 @@ import type { BattleState, BattleSide } from "../core/types";
 import type { ShowdownBattleEvent } from "./ShowdownAdapter";
 import { BattleTransactionGuard, type BattleTransaction, type MoveResolution } from "./BattleTransaction";
 import { BattleStateMachine } from "./BattleEngine";
+import { summarizeBattleEvents, type BattleResolutionSummary } from "./BattleEventJournal";
 
 function targetSide(event: ShowdownBattleEvent): BattleSide | null {
   const raw = event.payload;
@@ -14,6 +15,7 @@ function targetSide(event: ShowdownBattleEvent): BattleSide | null {
 export class BattlePresentationCoordinator {
   private readonly machine: BattleStateMachine;
   private readonly transactions = new BattleTransactionGuard();
+  private lastSummary: BattleResolutionSummary | null = null;
 
   public constructor(initialState: BattleState) {
     this.machine = new BattleStateMachine(initialState);
@@ -31,6 +33,10 @@ export class BattlePresentationCoordinator {
 
   public get state(): BattleState {
     return this.machine.state;
+  }
+
+  public get lastResolution(): BattleResolutionSummary | null {
+    return this.lastSummary;
   }
 
   public selectMove(moveId: string): BattleState {
@@ -58,13 +64,22 @@ export class BattlePresentationCoordinator {
   }
 
   public applyAuthoritativeResolution(transactionId: string, events: readonly ShowdownBattleEvent[]): BattleState {
-    const hasAuthoritativeResolution = events.some(event => {
-      if (event.kind === "damage") return targetSide(event) === "opponent";
-      return event.kind === "miss" || event.kind === "immune" || event.kind === "failed" || event.kind === "move" || event.kind === "heal" || event.kind === "status";
-    });
+    const summary = summarizeBattleEvents(events);
+    this.lastSummary = summary;
+    const hasAuthoritativeResolution =
+      summary.damage.length > 0 ||
+      summary.healing.length > 0 ||
+      summary.statuses.length > 0 ||
+      summary.statChanges.length > 0 ||
+      summary.abilityItemEvents.length > 0 ||
+      summary.miss ||
+      summary.immune ||
+      summary.failed ||
+      events.some(event => event.kind === "move" || event.kind === "battle-end");
+
     if (!hasAuthoritativeResolution) {
       const received = events.map(event => `${event.kind}:${JSON.stringify(event.payload)}`).join(" | ");
-      throw new Error(`No authoritative opponent move resolution for transaction ${transactionId}. Events=${received || "none"}`);
+      throw new Error(`No authoritative resolution for transaction ${transactionId}. Events=${received || "none"}`);
     }
 
     const resolution = this.resolveOutcome(events);
