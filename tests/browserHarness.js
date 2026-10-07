@@ -89,7 +89,7 @@ async function main(){
   for(let turn=0;turn<20;turn++){
     const result=document.querySelector(".battle-result");
     if(result)break;
-    const button=Array.from(document.querySelectorAll(".move-grid button")).find(node=>/Physical|Special/.test(node.textContent ?? ""));
+    const button=Array.from(document.querySelectorAll(".move-grid button")).find(node=>!node.disabled && /Power \d+/.test(node.textContent ?? ""));
     if(!button)throw new Error("Damaging move button disappeared before battle ended.");
     button.click();
     const turnDeadline=Date.now()+15000;
