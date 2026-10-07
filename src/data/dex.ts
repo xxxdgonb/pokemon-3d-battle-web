@@ -19,9 +19,29 @@ export function normalizeId(value:string):string{
 }
 
 export async function loadDex(generation:Generation):Promise<DexPayload>{
-  const response=await fetch(`/api/dex?generation=${generation}`);
-  if(!response.ok) throw new Error(`Dex request failed: ${response.status}`);
-  return await response.json() as DexPayload;
+  if(!Number.isInteger(generation) || generation<1 || generation>9) throw new Error("Invalid generation. Choose Generation 1-9.");
+  const controller=new AbortController();
+  const timeout=window.setTimeout(()=>controller.abort(),15000);
+  try{
+    const response=await fetch(`/api/dex?generation=${generation}`,{signal:controller.signal,cache:"no-store"});
+    const contentType=response.headers.get("content-type")??"";
+    if(!response.ok){
+      let detail="";
+      try{detail=(await response.text()).slice(0,240)}catch{}
+      throw new Error(`Dex request failed (${response.status})${detail ? `: ${detail}` : "."}`);
+    }
+    if(!contentType.includes("application/json")) throw new Error("Dex API returned non-JSON data. Start the Showdown runtime with npm run dev.");
+    const payload=await response.json() as DexPayload;
+    if(payload.generation!==generation || !Array.isArray(payload.species) || payload.species.length===0){
+      throw new Error(`Generation ${generation} returned invalid Pokémon data.`);
+    }
+    return payload;
+  }catch(error){
+    if(error instanceof DOMException && error.name==="AbortError") throw new Error("Dex request timed out. Make sure the development server is running.");
+    throw error;
+  }finally{
+    window.clearTimeout(timeout);
+  }
 }
 
 export function calculateHp(species:DexSpecies, level:number):number {
