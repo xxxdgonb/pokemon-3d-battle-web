@@ -113,6 +113,8 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
       case "-formechange":
       case "detailschange":
         return { kind: "formechange", payload: message.args, source: message };
+      case "-weather":
+        return {kind:"fieldstart",payload:message.args,source:message};
       case "-fieldstart":
         return {kind:"fieldstart",payload:message.args,source:message};
       case "-fieldend":
