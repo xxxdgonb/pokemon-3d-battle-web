@@ -31,6 +31,7 @@ export class App {
   private battle3dLoading=false;
   private battle3dError:string|null=null;
   private searchQuery="";
+  private speciesPage=1;
   private levelDraft=50;
   private readonly battleLog:string[]=[];
   private readonly audio=new AudioManager();
@@ -99,6 +100,7 @@ export class App {
     this.selectedMoves=[];
     this.levelDraft=50;
     this.searchQuery="";
+    this.speciesPage=1;
     this.legalMoveIds=await loadLearnset(this.generation,s.id);
     this.stage="details";
     this.render();
@@ -154,8 +156,10 @@ export class App {
   private speciesList():string{
     const query=this.searchQuery.trim().toLowerCase();
     const all=this.dex?.species.filter(s=>s.baseSpecies===s.name||!s.forme)??[];
-    const list=all.filter(s=>!query||s.name.toLowerCase().includes(query)||s.id.includes(query)||String(s.num)===query).slice(0,150);
-    return `<div class="section-intro"><div><strong>Choose your Pokémon</strong><span>${all.length} base species · Search by name or Pokédex number.</span></div></div><label class="search-field"><span>Search Pokémon</span><input data-search="true" type="search" placeholder="Pikachu, Charizard, 025…" value="${this.escapeHtml(this.searchQuery)}" autocomplete="off"></label>${list.length?`<div class="grid-list pokemon-grid">${list.map(s=>`<button class="pokemon-card" type="button" data-action="species" data-value="${s.id}"><strong>#${String(s.num).padStart(3,"0")} · ${this.escapeHtml(s.name)}</strong><span>${s.types.join(" / ")}</span><small>HP ${s.baseStats.hp} · ATK ${s.baseStats.atk} · DEF ${s.baseStats.def}</small></button>`).join("")}</div>`:'<div class="empty-state">No Pokémon match your search.</div>'}`;
+    const filtered=all.filter(s=>!query||s.name.toLowerCase().includes(query)||s.id.includes(query)||String(s.num)===query);
+    const pageSize=120;
+    const visible=filtered.slice(0,this.speciesPage*pageSize);
+    return `<div class="section-intro"><div><strong>Choose your Pokémon</strong><span>${all.length} base species available in Generation ${this.generation} · ${filtered.length} match${filtered.length===1?"":"es"}.</span></div></div><label class="search-field"><span>Search Pokémon</span><input data-search="true" type="search" placeholder="Pikachu, Charizard, 025…" value="${this.escapeHtml(this.searchQuery)}" autocomplete="off"></label>${visible.length?`<div class="grid-list pokemon-grid">${visible.map(s=>`<button class="pokemon-card" type="button" data-action="species" data-value="${s.id}"><strong>#${String(s.num).padStart(3,"0")} · ${this.escapeHtml(s.name)}</strong><span>${s.types.join(" / ")}</span><small>HP ${s.baseStats.hp} · ATK ${s.baseStats.atk} · DEF ${s.baseStats.def}</small></button>`).join("")}</div>`:'<div class="empty-state">No Pokémon match your search.</div>'}`;
   }
 
   private details():string{
@@ -212,6 +216,7 @@ export class App {
       if(action==="retry-generation"){await this.chooseGeneration(Number(value) as Generation);return;}
       if(action==="back"){this.goBack();return;}
       if(action==="generation"){await this.chooseGeneration(Number(value) as Generation);return;}
+      if(action==="species-more"){this.speciesPage+=1;this.render();return;}
       if(action==="species"){
         if(this.loading)return;
         const s=this.dex?.species.find(x=>x.id===value);
@@ -559,7 +564,7 @@ export class App {
     const adapter=this.adapter;const renderer=this.battleRenderer;
     this.adapter=null;this.coordinator=null;this.battleRenderer=null;
     await adapter?.dispose();renderer?.dispose();
-    this.pokemon=null;this.opponentPokemon=null;this.opponentSpecies=null;this.species=null;this.selectedMoves=[];this.legalMoveIds=[];
+    this.pokemon=null;this.opponentPokemon=null;this.opponentSpecies=null;this.species=null;this.selectedMoves=[];this.speciesPage=1;this.legalMoveIds=[];
     this.moveBusy=false;this.battleEnded=false;this.battleResult=null;this.battle3dLoading=false;this.battle3dError=null;this.battleLog.length=0;this.searchQuery="";this.levelDraft=50;this.stage="menu";this.render();
   }
 }
