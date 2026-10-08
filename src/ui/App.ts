@@ -465,7 +465,7 @@ export class App {
       const events=await this.adapter.submitPlayerMove(m.id);
       this.coordinator.syncAuthoritativeState(await this.adapter.getState());
       this.coordinator.applyAuthoritativeResolution(id,events);
-      await this.battleRenderer?.playResolution(m.type,events);
+      await this.battleRenderer?.playResolution(m.type,events,m.id);
       if(events.some(event=>event.kind==="damage"))this.audio.play("impact");
       if(events.some(event=>event.kind==="status"||event.kind==="curestatus"))this.audio.play("status");
       if(events.some(event=>event.kind==="faint"))this.audio.play("faint");
