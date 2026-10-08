@@ -16,6 +16,7 @@ function validatePokemonStateForGeneration(state: PokemonBattleState, generation
   if (state.heldItemId && !dex.items.get(state.heldItemId).exists) {
     throw new Error(`Unknown item for generation ${generation}: ${state.heldItemId}`);
   }
+  const learnset = dex.species.getLearnsetData(requestedSpecies as never).learnset ?? {};
   const seen = new Set<string>();
   for (const move of state.moves) {
     const id = move.moveId.toLowerCase();
@@ -23,6 +24,9 @@ function validatePokemonStateForGeneration(state: PokemonBattleState, generation
     seen.add(id);
     if (!dex.moves.get(id).exists) {
       throw new Error(`Unknown move for generation ${generation}: ${move.moveId}`);
+    }
+    if (!Object.prototype.hasOwnProperty.call(learnset, id)) {
+      throw new Error(`Move is not in the ${requestedSpecies} learnset for generation ${generation}: ${move.moveId}`);
     }
   }
 }
