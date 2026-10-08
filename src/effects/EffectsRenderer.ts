@@ -73,8 +73,13 @@ export class EffectsRenderer{
         const material=trail.material as THREE.MeshBasicMaterial;
         material.opacity=.75*(1-Math.min(1,i/6));
       }
-      const spin=performance.now()*0.008;
-      core.rotation.x=spin;core.rotation.y=spin*1.3;
+      if(profile==="beam"){
+        const direction=end.clone().sub(start).normalize();
+        core.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),direction);
+      }else{
+        const spin=performance.now()*0.008;
+        core.rotation.x=spin;core.rotation.y=spin*1.3;
+      }
       if(t<1){effect.frame=requestAnimationFrame(tick);}
       else{
         if(!impacted){impacted=true;onImpact();}
