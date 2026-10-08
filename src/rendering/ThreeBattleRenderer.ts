@@ -148,8 +148,8 @@ export class ThreeBattleRenderer {
       this.effects.playHealEffect(modelFor(event.target));
     }
     for(const event of summary.statChanges){
-      const raw=Array.isArray(event.payload)?event.payload[1]:"";
-      this.effects.playStageEffect(modelFor(summary.target ?? "opponent"),typeof raw==="string"&&!raw.startsWith("-"));
+      const amount=Array.isArray(event.payload)?Number(event.payload[2]):0;
+      this.effects.playStageEffect(modelFor(summary.target ?? "opponent"),amount>=0);
     }
     if(summary.abilityItemEvents.length>0){
       this.effects.playStatusEffect(modelFor(summary.target ?? "opponent"),"ability");
