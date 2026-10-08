@@ -49,8 +49,9 @@ export class ThreeBattleRenderer {
 
   public async setupBattle(player:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless";formId?:string;speciesName?:string},opponent:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless";formId?:string;speciesName?:string},generation:number):Promise<void>{
     void generation;
-    if(this.playerModel){this.animations.dispose(this.playerModel);this.scene.remove(this.playerModel);}
-    if(this.opponentModel){this.animations.dispose(this.opponentModel);this.scene.remove(this.opponentModel);}
+    this.host.querySelector(".model-unavailable")?.remove();
+    if(this.playerModel){this.animations.dispose(this.playerModel);this.scene.remove(this.playerModel);this.playerModel=null;}
+    if(this.opponentModel){this.animations.dispose(this.opponentModel);this.scene.remove(this.opponentModel);this.opponentModel=null;}
     this.playerModel=await this.loader.load(player);
     this.opponentModel=await this.loader.load(opponent);
     if(!this.playerModel)this.showModelUnavailable("Player model unavailable");
@@ -115,7 +116,7 @@ export class ThreeBattleRenderer {
   }
 
   private showModelUnavailable(message:string):void{
-    const existing=this.host.querySelector(".model-unavailable"); if(existing)return;
+    const existing=this.host.querySelector(".model-unavailable"); if(existing){existing.textContent=message;return;}
     const label=document.createElement("div"); label.className="model-unavailable"; label.textContent=message;
     label.style.cssText="position:absolute;top:12px;left:12px;padding:6px 10px;background:#111c;color:#fff;border:1px solid #789;border-radius:8px;font:12px system-ui;z-index:2";
     this.host.appendChild(label);
