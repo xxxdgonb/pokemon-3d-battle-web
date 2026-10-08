@@ -134,13 +134,14 @@ export class ThreeBattleRenderer {
     const animationAlias=events.find(event=>event.kind==="anim")?.payload;
     const visualMoveId=Array.isArray(animationAlias)&&typeof animationAlias[0]==="string"?animationAlias[0]:moveId;
     const modelFor=(side:"player"|"opponent"):THREE.Group|null=>side==="player"?this.playerModel:this.opponentModel;
-    const hitSides=[...new Set(summary.damage.map(event=>event.target))];
-    for(const side of hitSides){
-      const target=modelFor(side);
+    // Showdown emits one damage event per hit for multi-hit moves. Preserve
+    // that rhythm instead of collapsing ten hits into one generic impact.
+    for(const damage of summary.damage){
+      const target=modelFor(damage.target);
       if(!target)continue;
       this.effects.playTypeImpact(type,target,visualMoveId);
-      this.cameraController.shake(.11,.18);
-      await this.animations.play(target,"hit",220);
+      this.cameraController.shake(.09,.12);
+      await this.animations.play(target,"hit",140);
     }
     if(summary.miss||summary.immune||summary.failed){
       this.effects.playMissEffect(modelFor(summary.target ?? "opponent"));
