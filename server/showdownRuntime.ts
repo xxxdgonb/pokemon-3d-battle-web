@@ -12,7 +12,7 @@ function validatePokemonStateForGeneration(state: PokemonBattleState, generation
   const species = directSpecies.exists ? directSpecies : formSpecies;
   const requestedSpecies = species.exists ? species.id : state.speciesId;
   if (!species.exists) throw new Error(`Pokémon is not available in generation ${generation}: ${requestedSpecies}`);
-  if (species.isNonstandard || species.isUnreleased) {
+  if (species.isNonstandard) {
     throw new Error(`Pokémon is not legal in Generation ${generation} Showdown rules: ${requestedSpecies}`);
   }
   if (generation >= 3) {
