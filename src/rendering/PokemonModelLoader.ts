@@ -130,8 +130,13 @@ export class PokemonModelLoader {
 
     if(request.shiny && suffix)add("shiny",`${dex}${suffix}`);
     if(request.shiny)add("shiny",dex);
-    if(suffix)add("regular",`${dex}${suffix}`);
-    add("regular",dex);
+    // Do not silently replace a requested shiny appearance with a normal
+    // model. If the shiny GLB is unavailable, load the shiny artwork fallback
+    // below so the visual identity remains correct.
+    if(!request.shiny){
+      if(suffix)add("regular",`${dex}${suffix}`);
+      add("regular",dex);
+    }
     return result;
   }
 
