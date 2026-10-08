@@ -12,9 +12,6 @@ function validatePokemonStateForGeneration(state: PokemonBattleState, generation
   const species = directSpecies.exists ? directSpecies : formSpecies;
   const requestedSpecies = species.exists ? species.id : state.speciesId;
   if (!species.exists) throw new Error(`Pokémon is not available in generation ${generation}: ${requestedSpecies}`);
-  if (species.isNonstandard) {
-    throw new Error(`Pokémon is not legal in Generation ${generation} Showdown rules: ${requestedSpecies}`);
-  }
   if (generation >= 3) {
     const speciesAbilityIds = new Set(Object.values(species.abilities).map(ability => ability.toLowerCase().replace(/[^a-z0-9]+/g, "")));
     const abilityId = state.abilityId.toLowerCase().replace(/[^a-z0-9]+/g, "");
