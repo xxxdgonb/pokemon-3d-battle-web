@@ -28,11 +28,11 @@ export function getDexPayload(generation: Generation): unknown {
 
   const dex = Dex.mod(`gen${generation}`);
   const species = dex.species.all()
-    .filter(s => s.exists && !s.isNonstandard && s.num > 0 && s.num <= maxNationalDex(generation) && (s.gen ?? generation) <= generation)
+    .filter(s => s.exists && s.num > 0 && s.num <= maxNationalDex(generation) && (s.gen ?? generation) <= generation)
     .map(s => ({
       id: id(s), name: s.name, num: s.num, baseSpecies: s.baseSpecies,
       forme: s.forme, types: [...s.types], abilities: Object.fromEntries(Object.entries(s.abilities).map(([slot, name]) => [slot, normalizeId(name)])),
-      gender: s.gender, genderRatio: s.genderRatio, isMega: s.isMega, isGigantamax: Boolean((s as unknown as {isGigantamax?: boolean}).isGigantamax),
+      gender: s.gender, genderRatio: s.genderRatio, isMega: s.isMega, isGigantamax: Boolean((s as unknown as {isGigantamax?: boolean}).isGigantamax), battleLegal: !s.isNonstandard && !s.isUnreleased,
       gen: s.gen,
       baseStats: {...s.baseStats},
     }));
