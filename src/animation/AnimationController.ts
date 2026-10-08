@@ -58,6 +58,8 @@ export class AnimationController{
     action.reset();
     action.clampWhenFinished=animation==="faint";
     action.setLoop(animation==="idle"?THREE.LoopRepeat:THREE.LoopOnce,animation==="idle"?Infinity:1);
+    if(animation!=="idle"&&animation!=="faint")action.setDuration(Math.max(.08,animation==="attack"?.65:.32));
+    action.fadeIn(animation==="idle"?.12:.06);
     action.play();
     return action;
   }
