@@ -134,6 +134,7 @@ export class ThreeBattleRenderer {
       const target=modelFor(side);
       if(!target)continue;
       this.effects.playTypeImpact(type,target,moveId);
+      this.cameraController.shake(.11,.18);
       await this.animations.play(target,"hit",220);
     }
     if(summary.miss||summary.immune||summary.failed){
