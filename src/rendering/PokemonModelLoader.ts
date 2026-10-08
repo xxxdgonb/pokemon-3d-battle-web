@@ -8,7 +8,7 @@ export interface PokemonModelRequest {
   readonly shiny:boolean;
   readonly gender:"male"|"female"|"genderless";
   readonly formId?:string;
-  readonly speciesName?:string;
+  readonly speciesName?:string; readonly heightm?:number | undefined;
 }
 
 interface ModelCandidate { readonly category:string; readonly filename:string; }
