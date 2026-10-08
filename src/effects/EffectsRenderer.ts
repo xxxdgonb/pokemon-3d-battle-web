@@ -147,7 +147,7 @@ export class EffectsRenderer{
 
   public playStatusEffect(target:THREE.Object3D|null,status:string):void{
     if(this.disposed||!target)return;
-    const palette:Record<string,number>={brn:0xff6633,par:0xffd84d,psn:0xb36ad8,tox:0x8f4db7,slp:0x7d91b8,frz:0x9fe8ff,ability:0xffc857,item:0x9cc9ff};
+    const palette:Record<string,number>={brn:0xff6633,par:0xffd84d,psn:0xb36ad8,tox:0x8f4db7,slp:0x7d91b8,frz:0x9fe8ff,ability:0xffc857,item:0x9cc9ff,heal:0x67e8a5};
     const color=palette[status.toLowerCase()]??0xffffff;
     const geometry=new THREE.SphereGeometry(.09,10,10);
     const material=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.9});
@@ -173,6 +173,36 @@ export class EffectsRenderer{
         const material=(child as THREE.Mesh).material as THREE.MeshBasicMaterial;
         material.opacity=.9*(1-t);
       });
+      if(t<1)effect.frame=requestAnimationFrame(tick);else this.disposeEffect(effect);
+    };
+    effect.frame=requestAnimationFrame(tick);
+  }
+
+  public playHealEffect(target:THREE.Object3D|null):void{
+    if(this.disposed||!target)return;
+    this.playStatusEffect(target,"heal");
+  }
+
+  public playStageEffect(target:THREE.Object3D|null,positive:boolean):void{
+    if(this.disposed||!target)return;
+    const color=positive?0x67e8a5:0xff7185;
+    const geometry=new THREE.RingGeometry(.22,.3,20);
+    const material=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.82,side:THREE.DoubleSide});
+    const ring=new THREE.Mesh(geometry,material);
+    ring.rotation.x=-Math.PI/2;
+    ring.position.copy(target.position);
+    ring.position.y+=.12;
+    this.scene.add(ring);
+    const effect:ActiveEffect={group:new THREE.Group(),geometries:[geometry],frame:0};
+    effect.group.add(ring);
+    this.active.add(effect);
+    const start=performance.now();
+    const tick=():void=>{
+      if(this.disposed){this.disposeEffect(effect);return;}
+      const t=Math.min(1,(performance.now()-start)/520);
+      ring.scale.setScalar(.5+t*1.7);
+      ring.position.y=target.position.y+.12+t*.9;
+      material.opacity=.82*(1-t);
       if(t<1)effect.frame=requestAnimationFrame(tick);else this.disposeEffect(effect);
     };
     effect.frame=requestAnimationFrame(tick);
