@@ -1,6 +1,6 @@
 # Final Audit Checkpoint
 
-Date: 2026-10-07
+Date: 2026-10-08
 
 ## Implemented end-to-end
 - Generation 1-9 selection backed by Pokémon Showdown Dex.
@@ -20,7 +20,7 @@ Date: 2026-10-07
 - CI workflow and real Showdown smoke test.
 
 ## Technical acceptance result
-- Latest implementation CI run `37641192757` on commit `efcfe162f071f4a2fa6c912ac7dfd2a815a3ba66` completed successfully: TypeScript/server type-check, ESLint, tests, production build, dependency audit, passive-opponent smoke, WebSocket runtime smoke, and Chromium/WebGL smoke all passed.
+- Latest implementation CI run #437 (`37739516997`) on commit `e0c0e64b59b7d5b60736f4d45358c54cc2b29b69` completed successfully: TypeScript/server type-check, ESLint, tests, production build, dependency audit, passive-opponent smoke, WebSocket runtime smoke, and Chromium/WebGL smoke all passed.
 - Chromium/WebDriver browser smoke is verified in CI, including WebGL canvas presence, battle move loop, terminal result, Battle Again, and three repeated cycles.
 - Advanced field/side/volatile effects are normalized and projected into BattleState; broader presentation remains extensible.
 - Three repeated browser battle/restart cycles are verified; deep GPU profiling and human visual fidelity review remain non-automated.
@@ -32,7 +32,7 @@ Technical runtime acceptance is satisfied: GitHub Actions reports success and th
 
 ## Latest verification checkpoint
 
-- CI run `37641192757` passed on commit `efcfe162f071f4a2fa6c912ac7dfd2a815a3ba66`.
+- CI run #437 (`37739516997`) passed on commit `e0c0e64b59b7d5b60736f4d45358c54cc2b29b69`.
 - Chromium/WebDriver browser smoke completed three consecutive cycles with WebGL canvas, battle loop, terminal result and restart coverage.
 - Server input validation, form-model resolution, two-sided authoritative hit/faint presentation, and procedural audio fallback are included.
 - Remaining release gates are external: legal approval for upstream Pokémon model redistribution/use and human visual/GPU review.
