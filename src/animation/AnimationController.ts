@@ -80,11 +80,9 @@ export class AnimationController{
     const action=this.native(model,animation);
     const start=performance.now(),origin=base.position.clone(),originRotation=base.rotation.clone();
     return new Promise(resolve=>{
-      let previous=start;
       const tick=():void=>{
         const now=performance.now(),t=Math.min(1,(now-start)/duration);
         if(!action)this.animateFallback(model,animation,t,origin,originRotation);
-        previous=now;
         if(t<1)requestAnimationFrame(tick);
         else{
           action?.stop();
