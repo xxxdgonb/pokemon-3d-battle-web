@@ -55,7 +55,9 @@ export class ThreeBattleRenderer {
     this.playerModel=await this.loader.load(player);
     this.opponentModel=await this.loader.load(opponent);
     if(!this.playerModel)this.showModelUnavailable("Player model unavailable");
+    else if(this.playerModel.userData.artworkFallback)this.showModelUnavailable("Player 3D asset unavailable — artwork fallback");
     if(!this.opponentModel)this.showModelUnavailable("Opponent model unavailable");
+    else if(this.opponentModel.userData.artworkFallback)this.showModelUnavailable("Opponent 3D asset unavailable — artwork fallback");
     if(this.playerModel){
       this.placeCombatant(this.playerModel,"player",player.heightm);
       this.addModel(this.playerModel);
