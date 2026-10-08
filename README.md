@@ -16,12 +16,12 @@ The repository currently has a working implementation through the Node/WebSocket
 Verified in GitHub Actions:
 - TypeScript + server compilation
 - ESLint
-- 20 unit tests
+- 28 unit tests
 - production Vite build
 - direct pinned-Showdown passive-opponent smoke test
 - real WebSocket runtime smoke test covering battle creation, active move request, move execution and authoritative damage
 
-The browser/WebGL client has not been visually exercised by browser automation in the current development environment, so browser presentation and GPU performance remain explicitly unverified.
+Chromium/WebDriver browser smoke is verified in CI across three consecutive full battle/restart cycles. Human visual fidelity review and deep GPU profiling remain release-quality checks.
 
 See [PROJECT_STATUS.md](./PROJECT_STATUS.md) for the exact completion matrix and remaining blockers.
 
