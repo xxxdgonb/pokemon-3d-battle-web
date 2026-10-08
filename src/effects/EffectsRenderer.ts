@@ -5,7 +5,13 @@ type ProceduralEffectKind="elemental"|"beam"|"slash"|"orb"|"impact";
 const MOVE_PROFILES:Record<string,ProceduralEffectKind>={
   thunderbolt:"beam", thunder:"beam", icebeam:"beam", flamethrower:"beam", psychic:"beam", shadowball:"orb",
   energyball:"orb", aurasphere:"orb", waterpulse:"orb", dragonpulse:"beam", hyperbeam:"beam",
-  closecombat:"slash", nightslash:"slash", airslash:"slash", psychocut:"slash"
+  closecombat:"slash", nightslash:"slash", airslash:"slash", psychocut:"slash", dragonclaw:"slash", shadowclaw:"slash",
+  surf:"elemental", hydropump:"beam", waterfall:"beam", aquatail:"slash",
+  earthquake:"elemental", bulldoze:"elemental", rockslide:"elemental", stoneedge:"slash",
+  vinewhip:"slash", powerwhip:"slash", razorleaf:"slash", leafblade:"slash",
+  solarbeam:"beam", dazzlinggleam:"beam", moonblast:"orb", darkpulse:"orb",
+  fireblast:"orb", flareblitz:"slash", overheat:"beam", icefang:"slash", iciclecrash:"slash",
+  psyshock:"orb", psybeam:"beam", focusblast:"orb", aurasphere:"orb"
 };
 
 interface ActiveEffect{
@@ -73,6 +79,12 @@ export class EffectsRenderer{
         for(const trail of trails)trail.visible=false;
       }else{
         core.position.copy(position);
+        // Signature trajectories keep moves visually distinct even when they
+        // share the same broad effect family.
+        if(move==="surf")core.position.y+=Math.sin(t*Math.PI*2)*.28;
+        else if(move==="earthquake"||move==="bulldoze")core.position.y+=Math.abs(Math.sin(t*Math.PI*3))*.18;
+        else if(move==="vinewhip"||move==="powerwhip"||move==="razorleaf"||move==="leafblade")core.rotation.z=Math.sin(t*Math.PI*2)*.9;
+        else if(move==="moonblast"||move==="dazzlinggleam")core.scale.setScalar(1+Math.sin(t*Math.PI)*.45);
         for(let i=0;i<trails.length;i++){
           const trail=trails[i];
           if(!trail)continue;
@@ -109,7 +121,7 @@ export class EffectsRenderer{
     const geometry=kind==="slash"?new THREE.BoxGeometry(.08,.55,.08):kind==="beam"?new THREE.BoxGeometry(.13,.13,.8):new THREE.SphereGeometry(.12,12,12);
     const group=new THREE.Group();
     const color=TYPE_COLORS[normalized]??0xffffff;
-    const count=kind==="beam"?6:kind==="slash"?4:10;
+    const count=move==="earthquake"||move==="bulldoze"?14:move==="fireblast"||move==="dazzlinggleam"?18:kind==="beam"?6:kind==="slash"?5:12;
     for(let i=0;i<count;i++){
       const material=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.88});
       const mesh=new THREE.Mesh(geometry,material);
@@ -117,11 +129,15 @@ export class EffectsRenderer{
       if(kind==="beam"){
         mesh.position.set(0,(i-count/2)*.14,0);
         mesh.rotation.y=Math.PI/2;
+        if(move==="thunderbolt"||move==="thunder")mesh.rotation.z=(i%2===0?1:-1)*.45;
+        if(move==="icebeam")mesh.rotation.x=(i%2===0?1:-1)*.7;
       }else if(kind==="slash"){
         mesh.position.set(Math.cos(angle)*.55,.78+Math.sin(angle)*.3,0);
         mesh.rotation.z=angle;
       }else{
         mesh.position.set(Math.cos(angle)*.45,.8+Math.sin(angle)*.25,0);
+        if(move==="earthquake"||move==="bulldoze")mesh.position.y=.25+Math.abs(Math.sin(angle))*1.0;
+        if(move==="fireblast")mesh.scale.setScalar(1.15);
       }
       group.add(mesh);
     }
