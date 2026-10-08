@@ -4,6 +4,28 @@ import { WebSocketServer, type WebSocket } from "ws";
 import type { BattleStream as BattleStreamType } from "pokemon-showdown";
 const require = createRequire(import.meta.url);
 const {BattleStream, Dex} = require("pokemon-showdown") as {BattleStream: typeof BattleStreamType; Dex: typeof import("pokemon-showdown").Dex};
+
+function validatePokemonStateForGeneration(state: PokemonBattleState, generation: Generation): void {
+  const dex = Dex.forGen(generation);
+  const requestedSpecies = state.formId && state.formId !== "base" ? `${state.speciesId}-${state.formId}` : state.speciesId;
+  const species = dex.species.get(requestedSpecies);
+  if (!species.exists) throw new Error(`Pokémon is not available in generation ${generation}: ${requestedSpecies}`);
+  if (!dex.abilities.get(state.abilityId).exists) {
+    throw new Error(`Unknown ability for generation ${generation}: ${state.abilityId}`);
+  }
+  if (state.heldItemId && !dex.items.get(state.heldItemId).exists) {
+    throw new Error(`Unknown item for generation ${generation}: ${state.heldItemId}`);
+  }
+  const seen = new Set<string>();
+  for (const move of state.moves) {
+    const id = move.moveId.toLowerCase();
+    if (seen.has(id)) throw new Error(`Duplicate move is not allowed: ${move.moveId}`);
+    seen.add(id);
+    if (!dex.moves.get(id).exists) {
+      throw new Error(`Unknown move for generation ${generation}: ${move.moveId}`);
+    }
+  }
+}
 import type { Generation, PokemonBattleState } from "../src/core/types";
 import { getDexPayload, getGeneration, getLearnset } from "./dexApi";
 
