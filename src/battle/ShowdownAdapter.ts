@@ -8,7 +8,7 @@ export interface ShowdownBattleConfig {
 }
 
 export interface ShowdownBattleEvent {
-  readonly kind: "log" | "request" | "move" | "damage" | "heal" | "sethp" | "status" | "curestatus" | "faint" | "miss" | "immune" | "failed" | "crit" | "effectiveness" | "boost" | "unboost" | "ability" | "item" | "enditem" | "formechange" | "fieldstart" | "fieldend" | "fieldactivate" | "sidestart" | "sideend" | "start" | "end" | "battle-end" | "turn-end";
+  readonly kind: "log" | "request" | "move" | "anim" | "damage" | "heal" | "sethp" | "status" | "curestatus" | "faint" | "miss" | "immune" | "failed" | "crit" | "effectiveness" | "boost" | "unboost" | "ability" | "item" | "enditem" | "formechange" | "fieldstart" | "fieldend" | "fieldactivate" | "sidestart" | "sideend" | "start" | "end" | "battle-end" | "turn-end";
   readonly payload: unknown;
   readonly source: ShowdownProtocolMessage;
 }
