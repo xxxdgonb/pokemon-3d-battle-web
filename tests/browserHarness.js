@@ -94,6 +94,8 @@ async function main(){
   if(!battleScreen || !canvas || moveButtons.length===0){
     throw new Error("Battle UI did not finish rendering.");
   }
+  const gl=canvas.getContext("webgl2") ?? canvas.getContext("webgl");
+  if(!gl)throw new Error("Three.js canvas exists but WebGL context could not be created.");
   for(let turn=0;turn<20;turn++){
     const result=document.querySelector(".battle-result");
     if(result)break;
