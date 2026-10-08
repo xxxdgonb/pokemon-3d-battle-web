@@ -140,6 +140,64 @@ export class EffectsRenderer{
     effect.frame=requestAnimationFrame(tick);
   }
 
+  public playStatusEffect(target:THREE.Object3D|null,status:string):void{
+    if(this.disposed||!target)return;
+    const palette:Record<string,number>={brn:0xff6633,par:0xffd84d,psn:0xb36ad8,tox:0x8f4db7,slp:0x7d91b8,frz:0x9fe8ff,ability:0xffc857,item:0x9cc9ff};
+    const color=palette[status.toLowerCase()]??0xffffff;
+    const geometry=new THREE.SphereGeometry(.09,10,10);
+    const material=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.9});
+    const group=new THREE.Group();
+    for(let i=0;i<10;i++){
+      const mesh=new THREE.Mesh(geometry,material.clone());
+      const angle=(i/10)*Math.PI*2;
+      mesh.position.set(Math.cos(angle)*.48,.65+Math.sin(angle)*.2,Math.sin(angle)*.48);
+      group.add(mesh);
+    }
+    group.position.copy(target.position);
+    this.scene.add(group);
+    const effect:ActiveEffect={group,geometries:[geometry],frame:0};
+    this.active.add(effect);
+    const start=performance.now();
+    const tick=():void=>{
+      if(this.disposed){this.disposeEffect(effect);return;}
+      const t=Math.min(1,(performance.now()-start)/650);
+      group.rotation.y=t*Math.PI*1.8;
+      group.scale.setScalar(.7+t*.9);
+      group.children.forEach((child,i)=>{
+        child.position.y+=.002+(i%2)*.001;
+        const material=(child as THREE.Mesh).material as THREE.MeshBasicMaterial;
+        material.opacity=.9*(1-t);
+      });
+      if(t<1)effect.frame=requestAnimationFrame(tick);else this.disposeEffect(effect);
+    };
+    effect.frame=requestAnimationFrame(tick);
+  }
+
+  public playMissEffect(target:THREE.Object3D|null):void{
+    if(this.disposed||!target)return;
+    const geometry=new THREE.BoxGeometry(.07,.72,.07);
+    const group=new THREE.Group();
+    for(const angle of [Math.PI/4,-Math.PI/4]){
+      const mesh=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({color:0xe7edf6,transparent:true,opacity:.85}));
+      mesh.rotation.z=angle;
+      mesh.position.y=.9;
+      group.add(mesh);
+    }
+    group.position.copy(target.position);
+    this.scene.add(group);
+    const effect:ActiveEffect={group,geometries:[geometry],frame:0};
+    this.active.add(effect);
+    const start=performance.now();
+    const tick=():void=>{
+      if(this.disposed){this.disposeEffect(effect);return;}
+      const t=Math.min(1,(performance.now()-start)/360);
+      group.scale.setScalar(.7+t*.8);
+      group.children.forEach(child=>((child as THREE.Mesh).material as THREE.MeshBasicMaterial).opacity=.85*(1-t));
+      if(t<1)effect.frame=requestAnimationFrame(tick);else this.disposeEffect(effect);
+    };
+    effect.frame=requestAnimationFrame(tick);
+  }
+
   private kindFor(type:string):ProceduralEffectKind{
     if(BEAM_TYPES.has(type))return "beam";
     if(SLASH_TYPES.has(type))return "slash";
