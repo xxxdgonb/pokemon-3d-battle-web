@@ -50,8 +50,8 @@ export class ThreeBattleRenderer {
   public async setupBattle(player:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless";formId?:string;speciesName?:string},opponent:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless";formId?:string;speciesName?:string},generation:number):Promise<void>{
     void generation;
     this.host.querySelector(".model-unavailable")?.remove();
-    if(this.playerModel){this.animations.dispose(this.playerModel);this.scene.remove(this.playerModel);this.playerModel=null;}
-    if(this.opponentModel){this.animations.dispose(this.opponentModel);this.scene.remove(this.opponentModel);this.opponentModel=null;}
+    if(this.playerModel){this.animations.dispose(this.playerModel);this.loader.disposeInstance(this.playerModel);this.scene.remove(this.playerModel);this.playerModel=null;}
+    if(this.opponentModel){this.animations.dispose(this.opponentModel);this.loader.disposeInstance(this.opponentModel);this.scene.remove(this.opponentModel);this.opponentModel=null;}
     this.playerModel=await this.loader.load(player);
     this.opponentModel=await this.loader.load(opponent);
     if(!this.playerModel)this.showModelUnavailable("Player model unavailable");
@@ -201,8 +201,8 @@ export class ThreeBattleRenderer {
     if(this.disposed)return; this.disposed=true;
     if(this.animationFrame!==null)cancelAnimationFrame(this.animationFrame);
     window.removeEventListener("resize",this.handleResize);
-    if(this.playerModel){this.animations.dispose(this.playerModel);this.scene.remove(this.playerModel);}
-    if(this.opponentModel){this.animations.dispose(this.opponentModel);this.scene.remove(this.opponentModel);}
+    if(this.playerModel){this.animations.dispose(this.playerModel);this.loader.disposeInstance(this.playerModel);this.scene.remove(this.playerModel);}
+    if(this.opponentModel){this.animations.dispose(this.opponentModel);this.loader.disposeInstance(this.opponentModel);this.scene.remove(this.opponentModel);}
     this.playerModel=null;
     this.opponentModel=null;
     this.effects.dispose(); this.loader.dispose(); this.renderer.dispose(); this.renderer.domElement.remove();
