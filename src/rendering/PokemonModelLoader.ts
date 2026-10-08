@@ -96,35 +96,35 @@ export class PokemonModelLoader {
     if(form!=="base"){
       if(form.includes("mega-x")) {
         if(request.shiny)add("sx",dex);
-        add("x",dex);
+        if(!request.shiny)add("x",dex);
       } else if(form.includes("mega-y")) {
         if(request.shiny)add("sy",dex);
-        add("y",dex);
+        if(!request.shiny)add("y",dex);
       } else if(form.includes("mega")){
         if(request.shiny)add("megaShiny",dex);
-        add("mega",dex);
+        if(!request.shiny)add("mega",dex);
       } else if(form.includes("gigantamax")||form==="gmax"){
-        add("gmax",dex);
+        if(!request.shiny)add("gmax",dex);
       } else if(form.includes("alolan")||form==="alola"){
-        add("alolan",dex);
+        if(!request.shiny)add("alolan",dex);
       } else if(form.includes("galarian")||form==="galar"){
-        add("galar",dex);
+        if(!request.shiny)add("galar",dex);
       } else if(form.includes("hisuian")||form==="hisui"){
-        add("hisuian",dex);
+        if(!request.shiny)add("hisuian",dex);
       } else if(form.includes("primal")){
-        add("primal",dex);
+        if(!request.shiny)add("primal",dex);
       } else if(form.includes("origin")){
-        add("origin",dex);
+        if(!request.shiny)add("origin",dex);
       } else if(form.includes("fusion")){
         const names=[form,request.speciesName].filter((value):value is string=>Boolean(value));
         if(request.shiny)addVariants("fusionShiny",names);
-        addVariants("fusion",names);
+        if(!request.shiny)addVariants("fusion",names);
       } else {
         const names=[form,request.speciesName].filter((value):value is string=>Boolean(value));
         if(request.shiny)addVariants("multiShinyForm",names);
-        addVariants("multiform",names);
+        if(!request.shiny)addVariants("multiform",names);
         if(request.shiny)addVariants("unique",names);
-        addVariants("unique",names);
+        if(!request.shiny)addVariants("unique",names);
       }
     }
 
