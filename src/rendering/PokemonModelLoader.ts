@@ -23,6 +23,7 @@ export class PokemonModelLoader {
   private readonly draco=new DRACOLoader();
   private readonly cache=new Map<string,THREE.Group>();
   private readonly pending=new Map<string,Promise<THREE.Group|null>>();
+  private readonly fallbackInstances=new Set<THREE.Group>();
 
   public constructor(){
     this.draco.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
@@ -66,6 +67,7 @@ export class PokemonModelLoader {
       group.add(sprite);
       group.userData.artworkFallback=true;
       group.userData.artworkSource=url;
+      this.fallbackInstances.add(group);
       return group;
     }catch{
       return null;
@@ -170,6 +172,22 @@ export class PokemonModelLoader {
     }
   }
 
+  public disposeInstance(model:THREE.Group):void{
+    if(!this.fallbackInstances.has(model))return;
+    this.fallbackInstances.delete(model);
+    model.traverse(object=>{
+      const mesh=object as THREE.Mesh;
+      if(mesh.geometry)mesh.geometry.dispose();
+      const material=mesh.material;
+      if(Array.isArray(material)){
+        material.forEach(item=>{item.map?.dispose();item.dispose();});
+      }else if(material){
+        material.map?.dispose();
+        material.dispose();
+      }
+    });
+  }
+
   public dispose():void{
     this.pending.clear();
     for(const model of this.cache.values()){
@@ -182,6 +200,8 @@ export class PokemonModelLoader {
       });
     }
     this.cache.clear();
+    for(const model of [...this.fallbackInstances])this.disposeInstance(model);
+    this.fallbackInstances.clear();
     this.draco.dispose();
   }
 }
