@@ -37,7 +37,7 @@ export class EffectsRenderer{
     const profile=MOVE_PROFILES[move??""]??this.kindFor(normalized);
     const group=new THREE.Group();
     const core=new THREE.Mesh(
-      profile==="beam"?new THREE.CapsuleGeometry(.09,.62,6,12):new THREE.SphereGeometry(profile==="orb"?.2:.16,12,12),
+      profile==="beam"?new THREE.CylinderGeometry(.09,.09,1,12,1):new THREE.SphereGeometry(profile==="orb"?.2:.16,12,12),
       new THREE.MeshBasicMaterial({color,transparent:true,opacity:.95})
     );
     group.add(core);
@@ -61,22 +61,27 @@ export class EffectsRenderer{
       const eased=t*t*(3-2*t);
       const position=start.clone().lerp(end,eased);
       position.y+=Math.sin(t*Math.PI)*.55;
-      // start/end are world-space coordinates, so the effect group stays at
-      // the origin; otherwise the projectile and trail are translated twice.
-      core.position.copy(position);
-      for(let i=0;i<trails.length;i++){
-        const trail=trails[i];
-        if(!trail)continue;
-        const trailT=Math.max(0,eased-(i+1)*.06);
-        trail.position.lerpVectors(start,end,trailT);
-        trail.position.y+=Math.sin(trailT*Math.PI)*.55;
-        const material=trail.material as THREE.MeshBasicMaterial;
-        material.opacity=.75*(1-Math.min(1,i/6));
-      }
+      // Beam moves are presented as a growing spatial ray instead of a tiny
+      // capsule. Orbs/slashes remain projectile-like and keep their trails.
       if(profile==="beam"){
         const direction=end.clone().sub(start).normalize();
+        const distance=start.distanceTo(end);
+        core.position.copy(start).lerp(end,eased*.5);
+        core.position.y+=Math.sin(t*Math.PI)*.275;
+        core.scale.set(1,Math.max(.001,distance*eased),1);
         core.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),direction);
+        for(const trail of trails)trail.visible=false;
       }else{
+        core.position.copy(position);
+        for(let i=0;i<trails.length;i++){
+          const trail=trails[i];
+          if(!trail)continue;
+          const trailT=Math.max(0,eased-(i+1)*.06);
+          trail.position.lerpVectors(start,end,trailT);
+          trail.position.y+=Math.sin(trailT*Math.PI)*.55;
+          const material=trail.material as THREE.MeshBasicMaterial;
+          material.opacity=.75*(1-Math.min(1,i/6));
+        }
         const spin=performance.now()*0.008;
         core.rotation.x=spin;core.rotation.y=spin*1.3;
       }
