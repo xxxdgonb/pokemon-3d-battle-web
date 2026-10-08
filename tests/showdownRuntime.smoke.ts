@@ -17,7 +17,7 @@ const pokemon = (id: string, speciesId: string, abilityId: string) => ({
   hp: 100,
   maxHp: 100,
   status: null,
-  moves: [{moveId: "tackle", pp: 35, maxPp: 35}],
+  moves: [{moveId: "thunderbolt", pp: 15, maxPp: 15}],
 });
 
 function waitForServer(process: ChildProcessWithoutNullStreams): Promise<void> {
@@ -106,19 +106,19 @@ try {
     Date.now() + 5000,
   );
 
-  socket.send(JSON.stringify({type: "command", command: ">p1 move tackle"}));
+  socket.send(JSON.stringify({type: "command", command: ">p1 move thunderbolt"}));
   await waitForMessage(
     messages,
     message => message.type === "showdown" && !!message.block && (() => {
       const parsed = parseShowdownBlock(message.block);
-      return parsed.some(item => item.type === "move" && item.args[0] === "p1a: p1" && item.args[1] === "Tackle") &&
+      return parsed.some(item => item.type === "move" && item.args[0] === "p1a: p1" && item.args[1] === "Thunderbolt") &&
         parsed.some(item => item.type === "-damage" && item.args[0] === "p2a: p2");
     })(),
     Date.now() + 5000,
   );
 
   const parsed = parseShowdownBlock(messages.filter(message => message.type === "showdown").map(message => message.block ?? "").join("\n"));
-  const moveCount = parsed.filter(item => item.type === "move" && item.args[0] === "p1a: p1" && item.args[1] === "Tackle").length;
+  const moveCount = parsed.filter(item => item.type === "move" && item.args[0] === "p1a: p1" && item.args[1] === "Thunderbolt").length;
   const damageCount = parsed.filter(item => item.type === "-damage" && item.args[0] === "p2a: p2").length;
   if (moveCount !== 1 || damageCount !== 1) {
     throw new Error(`Runtime integration expected one move and one damage, got move=${moveCount}, damage=${damageCount}.`);
