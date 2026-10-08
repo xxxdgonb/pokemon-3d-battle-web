@@ -131,12 +131,14 @@ export class ThreeBattleRenderer {
 
   public async playResolution(type:string,events:readonly ShowdownBattleEvent[],moveId?:string):Promise<void>{
     const summary=summarizeBattleEvents(events);
+    const animationAlias=events.find(event=>event.kind==="anim")?.payload;
+    const visualMoveId=Array.isArray(animationAlias)&&typeof animationAlias[0]==="string"?animationAlias[0]:moveId;
     const modelFor=(side:"player"|"opponent"):THREE.Group|null=>side==="player"?this.playerModel:this.opponentModel;
     const hitSides=[...new Set(summary.damage.map(event=>event.target))];
     for(const side of hitSides){
       const target=modelFor(side);
       if(!target)continue;
-      this.effects.playTypeImpact(type,target,moveId);
+      this.effects.playTypeImpact(type,target,visualMoveId);
       this.cameraController.shake(.11,.18);
       await this.animations.play(target,"hit",220);
     }
