@@ -84,6 +84,8 @@ export class RemoteShowdownAdapter implements ShowdownAdapter {
         return { kind: "sethp", payload: message.args, source: message };
       case "move":
         return { kind: "move", payload: message.args, source: message };
+      case "-anim":
+        return { kind: "anim", payload: message.args, source: message };
       case "-miss":
         return { kind: "miss", payload: message.args, source: message };
       case "-immune":
