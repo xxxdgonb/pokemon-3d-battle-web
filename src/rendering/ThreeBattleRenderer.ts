@@ -47,7 +47,7 @@ export class ThreeBattleRenderer {
     }
   }
 
-  public async setupBattle(player:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless";formId?:string;speciesName?:string},opponent:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless";formId?:string;speciesName?:string},generation:number):Promise<void>{
+  public async setupBattle(player:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless";formId?:string;speciesName?:string;heightm?:number},opponent:{nationalDex:number;shiny:boolean;gender:"male"|"female"|"genderless";formId?:string;speciesName?:string;heightm?:number},generation:number):Promise<void>{
     void generation;
     this.host.querySelector(".model-unavailable")?.remove();
     if(this.playerModel){this.animations.dispose(this.playerModel);this.loader.disposeInstance(this.playerModel);this.scene.remove(this.playerModel);this.playerModel=null;}
@@ -57,12 +57,12 @@ export class ThreeBattleRenderer {
     if(!this.playerModel)this.showModelUnavailable("Player model unavailable");
     if(!this.opponentModel)this.showModelUnavailable("Opponent model unavailable");
     if(this.playerModel){
-      this.placeCombatant(this.playerModel,"player");
+      this.placeCombatant(this.playerModel,"player",player.heightm);
       this.addModel(this.playerModel);
       this.animations.startIdle(this.playerModel);
     }
     if(this.opponentModel){
-      this.placeCombatant(this.opponentModel,"opponent");
+      this.placeCombatant(this.opponentModel,"opponent",opponent.heightm);
       this.addModel(this.opponentModel);
       this.animations.startIdle(this.opponentModel);
     }
@@ -74,11 +74,14 @@ export class ThreeBattleRenderer {
     this.render();
   }
 
-  private placeCombatant(model:THREE.Group,side:"player"|"opponent"):void{
+  private placeCombatant(model:THREE.Group,side:"player"|"opponent",heightMeters?:number):void{
     const box=new THREE.Box3().setFromObject(model);
-    const height=Math.max(box.max.y-box.min.y,0.001);
-    const targetHeight=2.25;
-    const scale=Math.max(.55,Math.min(1.8,targetHeight/height));
+    const modelHeight=Math.max(box.max.y-box.min.y,0.001);
+    // Keep Pokémon visually proportional instead of forcing every species to the
+    // same height. Showdown's Dex height is the canonical source; the clamp keeps
+    // tiny and enormous species readable on a compact battle field.
+    const targetHeight=Math.max(.65,Math.min(3.25,(heightMeters??1.2)*1.05));
+    const scale=Math.max(.35,Math.min(2.4,targetHeight/modelHeight));
     model.scale.setScalar(scale);
 
     const fitted=new THREE.Box3().setFromObject(model);
