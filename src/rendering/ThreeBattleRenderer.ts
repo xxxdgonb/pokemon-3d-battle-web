@@ -136,6 +136,16 @@ export class ThreeBattleRenderer {
       this.effects.playTypeImpact(type,target,moveId);
       await this.animations.play(target,"hit",220);
     }
+    if(summary.miss||summary.immune||summary.failed){
+      this.effects.playMissEffect(modelFor(summary.target ?? "opponent"));
+    }
+    for(const event of summary.statuses){
+      const raw=Array.isArray(event.payload)?event.payload[1]:"status";
+      this.effects.playStatusEffect(modelFor(summary.target ?? "opponent"),typeof raw==="string"?raw:"status");
+    }
+    if(summary.abilityItemEvents.length>0){
+      this.effects.playStatusEffect(modelFor(summary.target ?? "opponent"),"ability");
+    }
     for(const side of summary.fainted){
       const target=modelFor(side);
       if(target)await this.animations.play(target,"faint",520);
