@@ -18,13 +18,17 @@ function normalizeId(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
+function maxNationalDex(generation: Generation): number {
+  return [0,151,251,386,493,649,721,809,905,1025][generation];
+}
+
 export function getDexPayload(generation: Generation): unknown {
   const cached = cache.get(generation);
   if (cached) return cached;
 
   const dex = Dex.mod(`gen${generation}`);
   const species = dex.species.all()
-    .filter(s => s.exists && !s.isNonstandard && s.num > 0 && s.num <= 1025)
+    .filter(s => s.exists && !s.isNonstandard && s.num > 0 && s.num <= maxNationalDex(generation) && (s.gen ?? generation) <= generation)
     .map(s => ({
       id: id(s), name: s.name, num: s.num, baseSpecies: s.baseSpecies,
       forme: s.forme, types: [...s.types], abilities: Object.fromEntries(Object.entries(s.abilities).map(([slot, name]) => [slot, normalizeId(name)])),
@@ -34,7 +38,7 @@ export function getDexPayload(generation: Generation): unknown {
     }));
 
   const moves = dex.moves.all()
-    .filter(m => m.exists && !m.isNonstandard)
+    .filter(m => m.exists && !m.isNonstandard && (m.gen ?? generation) <= generation)
     .map(m => ({
       id: id(m), name: m.name, type: m.type, category: m.category,
       basePower: m.basePower, accuracy: m.accuracy, pp: m.pp,
@@ -43,11 +47,11 @@ export function getDexPayload(generation: Generation): unknown {
     }));
 
   const abilities = dex.abilities.all()
-    .filter(a => a.exists && !a.isNonstandard)
+    .filter(a => a.exists && !a.isNonstandard && (a.gen ?? generation) <= generation)
     .map(a => ({id: id(a), name: a.name, shortDesc: a.shortDesc || a.desc, gen: a.gen}));
 
   const items = dex.items.all()
-    .filter(i => i.exists && !i.isNonstandard)
+    .filter(i => i.exists && !i.isNonstandard && (i.gen ?? generation) <= generation)
     .map(i => ({id: id(i), name: i.name, shortDesc: i.shortDesc || i.desc, gen: i.gen}));
 
   const payload = {generation, species, moves, abilities, items};
