@@ -84,7 +84,6 @@ export class AnimationController{
       const tick=():void=>{
         const now=performance.now(),t=Math.min(1,(now-start)/duration);
         if(!action)this.animateFallback(model,animation,t,origin,originRotation);
-        else this.mixers.get(model)?.update((now-previous)/1000);
         previous=now;
         if(t<1)requestAnimationFrame(tick);
         else{
