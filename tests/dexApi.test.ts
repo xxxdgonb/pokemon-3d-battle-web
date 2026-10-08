@@ -13,7 +13,7 @@ describe("generation dex payload",()=>{
       expect(base.length).toBe(expected[generation]);
       expect(Math.max(...base.map(s=>s.num))).toBe(expected[generation]);
       const legal=base.filter(s=>s.battleLegal!==false);
-      expect(legal.length).toBe(generation===7||generation===8?807:expected[generation]);
+      expect(legal.length).toBe(expected[generation]);
       expect(base.every(s=>(s.gen??generation)<=generation)).toBe(true);
     }
   });
