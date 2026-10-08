@@ -5,7 +5,7 @@ import { parseShowdownBlock } from "../src/battle/ShowdownProtocol";
 const PORT = 8790;
 const URL = `ws://127.0.0.1:${PORT}`;
 
-const pokemon = (id: string, speciesId: string, abilityId: string) => ({
+const pokemon = (id: string, speciesId: string, abilityId: string, moveId: string) => ({
   id,
   speciesId,
   formId: "base",
@@ -17,7 +17,7 @@ const pokemon = (id: string, speciesId: string, abilityId: string) => ({
   hp: 100,
   maxHp: 100,
   status: null,
-  moves: [{moveId: "thunderbolt", pp: 15, maxPp: 15}],
+  moves: [{moveId, pp: moveId === "thunderbolt" ? 15 : 15, maxPp: 15}],
 });
 
 function waitForServer(process: ChildProcessWithoutNullStreams): Promise<void> {
