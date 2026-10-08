@@ -45,6 +45,15 @@ async function main(){
     if(!document.querySelector('[data-action="species"][data-value="pikachu"]')){
       throw new Error("Generation "+generation+" did not expose Pikachu species data.");
     }
+    const expectedNationalDex=[0,151,251,386,493,649,721,809,905,1025][generation];
+    const pokemonContent=document.querySelector("#content")?.textContent ?? "";
+    if(!pokemonContent.includes(expectedNationalDex+" base species in this generation")){
+      throw new Error("Generation "+generation+" Dex count mismatch; expected "+expectedNationalDex+".");
+    }
+    const activeGeneration=document.querySelector('[data-action="generation"][data-value="'+generation+'"]');
+    if(activeGeneration?.getAttribute("aria-current")!=="true"){
+      throw new Error("Generation "+generation+" did not become the active selection.");
+    }
     mark("generation-"+generation+"-verified");
     if(generation!==9){
       await click('[data-action="back"]');
