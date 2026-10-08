@@ -93,8 +93,8 @@ try {
     type: "createBattle",
     config: {
       generation: 9,
-      player: pokemon("p1", "pikachu", "static"),
-      opponent: pokemon("p2", "charizard", "blaze"),
+      player: pokemon("p1", "pikachu", "static", "thunderbolt"),
+      opponent: pokemon("p2", "charizard", "blaze", "flamethrower"),
     },
   }));
   await waitForMessage(messages, message => message.type === "ready", Date.now() + 5000);
