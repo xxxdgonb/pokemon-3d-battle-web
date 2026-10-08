@@ -19,6 +19,7 @@ function normalizedForm(formId:string|undefined):string {
 
 export class PokemonModelLoader {
   private readonly loader=new GLTFLoader();
+  private readonly textureLoader=new THREE.TextureLoader();
   private readonly draco=new DRACOLoader();
   private readonly cache=new Map<string,THREE.Group>();
   private readonly pending=new Map<string,Promise<THREE.Group|null>>();
@@ -44,7 +45,31 @@ export class PokemonModelLoader {
       const model=await promise;
       if(model)return this.cloneWithAnimations(model);
     }
-    return null;
+    // The public 3D catalog is not complete for every form/shiny variant.
+    // Never leave the battle arena empty: use a lit 3D billboard fallback
+    // backed by PokeAPI HOME artwork when no GLB can be resolved.
+    return this.createArtworkFallback(request);
+  }
+
+  private async createArtworkFallback(request:PokemonModelRequest):Promise<THREE.Group|null>{
+    const id=String(request.nationalDex);
+    const variant=request.shiny?"shiny/":"";
+    const url=`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${variant}${id}.png`;
+    try{
+      const texture=await this.textureLoader.loadAsync(url);
+      texture.colorSpace=THREE.SRGBColorSpace;
+      const material=new THREE.SpriteMaterial({map:texture,transparent:true,depthWrite:false});
+      const sprite=new THREE.Sprite(material);
+      sprite.scale.set(2.15,2.15,1);
+      sprite.position.y=1.08;
+      const group=new THREE.Group();
+      group.add(sprite);
+      group.userData.artworkFallback=true;
+      group.userData.artworkSource=url;
+      return group;
+    }catch{
+      return null;
+    }
   }
 
   private candidates(request:PokemonModelRequest):readonly ModelCandidate[]{
