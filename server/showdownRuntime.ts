@@ -87,6 +87,8 @@ function parseClientMessage(raw: string): ClientMessage {
         !isPokemonState(config.player) || !isPokemonState(config.opponent)) {
       throw new Error("Invalid battle configuration.");
     }
+    validatePokemonStateForGeneration(config.player, config.generation);
+    validatePokemonStateForGeneration(config.opponent, config.generation);
     return {
       type: "createBattle",
       config: {
