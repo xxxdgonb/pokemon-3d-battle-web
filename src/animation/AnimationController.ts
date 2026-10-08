@@ -44,8 +44,18 @@ export class AnimationController{
     const normalized=(value:string)=>value.toLowerCase().replace(/[^a-z0-9]+/g,"");
     const names=validClips.map(clip=>({clip,name:normalized(clip.name)}));
     const exactWords=nativeWords(animation).map(normalized);
-    const clip=names.find(item=>exactWords.some(word=>item.name===word))?.clip
-      ?? names.find(item=>exactWords.some(word=>item.name.startsWith(word)||item.name.endsWith(word)))?.clip;
+    const exact=names.find(item=>exactWords.some(word=>item.name===word))?.clip;
+    const partial=names.find(item=>exactWords.some(word=>item.name.startsWith(word)||item.name.endsWith(word)))?.clip;
+    const idleLike=names.find(item=>["idle","stand","breath","wait","walk"].some(word=>item.name.includes(word)))?.clip;
+    const actionLike=names.find(item=>["attack","action","move","hit","hurt","damage","faint","victory","win"].some(word=>item.name.includes(word)))?.clip;
+    // Many community GLBs use generic names such as "Animation" rather than
+    // semantic names. Never throw away a valid skeletal clip just because its
+    // author used an unexpected name: use the best available clip.
+    const clip=exact
+      ?? partial
+      ?? (animation==="idle"?idleLike:actionLike)
+      ?? validClips[0]
+      ?? null;
     if(!clip)return null;
     let mixer=this.mixers.get(model);
     if(!mixer){
