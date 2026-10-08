@@ -10,6 +10,10 @@ function validatePokemonStateForGeneration(state: PokemonBattleState, generation
   const requestedSpecies = state.formId && state.formId !== "base" ? `${state.speciesId}-${state.formId}` : state.speciesId;
   const species = dex.species.get(requestedSpecies);
   if (!species.exists) throw new Error(`Pokémon is not available in generation ${generation}: ${requestedSpecies}`);
+  const speciesAbilityIds = new Set(Object.values(species.abilities).map(ability => ability.toLowerCase().replace(/[^a-z0-9]+/g, "")));
+  if (!speciesAbilityIds.has(state.abilityId.toLowerCase().replace(/[^a-z0-9]+/g, ""))) {
+    throw new Error(`Ability is not available to ${requestedSpecies}: ${state.abilityId}`);
+  }
   if (!dex.abilities.get(state.abilityId).exists) {
     throw new Error(`Unknown ability for generation ${generation}: ${state.abilityId}`);
   }
