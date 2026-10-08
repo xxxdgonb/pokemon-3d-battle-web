@@ -20,7 +20,7 @@ export type StatStages = Readonly<Record<BattleStat, number>>;
 export type BattlePhase =
   | "INIT" | "INTRO" | "PLAYER_SELECTING_MOVE" | "MOVE_VALIDATING" | "MOVE_START"
   | "MOVE_ANIMATION" | "MOVE_HIT" | "DAMAGE_CALCULATION" | "DAMAGE_APPLICATION"
-  | "SECONDARY_EFFECTS" | "STATUS_PROCESSING" | "FAINT_CHECK" | "VICTORY" | "DEFEAT" | "BATTLE_END";
+  | "SECONDARY_EFFECTS" | "STATUS_PROCESSING" | "FAINT_CHECK" | "VICTORY" | "DEFEAT" | "DRAW" | "BATTLE_END";
 
 export interface MoveSlot {
   readonly moveId: string;
