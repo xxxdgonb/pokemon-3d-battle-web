@@ -259,6 +259,13 @@ async function run(): Promise<void> {
           return;
         }
 
+        if (message.command.startsWith(">p1 move ")) {
+          const moveId = message.command.slice(">p1 move ".length).trim().toLowerCase();
+          if (!config.player.moves.some(move => move.moveId.toLowerCase() === moveId)) {
+            throw new Error(`Player move is not part of the configured moveset: ${moveId}`);
+          }
+        }
+
         await battle.write(message.command);
 
         if (message.command.startsWith(">p1 move ")) {
