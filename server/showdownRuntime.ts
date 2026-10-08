@@ -7,8 +7,10 @@ const {BattleStream, Dex} = require("pokemon-showdown") as {BattleStream: typeof
 
 function validatePokemonStateForGeneration(state: PokemonBattleState, generation: Generation): void {
   const dex = Dex.forGen(generation);
-  const requestedSpecies = state.formId && state.formId !== "base" ? `${state.speciesId}-${state.formId}` : state.speciesId;
-  const species = dex.species.get(requestedSpecies);
+  const directSpecies = dex.species.get(state.speciesId);
+  const formSpecies = state.formId && state.formId !== "base" ? dex.species.get(`${state.speciesId}-${state.formId}`) : directSpecies;
+  const species = directSpecies.exists ? directSpecies : formSpecies;
+  const requestedSpecies = species.exists ? species.id : state.speciesId;
   if (!species.exists) throw new Error(`Pokémon is not available in generation ${generation}: ${requestedSpecies}`);
   if (generation >= 3) {
     const speciesAbilityIds = new Set(Object.values(species.abilities).map(ability => ability.toLowerCase().replace(/[^a-z0-9]+/g, "")));
@@ -137,9 +139,8 @@ interface ShowdownPokemonSet {
 
 function toPokemonSet(state: PokemonBattleState): ShowdownPokemonSet {
   const direct = Dex.species.get(state.speciesId);
-  const requestedSpecies = state.formId && state.formId !== "base" ? `${state.speciesId}-${state.formId}` : state.speciesId;
-  const requested = state.formId && state.formId !== "base" ? Dex.species.get(requestedSpecies) : direct;
-  const resolvedSpecies = requested.exists ? requested : direct;
+  const requestedSpecies = state.formId && state.formId !== "base" ? Dex.species.get(`${state.speciesId}-${state.formId}`) : direct;
+  const resolvedSpecies = direct.exists ? direct : requestedSpecies;
   if (!resolvedSpecies.exists) throw new Error(`Unknown Pokémon species/form: ${state.speciesId}${state.formId !== "base" ? `-${state.formId}` : ""}`);
   const species = resolvedSpecies.name;
 
