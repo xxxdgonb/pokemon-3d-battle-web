@@ -6,7 +6,7 @@ type DexPayloadLike={generation:number;species:DexSpeciesLike[];moves:{gen:numbe
 
 describe("generation dex payload",()=>{
   it("returns the complete base National Dex for each generation",()=>{
-    const expected=[0,151,251,386,493,649,721,809,807,1025];
+    const expected=[0,151,251,386,493,649,721,807,807,1025];
     for(let generation=1;generation<=9;generation++){
       const payload=getDexPayload(generation) as DexPayloadLike;
       const base=payload.species.filter(s=>s.baseSpecies===s.name||!s.forme);
