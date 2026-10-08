@@ -549,8 +549,8 @@ export class App {
       if(!host)throw new Error("Battle canvas host was not created.");
       const renderer=await this.initializeBattleRenderer(host);
       await renderer.setupBattle(
-        {nationalDex:this.species.num,shiny:this.pokemon.shiny,gender:this.pokemon.gender,formId:this.pokemon.formId,speciesName:this.species.name},
-        {nationalDex:this.opponentSpecies.num,shiny:this.opponentPokemon.shiny,gender:this.opponentPokemon.gender,formId:this.opponentPokemon.formId,speciesName:this.opponentSpecies.name},
+        {nationalDex:this.species.num,shiny:this.pokemon.shiny,gender:this.pokemon.gender,formId:this.pokemon.formId,speciesName:this.species.name,heightm:this.species.heightm},
+        {nationalDex:this.opponentSpecies.num,shiny:this.opponentPokemon.shiny,gender:this.opponentPokemon.gender,formId:this.opponentPokemon.formId,speciesName:this.opponentSpecies.name,heightm:this.opponentSpecies.heightm},
         this.generation
       );
     }catch(error){
