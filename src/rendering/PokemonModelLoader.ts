@@ -61,7 +61,8 @@ export class PokemonModelLoader {
       texture.colorSpace=THREE.SRGBColorSpace;
       const material=new THREE.SpriteMaterial({map:texture,transparent:true,depthWrite:false});
       const sprite=new THREE.Sprite(material);
-      sprite.scale.set(2.15,2.15,1);
+      const worldHeight=Math.max(.65,Math.min(3.25,(request.heightm??1.2)*1.05));
+      sprite.scale.set(worldHeight,worldHeight,1);
       sprite.position.y=1.08;
       const group=new THREE.Group();
       group.add(sprite);
