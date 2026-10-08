@@ -6,11 +6,11 @@
 
 Phases 0–11 have implementation or verification evidence as described below. PHASE 14 is intentionally not closed until browser/WebGL verification, advanced battle-event coverage, asset/license audit, and repeated-battle soak evidence exist.
 
-Current head: `efcfe162f071f4a2fa6c912ac7dfd2a815a3ba66`
+Current head: `f674b23353f3bc4939a3f2c25cf53b4be78115c7`
 
 ## Evidence
 
-Latest GitHub Actions CI run after the current implementation changes completed successfully (run `37640151905`, commit `8f3d398525ce269a33cfe49ef2e0d3d6fdd25411`).
+Latest GitHub Actions CI run #437 (`37739516997`, commit `e0c0e64b59b7d5b60736f4d45358c54cc2b29b69`) completed successfully.
 
 Verified by CI:
 - `npm install`
@@ -41,14 +41,14 @@ Real Chromium/WebDriver browser smoke now exercises the battle client, WebGL can
 | PHASE 1 Architecture | COMPLETE | Battle/render separation, WebSocket runtime boundary, transaction model, state machine and asset-provider strategy implemented. |
 | PHASE 2 Foundation | COMPLETE | Vite/TypeScript/Three.js/Vitest/ESLint foundation, Node Showdown runtime and CI established. |
 | PHASE 3 Pokémon Data | IMPLEMENTED | Pinned Showdown Dex/learnset APIs drive species/move/ability/item data and generation filtering. Runtime API chain is exercised through the server smoke. |
-| PHASE 4 3D Renderer | IMPLEMENTED / BROWSER UNVERIFIED | Three.js arena, camera, lighting, GLB loader/cache/fallback, effect disposal and renderer disposal implemented. Browser/WebGL visual inspection remains open. |
+| PHASE 4 3D Renderer | IMPLEMENTED / HUMAN REVIEW OPEN | Three.js arena, camera, lighting, GLB loader/cache/fallback, effect disposal and renderer disposal implemented. Browser/WebGL visual inspection remains open. |
 | PHASE 5 Battle Engine | IMPLEMENTED | State machine, transaction guard, authoritative core state plus stat stages, volatile/field/side-condition projection and passive no-AI Showdown runtime are implemented and runtime-tested. |
 | PHASE 6 Move System | IMPLEMENTED / PRESENTATION EXTENSIBLE | Actual Showdown move validation/execution/damage is authoritative. Miss/immune/fail/crit/effectiveness, status, stat-stage, volatile, field and side-condition events are normalized; additional move-specific presentation can extend the event boundary. |
 | PHASE 7 Animation | IMPLEMENTED PROCEDURAL | Dedicated AnimationController and MoveAnimationController now own idle/attack/hit/hurt/faint/victory presentation and impact timing; procedural type fallback effects are explicit. Official/third-party animation packs are not bundled without rights. |
 | PHASE 8 Arena | IMPLEMENTED / BROWSER UNVERIFIED | Ground, battle positions, lighting, shadows and camera presets implemented. |
 | PHASE 9 UI | IMPLEMENTED / BROWSER UNVERIFIED | Generation/species/form/gender/shiny/ability/item/level/4-move flow, battle HUD, move lock, terminal result and restart flow implemented. |
-| PHASE 10 Integration | VERIFIED SERVER/WS | Browser adapter → WebSocket → Node → pinned Showdown → normalized protocol is covered by the real WebSocket smoke. Browser launch remains unverified. |
-| PHASE 11 Testing | CI GREEN | 21 unit tests + direct Showdown smoke + real WebSocket runtime smoke + production build pass in CI. |
+| PHASE 10 Integration | VERIFIED END-TO-END | Browser adapter → WebSocket → Node → pinned Showdown → normalized protocol is covered by the real WebSocket smoke. Chromium browser launch and battle flow are verified in CI. |
+| PHASE 11 Testing | CI GREEN | 28 unit tests + direct Showdown smoke + real WebSocket runtime smoke + production build + npm audit + Chromium/WebGL smoke pass in CI. |
 | PHASE 12 Bug Fixing | HARDENED | Recent fixes cover CommonJS runtime loading, transaction identity, Showdown split duplication, runtime readiness, effect disposal, renderer loop disposal, level HP recalculation, terminal/restart lifecycle, animation timing, model-load single-flight, remote move concurrency and runtime input validation. |
 | PHASE 13 Performance | PARTIAL | Lazy model loading/cache, single-flight requests, disposal and transient-effect cleanup are implemented; browser profiling, GPU frame analysis and long-session soak are still required. |
 | PHASE 14 Final Audit | NOT CLOSED | Requires browser/WebGL run, repeated battle soak, advanced protocol/state coverage, dependency/security audit and individual asset-license review. |
@@ -139,7 +139,7 @@ Chromium/WebDriver browser smoke is now verified in CI. The harness completed th
 
 ### SECURITY-001 — Dependency audit
 
-CI's `npm install` currently reports dependency vulnerabilities (including high/critical findings). This is not yet a release-blocking build failure, but it must be reviewed before production release.
+Latest CI `npm audit --omit=dev --audit-level=high` passed with zero reported vulnerabilities.
 
 ## Test inventory
 
