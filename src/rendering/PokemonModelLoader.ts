@@ -95,6 +95,23 @@ export class PokemonModelLoader {
     const addVariants=(category:string,values:readonly string[]):void=>{
       for(const value of values)for(const filename of variants(value))add(category,filename);
     };
+    const multiFormFiles:Record<string,string>={
+      deoxysattack:"386-1",deoxysdefense:"386-2",deoxysspeed:"386-3",
+      zygarde10:"718_1",zygarde50:"718_2",zygardecomplete:"718_3",
+      rotomfan:"RotomFan",rotomfrost:"RotomFrost",rotomheat:"RotomHeat",rotommow:"RotomMow",
+      lycanrocdusk:"LycanrocDuskForm",lycanrocmidnight:"LycanrocMidnightForm",
+      shayminsky:"ShayminSky",wishiwashischool:"WishiwashiSchool",basculinbluestripe:"BasculinBlueStripe",
+      enamorustherian:"EnamorusTherian",koraidoncombat:"Koraidon_Combat",koraidondrive:"Koraidon_Drive",
+      miraidonaquatic:"Miraidon_Aquatic"
+    };
+    const addKnownMultiForm=(category:string):void=>{
+      const keys=[form,request.speciesName??""]
+        .map(value=>value.toLowerCase().replace(/[^a-z0-9]+/g,""));
+      for(const keyName of keys){
+        const filename=multiFormFiles[keyName];
+        if(filename){add(category,filename);break;}
+      }
+    };
 
     if(form!=="base"){
       if(form.includes("mega-x")) {
@@ -125,7 +142,7 @@ export class PokemonModelLoader {
       } else {
         const names=[form,request.speciesName].filter((value):value is string=>Boolean(value));
         if(request.shiny)addVariants("multiShinyForm",names);
-        if(!request.shiny)addVariants("multiform",names);
+        if(!request.shiny){addKnownMultiForm("multiform");addVariants("multiform",names);}
         if(request.shiny)addVariants("unique",names);
         if(!request.shiny)addVariants("unique",names);
       }
