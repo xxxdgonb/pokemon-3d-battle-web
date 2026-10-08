@@ -55,10 +55,63 @@ export class ThreeBattleRenderer {
     this.opponentModel=await this.loader.load(opponent);
     if(!this.playerModel)this.showModelUnavailable("Player model unavailable");
     if(!this.opponentModel)this.showModelUnavailable("Opponent model unavailable");
-    if(this.playerModel){this.playerModel.position.set(-2,0,2.7);this.playerModel.rotation.y=Math.PI;this.playerModel.scale.setScalar(1.5);this.addModel(this.playerModel);}
-    if(this.opponentModel){this.opponentModel.position.set(2,0,-2.5);this.opponentModel.scale.setScalar(1.5);this.addModel(this.opponentModel);}
+    if(this.playerModel){
+      this.placeCombatant(this.playerModel,"player");
+      this.addModel(this.playerModel);
+      this.animations.startIdle(this.playerModel);
+    }
+    if(this.opponentModel){
+      this.placeCombatant(this.opponentModel,"opponent");
+      this.addModel(this.opponentModel);
+      this.animations.startIdle(this.opponentModel);
+    }
+
+    // Give the battle a real entrance instead of popping both models into place.
+    this.cameraController.set("intro");
+    await this.playEntrance();
     this.cameraController.set("default");
     this.render();
+  }
+
+  private placeCombatant(model:THREE.Group,side:"player"|"opponent"):void{
+    const box=new THREE.Box3().setFromObject(model);
+    const height=Math.max(box.max.y-box.min.y,0.001);
+    const targetHeight=2.25;
+    const scale=Math.max(.55,Math.min(1.8,targetHeight/height));
+    model.scale.setScalar(scale);
+
+    const fitted=new THREE.Box3().setFromObject(model);
+    const groundOffset=-fitted.min.y;
+    model.position.set(
+      side==="player"?-2.35:2.35,
+      groundOffset,
+      side==="player"?2.9:-2.55
+    );
+
+    // Face the opposing side. The previous implementation was reversed.
+    model.rotation.set(0,side==="player"?0:Math.PI,0);
+  }
+
+  private async playEntrance():Promise<void>{
+    const player=this.playerModel;
+    const opponent=this.opponentModel;
+    const start=performance.now();
+    const duration=700;
+    const playerTarget=player?.position.clone();
+    const opponentTarget=opponent?.position.clone();
+    if(playerTarget)player?.position.set(playerTarget.x,playerTarget.y,playerTarget.z+.9);
+    if(opponentTarget)opponent?.position.set(opponentTarget.x,opponentTarget.y,opponentTarget.z-.9);
+
+    await new Promise<void>(resolve=>{
+      const tick=():void=>{
+        const t=Math.min(1,(performance.now()-start)/duration);
+        const eased=t*t*(3-2*t);
+        if(player&&playerTarget)player.position.z=playerTarget.z+.9*(1-eased);
+        if(opponent&&opponentTarget)opponent.position.z=opponentTarget.z-.9*(1-eased);
+        if(t<1)requestAnimationFrame(tick);else resolve();
+      };
+      requestAnimationFrame(tick);
+    });
   }
 
   private showModelUnavailable(message:string):void{
