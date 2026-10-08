@@ -81,6 +81,7 @@ export class App {
     this.selectedMoves=[];
     this.legalMoveIds=[];
     this.searchQuery="";
+    this.speciesPage=1;
     this.render();
     try{
       this.dex=await loadDex(g);
