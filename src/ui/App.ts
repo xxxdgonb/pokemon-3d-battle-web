@@ -261,7 +261,11 @@ export class App {
       this.errorMessage=error instanceof Error?error.message:"Unexpected application error.";
       this.appendBattleLog(`ERROR: ${this.errorMessage}`);
       console.error(error);
-      if(this.stage==="battle")this.updateBattleHud();else this.render();
+      if(this.stage==="battle"){
+        this.battle3dLoading=false;
+        if(!this.coordinator){this.stage="moves";this.render();}
+        else this.updateBattleHud();
+      }else this.render();
     }
   }
 
