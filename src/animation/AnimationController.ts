@@ -28,9 +28,24 @@ export class AnimationController{
 
   private native(model:THREE.Object3D,animation:PokemonAnimation):THREE.AnimationAction|null{
     const clips=model.userData.animationClips as THREE.AnimationClip[]|undefined;
-    if(!clips?.length)return null;
-    const words=nativeWords(animation);
-    const clip=clips.find(item=>words.some(word=>item.name.toLowerCase().includes(word)));
+    if(!Array.isArray(clips)||clips.length===0)return null;
+
+    // Never feed deserialized/plain-object clips to AnimationMixer.
+    // SkeletonUtils cloning is handled by PokemonModelLoader, but this guard
+    // keeps the renderer safe if another loader supplies userData clips.
+    const validClips=clips.filter((clip):clip is THREE.AnimationClip=>
+      clip instanceof THREE.AnimationClip &&
+      Array.isArray(clip.tracks) &&
+      clip.tracks.length>0 &&
+      clip.tracks.every(track=>track && typeof track.createInterpolant==="function")
+    );
+    if(validClips.length===0)return null;
+
+    const normalized=(value:string)=>value.toLowerCase().replace(/[^a-z0-9]+/g,"");
+    const names=validClips.map(clip=>({clip,name:normalized(clip.name)}));
+    const exactWords=nativeWords(animation).map(normalized);
+    const clip=names.find(item=>exactWords.some(word=>item.name===word))?.clip
+      ?? names.find(item=>exactWords.some(word=>item.name.startsWith(word)||item.name.endsWith(word)))?.clip;
     if(!clip)return null;
     let mixer=this.mixers.get(model);
     if(!mixer){
