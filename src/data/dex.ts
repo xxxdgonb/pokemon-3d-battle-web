@@ -3,7 +3,7 @@ import type { Generation, Gender, MoveSlot, PokemonBattleState } from "../core/t
 export interface DexSpecies {
   readonly id:string; readonly name:string; readonly num:number; readonly baseSpecies:string;
   readonly forme?:string; readonly types:readonly string[]; readonly abilities:Record<string,string>;
-  readonly gender?:string; readonly genderRatio?:Record<string,number>; readonly isMega?:boolean;
+  readonly gender?:string; readonly genderRatio?:Record<string,number>; readonly heightm?:number; readonly isMega?:boolean;
   readonly isGigantamax?:boolean; readonly battleLegal?:boolean; readonly gen?:number; readonly baseStats:Record<string,number>;
 }
 export interface DexMove {
