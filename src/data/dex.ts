@@ -4,7 +4,7 @@ export interface DexSpecies {
   readonly id:string; readonly name:string; readonly num:number; readonly baseSpecies:string;
   readonly forme?:string; readonly types:readonly string[]; readonly abilities:Record<string,string>;
   readonly gender?:string; readonly genderRatio?:Record<string,number>; readonly isMega?:boolean;
-  readonly isGigantamax?:boolean; readonly gen?:number; readonly baseStats:Record<string,number>;
+  readonly isGigantamax?:boolean; readonly battleLegal?:boolean; readonly gen?:number; readonly baseStats:Record<string,number>;
 }
 export interface DexMove {
   readonly id:string; readonly name:string; readonly type:string; readonly category:string;
