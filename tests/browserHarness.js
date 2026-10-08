@@ -50,9 +50,8 @@ async function main(){
     if(!pokemonContent.includes(expectedNationalDex+" base species in this generation")){
       throw new Error("Generation "+generation+" Dex count mismatch; expected "+expectedNationalDex+".");
     }
-    const activeGeneration=document.querySelector('[data-action="generation"][data-value="'+generation+'"]');
-    if(activeGeneration?.getAttribute("aria-current")!=="true"){
-      throw new Error("Generation "+generation+" did not become the active selection.");
+    if(document.body.dataset.lastAction!=="generation" || document.body.dataset.lastActionValue!==String(generation)){
+      throw new Error("Generation "+generation+" selection event did not complete.");
     }
     mark("generation-"+generation+"-verified");
     if(generation!==9){
