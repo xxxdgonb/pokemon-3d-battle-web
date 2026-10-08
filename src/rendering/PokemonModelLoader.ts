@@ -32,17 +32,17 @@ export class PokemonModelLoader {
     for(const candidate of this.candidates(request)){
       const key=`${candidate.category}/${candidate.filename}`;
       const cached=this.cache.get(key);
-      if(cached)return SkeletonUtils.clone(cached) as THREE.Group;
+      if(cached)return this.cloneWithAnimations(cached);
       const inFlight=this.pending.get(key);
       if(inFlight){
         const model=await inFlight;
-        if(model)return SkeletonUtils.clone(model) as THREE.Group;
+        if(model)return this.cloneWithAnimations(model);
         continue;
       }
       const promise=this.fetchModel(candidate,key);
       this.pending.set(key,promise);
       const model=await promise;
-      if(model)return SkeletonUtils.clone(model) as THREE.Group;
+      if(model)return this.cloneWithAnimations(model);
     }
     return null;
   }
@@ -108,6 +108,21 @@ export class PokemonModelLoader {
     if(suffix)add("regular",`${dex}${suffix}`);
     add("regular",dex);
     return result;
+  }
+
+  /**
+   * SkeletonUtils.clone() deep-copies userData. AnimationClip/KeyframeTrack
+   * instances are class objects with methods, so putting them in userData
+   * causes those methods to be lost during cloning and leads to:
+   * "tracks[i].createInterpolant is not a function".
+   * Keep the real clips on the cached source and explicitly reattach them
+   * after cloning.
+   */
+  private cloneWithAnimations(source:THREE.Group):THREE.Group{
+    const clone=SkeletonUtils.clone(source) as THREE.Group;
+    const clips=source.userData.animationClips as THREE.AnimationClip[]|undefined;
+    if(clips?.length)clone.userData.animationClips=clips;
+    return clone;
   }
 
   private async fetchModel(candidate:ModelCandidate,key:string):Promise<THREE.Group|null>{
