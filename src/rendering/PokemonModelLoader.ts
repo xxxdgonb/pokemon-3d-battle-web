@@ -180,9 +180,9 @@ export class PokemonModelLoader {
       if(mesh.geometry)mesh.geometry.dispose();
       const material=mesh.material;
       if(Array.isArray(material)){
-        material.forEach(item=>{item.map?.dispose();item.dispose();});
+        material.forEach(item=>{(item as THREE.MeshStandardMaterial).map?.dispose();item.dispose();});
       }else if(material){
-        material.map?.dispose();
+        (material as THREE.MeshStandardMaterial).map?.dispose();
         material.dispose();
       }
     });
