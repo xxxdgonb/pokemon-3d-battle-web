@@ -25,7 +25,7 @@ export class App {
   private battleRenderer:ThreeBattleRenderer|null=null;
   private moveBusy=false;
   private battleEnded=false;
-  private battleResult:"VICTORY"|"DEFEAT"|null=null;
+  private battleResult:"VICTORY"|"DEFEAT"|"DRAW"|null=null;
   private loading=false;
   private errorMessage:string|null=null;
   private battle3dLoading=false;
@@ -287,7 +287,14 @@ export class App {
     this.stage="battle";
     this.renderBattle();
     const charizard=dex.species.find(s=>s.id==="charizard"||(s.baseSpecies==="Charizard"&&!s.forme));
-    if(!charizard)throw new Error("Charizard is unavailable in the selected generation.");
+    if(!charizard){
+      this.battle3dLoading=false;
+      this.errorMessage="The selected generation has no legal passive Charizard opponent.";
+      this.stage="moves";
+      this.updateBattleHud();
+      this.render();
+      return;
+    }
     const enemyLearnset=await loadLearnset(this.generation,charizard.id);
     const enemyMoves=enemyLearnset.map(id=>dex.moves.find(m=>m.id===id)).filter((m):m is DexMove=>Boolean(m)).slice(0,4);
     if(enemyMoves.length<1)throw new Error("No legal passive-opponent moves are available.");
@@ -376,8 +383,8 @@ export class App {
     if(pb)pb.style.width=`${Math.max(0,100*s.player.hp/Math.max(1,s.player.maxHp))}%`;
     if(ob)ob.style.width=`${Math.max(0,100*s.opponent.hp/Math.max(1,s.opponent.maxHp))}%`;
     const ps=this.root.querySelector("#player-status");const os=this.root.querySelector("#opponent-status");
-    if(ps)ps.textContent=s.player.status?`Status: ${s.player.status}`:"";
-    if(os)os.textContent=s.opponent.status?`Status: ${s.opponent.status}`:"";
+    if(ps)ps.textContent=s.player.status?`Status: ${this.formatStatus(s.player.status)}`:"";
+    if(os)os.textContent=s.opponent.status?`Status: ${this.formatStatus(s.opponent.status)}`:"";
     const pn=this.root.querySelector("#player-name");const on=this.root.querySelector("#opponent-name");
     if(pn)pn.textContent=this.species?.name??"Player";
     if(on)on.textContent=this.opponentSpecies?.name??"Opponent";
@@ -405,7 +412,14 @@ export class App {
       else overlay.innerHTML="";
     }
     const slot=this.root.querySelector("#battle-result-slot") as HTMLElement|null;
-    if(slot)slot.innerHTML=this.battleEnded?`<div class="battle-result"><div><strong>${this.battleResult==="VICTORY"?"Victory!":"Defeat!"}</strong><span>Authoritative battle ended.</span></div><button type="button" data-action="restart-battle">Battle Again</button></div>`:"";
+    if(slot){
+      const resultLabel=this.battleResult==="VICTORY"?"Victory!":this.battleResult==="DEFEAT"?"Defeat!":"Draw";
+      slot.innerHTML=this.battleEnded?`<div class="battle-result"><div><strong>${resultLabel}</strong><span>Authoritative battle ended.</span></div><button type="button" data-action="restart-battle">Battle Again</button></div>`:"";
+    }
+  }
+
+  private formatStatus(value:string):string{
+    return ({brn:"Burned",par:"Paralyzed",psn:"Poisoned",tox:"Badly poisoned",slp:"Asleep",frz:"Frozen"} as Record<string,string>)[value]??value;
   }
 
   private formatConditionLabel(value:string):string{
@@ -472,8 +486,13 @@ export class App {
       this.appendResolutionLog(m,events);this.updateBattleHud();
       this.coordinator.resolveSecondaryEffects(id,events);this.coordinator.processStatus(id);
       const state=this.coordinator.finishTransaction(id,this.coordinator.state.player.hp<=0,this.coordinator.state.opponent.hp<=0);
-      if(state.phase==="VICTORY"||state.phase==="DEFEAT"){
-        this.battleEnded=true;this.battleResult=state.phase;this.audio.play(state.phase==="VICTORY"?"victory":"defeat");this.coordinator.endBattle();this.appendBattleLog(state.phase==="VICTORY"?"Battle won.":"Battle lost.");this.updateBattleHud();return;
+      if(state.phase==="VICTORY"||state.phase==="DEFEAT"||state.phase==="DRAW"){
+        this.battleEnded=true;this.battleResult=state.phase;
+        if(state.phase==="VICTORY")this.audio.play("victory");
+        else if(state.phase==="DEFEAT")this.audio.play("defeat");
+        this.coordinator.endBattle();
+        this.appendBattleLog(state.phase==="VICTORY"?"Battle won.":state.phase==="DEFEAT"?"Battle lost.":"Battle ended in a draw.");
+        this.updateBattleHud();return;
       }
       this.updateBattleHud();
     }catch(error){
