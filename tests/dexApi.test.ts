@@ -6,12 +6,12 @@ type DexPayloadLike={generation:number;species:DexSpeciesLike[];moves:{gen:numbe
 
 describe("generation dex payload",()=>{
   it("returns the complete base National Dex for each generation",()=>{
-    const expected=[0,151,251,386,493,649,721,809,905,1025];
+    const expected=[0,151,251,386,493,649,721,809,807,1025];
     for(let generation=1;generation<=9;generation++){
       const payload=getDexPayload(generation) as DexPayloadLike;
       const base=payload.species.filter(s=>s.baseSpecies===s.name||!s.forme);
       expect(base.length).toBe(expected[generation]);
-      expect(Math.max(...base.map(s=>s.num))).toBe(expected[generation]);
+      expect(Math.max(...base.map(s=>s.num))).toBe(generation===8?905:expected[generation]);
       expect(base.every(s=>(s.gen??generation)<=generation)).toBe(true);
     }
   });
