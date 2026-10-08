@@ -63,7 +63,7 @@ export class PokemonModelLoader {
       const sprite=new THREE.Sprite(material);
       const worldHeight=Math.max(.65,Math.min(3.25,(request.heightm??1.2)*1.05));
       sprite.scale.set(worldHeight,worldHeight,1);
-      sprite.position.y=1.08;
+      sprite.position.y=worldHeight*.5;
       const group=new THREE.Group();
       group.add(sprite);
       group.userData.artworkFallback=true;
