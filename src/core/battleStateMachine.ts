@@ -29,6 +29,7 @@ const transitions: Readonly<Partial<Record<BattlePhase, Readonly<Partial<Record<
   FAINT_CHECK: { FAINT_CHECK_COMPLETE: "VICTORY", BATTLE_ENDED: "BATTLE_END" },
   VICTORY: { BATTLE_ENDED: "BATTLE_END" },
   DEFEAT: { BATTLE_ENDED: "BATTLE_END" },
+  DRAW: { BATTLE_ENDED: "BATTLE_END" },
   BATTLE_END: {}
 };
 
@@ -49,7 +50,7 @@ export function transition(phase: BattlePhase, event: BattleEvent): BattlePhase 
     if (event.playerFainted && !event.opponentFainted) return "DEFEAT";
     if (event.opponentFainted && !event.playerFainted) return "VICTORY";
     if (!event.playerFainted && !event.opponentFainted) return "PLAYER_SELECTING_MOVE";
-    throw new InvalidBattleTransitionError(phase, event.type);
+    return "DRAW";
   }
 
   return next;
