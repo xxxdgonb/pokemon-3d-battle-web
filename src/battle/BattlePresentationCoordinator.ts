@@ -69,6 +69,7 @@ export class BattlePresentationCoordinator {
     const hasAuthoritativeResolution =
       summary.damage.length > 0 ||
       summary.healing.length > 0 ||
+      summary.fainted.length > 0 ||
       summary.statuses.length > 0 ||
       summary.statChanges.length > 0 ||
       summary.abilityItemEvents.length > 0 ||
