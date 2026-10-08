@@ -61,7 +61,9 @@ export class EffectsRenderer{
       const eased=t*t*(3-2*t);
       const position=start.clone().lerp(end,eased);
       position.y+=Math.sin(t*Math.PI)*.55;
-      group.position.copy(position);
+      // start/end are world-space coordinates, so the effect group stays at
+      // the origin; otherwise the projectile and trail are translated twice.
+      core.position.copy(position);
       for(let i=0;i<trails.length;i++){
         const trail=trails[i];
         if(!trail)continue;
